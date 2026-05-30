@@ -1,20 +1,47 @@
+import logging
+
 import pytmx
 import pygame
 from config import TILE_SIZE
 
+logger = logging.getLogger(__name__)
+
 
 class TileMap:
     def __init__(self, tmx_path):
-        self.tmx_data = pytmx.load_pygame(tmx_path)
+        self.tmx_data = None
+        self.width = 0
+        self.height = 0
+        self.pixel_width = 0
+        self.pixel_height = 0
+        self.collision_map = []
+        self.spawn_points = {}
+        self.transitions = []
+        self._visible_layers = []
+        self._collision_layer_index = -1
+        self._load_failed = False
+
+        try:
+            self.tmx_data = pytmx.load_pygame(tmx_path)
+        except Exception as e:
+            logger.error("地图加载失败: %s - %s", tmx_path, e)
+            self._load_failed = True
+            self.width = 30
+            self.height = 17
+            self.collision_map = [[False] * self.width for _ in range(self.height)]
+            for x in range(self.width):
+                self.collision_map[0][x] = True
+                self.collision_map[self.height - 1][x] = True
+            for y in range(self.height):
+                self.collision_map[y][0] = True
+                self.collision_map[y][self.width - 1] = True
+            return
+
         self.width = self.tmx_data.width
         self.height = self.tmx_data.height
         self.pixel_width = self.width * TILE_SIZE
         self.pixel_height = self.height * TILE_SIZE
         self.collision_map = [[False] * self.width for _ in range(self.height)]
-        self.spawn_points = {}
-        self.transitions = []
-        self._visible_layers = []
-        self._collision_layer_index = -1
         self._parse_layers()
         self._build_collision()
 
@@ -76,6 +103,10 @@ class TileMap:
                             self.collision_map[y][x] = True
 
     def draw(self, surface, camera):
+        if self._load_failed:
+            surface.fill((40, 40, 60))
+            return
+
         start_row, end_row, start_col, end_col = camera.visible_tile_range
         for layer_index in self._visible_layers:
             layer = self.tmx_data.layers[layer_index]

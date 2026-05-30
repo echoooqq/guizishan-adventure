@@ -8,8 +8,8 @@ class Entity:
         self.y = float(y)
         self.width = width
         self.height = height
-        self.hitbox_width = hitbox_width or width
-        self.hitbox_height = hitbox_height or height
+        self.hitbox_width = hitbox_width if hitbox_width is not None else width
+        self.hitbox_height = hitbox_height if hitbox_height is not None else height
         self.direction = "down"
         self.is_moving = False
         self.animation_frame = 0

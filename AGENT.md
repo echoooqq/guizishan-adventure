@@ -43,25 +43,27 @@
 
 ### 1.3 字体规范
 
-- **主字体**：必须使用 Zpix（中文像素风字体），确保中文渲染清晰
+- **正式字体**：必须使用 Zpix（中文像素风字体），确保中文渲染清晰
+- **临时字体（阶段1）**：Zpix 在阶段2（Day 12-13）才正式配置，阶段1使用系统黑体（SimHei）作为临时方案，通过 `pygame.font.Font(FONT_PATH, size)` 加载（`FONT_PATH` 定义在 `config.py`），仅保证中文可显示，不保证美观
 - **字体大小**：必须是像素网格的整数倍（推荐 12px、16px），避免亚像素渲染导致中文模糊
 - **英文补充字体**：按键提示中的英文按键名可用 Press Start 2P
 - **禁止使用** `pygame.font.Font(None, size)` 渲染中文文本，该默认字体不支持中文
+- **阶段2切换**：配置 Zpix 后，删除 `config.py` 中的 `FONT_PATH` 常量，所有字体加载统一使用 Zpix
 
 ### 1.4 当前代码中需修正的英文文本
 
-以下现有代码中的英文文本必须替换为中文：
+以下英文文本已在 Day 2 修正完毕（✅），记录如下供参考：
 
-| 文件 | 当前英文 | 应替换为 |
-|------|---------|---------|
-| `main.py` | `"GuiZiShan Adventure - Campus Mystery Exploration"` | `"桂子山秘境探险"` |
-| `game/game_manager.py` | `"GuiZiShan Adventure"` | `"桂子山秘境探险"` |
-| `game/game_manager.py` | `"Campus Mystery Exploration"` | `"校园秘境探险"` |
-| `game/game_manager.py` | `"Press ENTER to Start"` | `"按 回车键 开始游戏"` |
-| `game/game_manager.py` | `"Continue (Esc)"` | `"继续游戏 (Esc)"` |
-| `game/game_manager.py` | `"Back to Title (Q)"` | `"返回标题 (Q)"` |
-| `game/game_manager.py` | `"PAUSED"` | `"暂停"` |
-| `game/game_manager.py` | HUD 调试信息 `"Pos:"` / `"Dir:"` / `"Stamina:"` | `"位置:"` / `"方向:"` / `"体力:"` |
+| 文件 | 原英文 | 已替换为 | 状态 |
+|------|--------|---------|------|
+| `main.py` | `"GuiZiShan Adventure - Campus Mystery Exploration"` | `"桂子山秘境探险"` | ✅ 已修正 |
+| `game/game_manager.py` | `"GuiZiShan Adventure"` | `"桂子山秘境探险"` | ✅ 已修正 |
+| `game/game_manager.py` | `"Campus Mystery Exploration"` | `"校园秘境探险"` | ✅ 已修正 |
+| `game/game_manager.py` | `"Press ENTER to Start"` | `"按 回车键 开始游戏"` | ✅ 已修正 |
+| `game/game_manager.py` | `"Continue (Esc)"` | `"继续游戏 (Esc)"` | ✅ 已修正 |
+| `game/game_manager.py` | `"Back to Title (Q)"` | `"返回标题 (Q)"` | ✅ 已修正 |
+| `game/game_manager.py` | `"PAUSED"` | `"暂停"` | ✅ 已修正 |
+| `game/game_manager.py` | HUD 调试信息 `"Pos:"` / `"Dir:"` / `"Stamina:"` | `"位置:"` / `"方向:"` / `"体力:"` | ✅ 已修正 |
 
 ---
 
@@ -605,7 +607,7 @@ PAUSED ──返回标题──→ TITLE
 - [ ] 新增的 UI 按钮文本是否使用中文？
 - [ ] 新增的对话/提示文本是否使用中文？
 - [ ] 面向玩家的文本是否从 JSON 数据文件读取而非硬编码？
-- [ ] 字体是否使用 Zpix 而非 `pygame.font.Font(None, size)`？
+- [ ] 字体是否使用 Zpix 或临时 SimHei（而非 `pygame.font.Font(None, size)`）？
 - [ ] 新增模块是否遵循了依赖规则（不反向依赖）？
 - [ ] update() 和 draw() 是否分离？
 - [ ] 命名是否遵循规范（snake_case/PascalCase/UPPER_SNAKE_CASE）？

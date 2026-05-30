@@ -8,6 +8,9 @@ from config import (
     SCREEN_HEIGHT,
     FPS,
     PLAYER_HEIGHT,
+    FONT_PATH,
+    FONT_TITLE_SIZE,
+    FONT_INFO_SIZE,
     COLOR_BLACK,
     COLOR_TITLE_BG,
     COLOR_TITLE_TEXT,
@@ -17,6 +20,8 @@ from game.game_state import GameState
 from game.camera import Camera
 from player.player import Player
 from world.tilemap import TileMap
+
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 class GameManager:
@@ -31,17 +36,14 @@ class GameManager:
             theme_path="assets/ui/theme.json",
         )
 
-        tmx_path = os.path.join(
-            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-            "world", "map_data", "test_map.tmx",
-        )
+        tmx_path = os.path.join(PROJECT_ROOT, "world", "map_data", "test_map.tmx")
         self.tile_map = TileMap(tmx_path)
         spawn_x, spawn_y = self.tile_map.get_spawn_position()
         self.player = Player(spawn_x, spawn_y)
         self.camera = Camera(self.tile_map.width, self.tile_map.height)
 
-        self.title_font = pygame.font.Font(None, 32)
-        self.info_font = pygame.font.Font(None, 16)
+        self.title_font = pygame.font.Font(FONT_PATH, FONT_TITLE_SIZE)
+        self.info_font = pygame.font.Font(FONT_PATH, FONT_INFO_SIZE)
         self.blink_timer = 0.0
         self.show_press_enter = True
 
@@ -146,14 +148,14 @@ class GameManager:
     def _draw_title(self):
         self.internal_surface.fill(COLOR_TITLE_BG)
 
-        title_text = self.title_font.render("GuiZiShan Adventure", True, COLOR_TITLE_TEXT)
+        title_text = self.title_font.render("桂子山秘境探险", True, COLOR_TITLE_TEXT)
         title_rect = title_text.get_rect(
             centerx=INTERNAL_WIDTH // 2, centery=INTERNAL_HEIGHT // 2 - 30
         )
         self.internal_surface.blit(title_text, title_rect)
 
         sub_text = self.info_font.render(
-            "Campus Mystery Exploration", True, COLOR_WHITE
+            "校园秘境探险", True, COLOR_WHITE
         )
         sub_rect = sub_text.get_rect(
             centerx=INTERNAL_WIDTH // 2, centery=INTERNAL_HEIGHT // 2
@@ -161,7 +163,7 @@ class GameManager:
         self.internal_surface.blit(sub_text, sub_rect)
 
         if self.show_press_enter:
-            enter_text = self.info_font.render("Press ENTER to Start", True, COLOR_WHITE)
+            enter_text = self.info_font.render("按 回车键 开始游戏", True, COLOR_WHITE)
             enter_rect = enter_text.get_rect(
                 centerx=INTERNAL_WIDTH // 2, centery=INTERNAL_HEIGHT // 2 + 40
             )
@@ -172,9 +174,9 @@ class GameManager:
         self.player.draw(self.internal_surface, self.camera)
 
         pos_text = self.info_font.render(
-            f"Pos: ({int(self.player.x)}, {int(self.player.y)})  "
-            f"Dir: {self.player.direction}  "
-            f"Stamina: {int(self.player.stamina)}",
+            f"位置:({int(self.player.x)},{int(self.player.y)}) "
+            f"方向:{self.player.direction} "
+            f"体力:{int(self.player.stamina)}",
             True, COLOR_WHITE,
         )
         bg_rect = pos_text.get_rect(topleft=(4, 4))
@@ -188,7 +190,7 @@ class GameManager:
         overlay.fill((0, 0, 0, 128))
         self.internal_surface.blit(overlay, (0, 0))
 
-        pause_text = self.title_font.render("PAUSED", True, COLOR_WHITE)
+        pause_text = self.title_font.render("暂停", True, COLOR_WHITE)
         pause_rect = pause_text.get_rect(
             centerx=INTERNAL_WIDTH // 2, centery=INTERNAL_HEIGHT // 2 - 50
         )
