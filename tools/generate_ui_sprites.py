@@ -1,7 +1,6 @@
 import os
+import math
 import pygame
-
-TILE = 16
 
 
 def create_button_normal(path, w=64, h=24):
@@ -70,14 +69,6 @@ def create_inventory_slot(path, s=32):
     pygame.draw.line(surf, (60, 60, 80), (2, 2), (2, s - 3))
     pygame.draw.line(surf, (30, 30, 50), (s - 2, 2), (s - 2, s - 2))
     pygame.draw.line(surf, (30, 30, 50), (2, s - 2), (s - 2, s - 2))
-    pygame.image.save(surf, path)
-
-
-def create_icon_placeholder(path, s=32, color=(200, 200, 200), label="?"):
-    surf = pygame.Surface((s, s), pygame.SRCALPHA)
-    surf.fill((0, 0, 0, 0))
-    pygame.draw.rect(surf, color, (4, 4, s - 8, s - 8))
-    pygame.draw.rect(surf, (255, 255, 255), (4, 4, s - 8, s - 8), 1)
     pygame.image.save(surf, path)
 
 
@@ -171,8 +162,6 @@ def create_badge_fragment_icon(path, s=32, index=1):
     pygame.draw.circle(surf, inner_color, (cx, cy), 4)
     pygame.image.save(surf, path)
 
-
-import math
 
 if __name__ == "__main__":
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

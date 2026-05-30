@@ -1,6 +1,5 @@
 import os
 import sys
-import math
 import random
 import pygame
 import xml.etree.ElementTree as ET
@@ -276,8 +275,8 @@ def _place_borders(structures, collision):
 
 
 def _place_guizhong_road(ground, structures, decorations, collision, interactive_objects):
-    road_y_start = 37
-    road_y_end = 40
+    road_y_start = 36
+    road_y_end = 41
     road_x_start = 5
     road_x_end = 105
 
@@ -287,6 +286,7 @@ def _place_guizhong_road(ground, structures, decorations, collision, interactive
 
     for x in range(road_x_start, road_x_end + 1, 2):
         ground[38][x] = GID_PATH_DIRT
+        ground[39][x] = GID_PATH_DIRT
 
     for x in range(road_x_start + 3, road_x_end, 5):
         structures[road_y_start - 1][x] = GID_TREE_OSMANTHUS
@@ -387,24 +387,32 @@ def _place_building(ground, structures, collision, bx, by, bw, bh,
                 structures[door_y][door_x] = GID_BUILDING_DOOR
                 collision[door_y][door_x] = GID_EMPTY
 
-    door_x_pos = bx + door_offset + door_width / 2
-    door_y_pos = by + bh - 0.5
     if door_side == "south":
-        door_y_pos = by + bh - 0.5
+        obj_x = (bx + door_offset) * TILE_SIZE
+        obj_y = (by + bh - 1) * TILE_SIZE
+        obj_w = door_width * TILE_SIZE
+        obj_h = TILE_SIZE
     elif door_side == "north":
-        door_y_pos = by + 0.5
+        obj_x = (bx + door_offset) * TILE_SIZE
+        obj_y = by * TILE_SIZE
+        obj_w = door_width * TILE_SIZE
+        obj_h = TILE_SIZE
     elif door_side == "east":
-        door_x_pos = bx + bw - 0.5
-        door_y_pos = by + door_offset + door_width / 2
+        obj_x = (bx + bw - 1) * TILE_SIZE
+        obj_y = (by + door_offset) * TILE_SIZE
+        obj_w = TILE_SIZE
+        obj_h = door_width * TILE_SIZE
     elif door_side == "west":
-        door_x_pos = bx + 0.5
-        door_y_pos = by + door_offset + door_width / 2
+        obj_x = bx * TILE_SIZE
+        obj_y = (by + door_offset) * TILE_SIZE
+        obj_w = TILE_SIZE
+        obj_h = door_width * TILE_SIZE
 
     interactive_objects.append({
-        "x": (bx + door_offset) * TILE_SIZE,
-        "y": (by + bh - 1) * TILE_SIZE if door_side == "south" else by * TILE_SIZE,
-        "width": door_width * TILE_SIZE,
-        "height": TILE_SIZE,
+        "x": obj_x,
+        "y": obj_y,
+        "width": obj_w,
+        "height": obj_h,
         "type": "building_entrance",
         "properties": {
             "interactive_type": "enter",
@@ -415,10 +423,10 @@ def _place_building(ground, structures, collision, bx, by, bw, bh,
     })
 
     trigger_objects.append({
-        "x": (bx + door_offset) * TILE_SIZE,
-        "y": (by + bh - 1) * TILE_SIZE if door_side == "south" else by * TILE_SIZE,
-        "width": door_width * TILE_SIZE,
-        "height": TILE_SIZE,
+        "x": obj_x,
+        "y": obj_y,
+        "width": obj_w,
+        "height": obj_h,
         "type": "door_trigger",
         "properties": {
             "target_map": target_map,
@@ -433,7 +441,7 @@ def _place_library(ground, structures, collision, interactive_objects, trigger_o
                     "south", 6, 2, interactive_objects, trigger_objects,
                     "图书馆", "library_f1", "library_entrance")
 
-    for y in range(by + bh, 37):
+    for y in range(by + bh, 36):
         for x in range(bx + 6, bx + 8):
             ground[y][x] = GID_PATH_STONE
 
@@ -479,7 +487,7 @@ def _place_boya_square(ground, structures, decorations, collision, interactive_o
         decorations[sy + sh - 3][sx + dx] = GID_FLOWER_BED
         collision[sy + sh - 3][sx + dx] = GID_COLLISION
 
-    for y in range(sy + sh, 37):
+    for y in range(sy + sh, 36):
         for x in range(sx + sw // 2 - 1, sx + sw // 2 + 1):
             ground[y][x] = GID_PATH_STONE
 
@@ -490,7 +498,7 @@ def _place_gym(ground, structures, collision, interactive_objects, trigger_objec
                     "south", 7, 2, interactive_objects, trigger_objects,
                     "佑铭体育馆", "gym", "gym_entrance")
 
-    for y in range(41, by):
+    for y in range(42, by):
         for x in range(bx + 7, bx + 9):
             ground[y][x] = GID_PATH_STONE
 
@@ -505,7 +513,7 @@ def _place_dining_hall(ground, structures, collision, interactive_objects, trigg
                     "south", 5, 2, interactive_objects, trigger_objects,
                     "学子食堂", "dining_hall_f1", "dining_entrance")
 
-    for y in range(41, by):
+    for y in range(42, by):
         for x in range(bx + 5, bx + 7):
             ground[y][x] = GID_PATH_STONE
 
@@ -555,7 +563,7 @@ def _place_fountain_square(ground, structures, decorations, collision, interacti
         decorations[sy + sh - 3][sx + dx] = GID_FLOWER_BED
         collision[sy + sh - 3][sx + dx] = GID_COLLISION
 
-    for y in range(41, sy):
+    for y in range(42, sy):
         for x in range(sx + sw // 2 - 1, sx + sw // 2 + 1):
             ground[y][x] = GID_PATH_STONE
 
@@ -622,36 +630,36 @@ def _place_shuttle_station(ground, structures, decorations, collision, interacti
 
 def _place_connecting_paths(ground):
     for x in range(5, 105):
-        if ground[36][x] == GID_GRASS:
-            ground[36][x] = GID_PATH_DIRT
-        if ground[41][x] == GID_GRASS:
-            ground[41][x] = GID_PATH_DIRT
+        if ground[35][x] == GID_GRASS:
+            ground[35][x] = GID_PATH_DIRT
+        if ground[42][x] == GID_GRASS:
+            ground[42][x] = GID_PATH_DIRT
 
-    for y in range(3, 36):
+    for y in range(3, 35):
         if ground[y][18] == GID_GRASS:
             ground[y][18] = GID_PATH_DIRT
         if ground[y][19] == GID_GRASS:
             ground[y][19] = GID_PATH_DIRT
 
-    for y in range(3, 36):
+    for y in range(3, 35):
         if ground[y][85] == GID_GRASS:
             ground[y][85] = GID_PATH_DIRT
         if ground[y][86] == GID_GRASS:
             ground[y][86] = GID_PATH_DIRT
 
-    for y in range(42, 49):
+    for y in range(43, 49):
         if ground[y][18] == GID_GRASS:
             ground[y][18] = GID_PATH_DIRT
         if ground[y][19] == GID_GRASS:
             ground[y][19] = GID_PATH_DIRT
 
-    for y in range(42, 49):
+    for y in range(43, 49):
         if ground[y][94] == GID_GRASS:
             ground[y][94] = GID_PATH_DIRT
         if ground[y][95] == GID_GRASS:
             ground[y][95] = GID_PATH_DIRT
 
-    for y in range(42, 48):
+    for y in range(43, 48):
         if ground[y][59] == GID_GRASS:
             ground[y][59] = GID_PATH_DIRT
         if ground[y][60] == GID_GRASS:
@@ -789,7 +797,7 @@ def _add_default_spawn(trigger_objects):
         "x": 59 * TILE_SIZE,
         "y": 38 * TILE_SIZE,
         "width": 2 * TILE_SIZE,
-        "height": 2 * TILE_SIZE,
+        "height": 3 * TILE_SIZE,
         "type": "spawn",
         "properties": {
             "spawn_id": "default",
