@@ -37,7 +37,7 @@ class GameManager:
             theme_path=theme_path,
         )
 
-        tmx_path = os.path.join(PROJECT_ROOT, "world", "map_data", "test_map.tmx")
+        tmx_path = os.path.join(PROJECT_ROOT, "world", "map_data", "main_campus.tmx")
         self.tile_map = TileMap(tmx_path)
         spawn_x, spawn_y = self.tile_map.get_spawn_position()
         self.player = Player(spawn_x, spawn_y)
