@@ -60,8 +60,8 @@
 | `game/game_manager.py` | `"GuiZiShan Adventure"` | `"桂子山秘境探险"` | ✅ 已修正 |
 | `game/game_manager.py` | `"Campus Mystery Exploration"` | `"校园秘境探险"` | ✅ 已修正 |
 | `game/game_manager.py` | `"Press ENTER to Start"` | `"按 回车键 开始游戏"` | ✅ 已修正 |
-| `game/game_manager.py` | `"Continue (Esc)"` | `"继续游戏 (Esc)"` | ✅ 已修正 |
-| `game/game_manager.py` | `"Back to Title (Q)"` | `"返回标题 (Q)"` | ✅ 已修正 |
+| `game/game_manager.py` | `"Continue (Esc)"` | 暂保留英文（pygame_gui默认字体不支持中文，等Day12配置Zpix后统一中文化） | ⏳ 待Day12 |
+| `game/game_manager.py` | `"Back to Title (Q)"` | 暂保留英文（同上） | ⏳ 待Day12 |
 | `game/game_manager.py` | `"PAUSED"` | `"暂停"` | ✅ 已修正 |
 | `game/game_manager.py` | HUD 调试信息 `"Pos:"` / `"Dir:"` / `"Stamina:"` | `"位置:"` / `"方向:"` / `"体力:"` | ✅ 已修正 |
 

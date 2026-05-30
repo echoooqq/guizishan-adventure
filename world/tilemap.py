@@ -1,7 +1,6 @@
 import logging
 
 import pytmx
-import pygame
 from config import TILE_SIZE
 
 logger = logging.getLogger(__name__)

@@ -31,9 +31,10 @@ class GameManager:
         self.state = GameState.TITLE
         self.clock = pygame.time.Clock()
 
+        theme_path = os.path.join(PROJECT_ROOT, "assets", "ui", "theme.json")
         self.ui_manager = pygame_gui.UIManager(
             (SCREEN_WIDTH, SCREEN_HEIGHT),
-            theme_path="assets/ui/theme.json",
+            theme_path=theme_path,
         )
 
         tmx_path = os.path.join(PROJECT_ROOT, "world", "map_data", "test_map.tmx")
@@ -95,12 +96,12 @@ class GameManager:
         center_x = SCREEN_WIDTH // 2 - btn_w // 2
         self._pause_continue_btn = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect(center_x, SCREEN_HEIGHT // 2 - 60, btn_w, btn_h),
-            text="继续游戏 (Esc)",
+            text="Continue (Esc)",
             manager=self.ui_manager,
         )
         self._pause_title_btn = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect(center_x, SCREEN_HEIGHT // 2, btn_w, btn_h),
-            text="返回标题 (Q)",
+            text="Quit to Title (Q)",
             manager=self.ui_manager,
         )
 

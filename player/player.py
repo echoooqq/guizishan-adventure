@@ -41,13 +41,13 @@ class Player(Entity):
         if keys[pygame.K_d] or keys[pygame.K_RIGHT]:
             dx = 1.0
 
-        if dy < 0 and dx == 0:
+        if dy < 0:
             self.direction = "up"
-        elif dy > 0 and dx == 0:
+        elif dy > 0:
             self.direction = "down"
-        elif dx < 0 and dy == 0:
+        elif dx < 0:
             self.direction = "left"
-        elif dx > 0 and dy == 0:
+        elif dx > 0:
             self.direction = "right"
 
         self.is_moving = dx != 0 or dy != 0

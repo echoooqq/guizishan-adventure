@@ -65,6 +65,11 @@ def create_tileset(output_path):
             pygame.draw.rect(surface, COLOR_TREE_TRUNK, (x + 6, 10, 4, 6))
             pygame.draw.circle(surface, COLOR_TREE_LEAF, (x + 8, 6), 6)
             pygame.draw.circle(surface, COLOR_TREE_LEAF_DARK, (x + 6, 5), 3)
+        elif i == 6:
+            surface.fill(COLOR_GRASS, rect)
+            overlay = pygame.Surface((TILE_SIZE, TILE_SIZE), pygame.SRCALPHA)
+            overlay.fill(COLOR_COLLISION)
+            surface.blit(overlay, (x, 0))
 
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     pygame.image.save(surface, output_path)
@@ -74,7 +79,9 @@ def create_tileset(output_path):
 
 def design_map():
     ground = [[GID_GRASS] * MAP_WIDTH for _ in range(MAP_HEIGHT)]
+    terrain = [[GID_EMPTY] * MAP_WIDTH for _ in range(MAP_HEIGHT)]
     structures = [[GID_EMPTY] * MAP_WIDTH for _ in range(MAP_HEIGHT)]
+    decorations = [[GID_EMPTY] * MAP_WIDTH for _ in range(MAP_HEIGHT)]
     collision = [[GID_EMPTY] * MAP_WIDTH for _ in range(MAP_HEIGHT)]
 
     for x in range(MAP_WIDTH):
@@ -131,7 +138,7 @@ def design_map():
     for y in range(pond_y, pond_y + pond_h):
         for x in range(pond_x, pond_x + pond_w):
             if 0 <= y < MAP_HEIGHT and 0 <= x < MAP_WIDTH:
-                structures[y][x] = GID_WATER
+                terrain[y][x] = GID_WATER
                 collision[y][x] = GID_COLLISION
 
     for y in range(1, MAP_HEIGHT - 1):
@@ -139,7 +146,7 @@ def design_map():
             if ground[y][x] == GID_GRASS and (x + y) % 4 == 0:
                 ground[y][x] = GID_GRASS_DARK
 
-    return ground, structures, collision
+    return ground, terrain, structures, decorations, collision
 
 
 def layer_to_csv(layer_data):
@@ -149,7 +156,7 @@ def layer_to_csv(layer_data):
     return "\n" + ",".join(values) + "\n"
 
 
-def create_tmx(ground, structures, collision, tileset_path, output_path):
+def create_tmx(ground, terrain, structures, decorations, collision, tileset_path, output_path):
     root = ET.Element("map")
     root.set("version", "1.5")
     root.set("orientation", "orthogonal")
@@ -159,7 +166,6 @@ def create_tmx(ground, structures, collision, tileset_path, output_path):
     root.set("tilewidth", str(TILE_SIZE))
     root.set("tileheight", str(TILE_SIZE))
     root.set("infinite", "0")
-    root.set("nextlayerid", "4")
     root.set("nextobjectid", "1")
 
     tileset = ET.SubElement(root, "tileset")
@@ -196,6 +202,16 @@ def create_tmx(ground, structures, collision, tileset_path, output_path):
     ground_data.text = layer_to_csv(ground)
     layer_id += 1
 
+    terrain_layer = ET.SubElement(root, "layer")
+    terrain_layer.set("id", str(layer_id))
+    terrain_layer.set("name", "terrain")
+    terrain_layer.set("width", str(MAP_WIDTH))
+    terrain_layer.set("height", str(MAP_HEIGHT))
+    terrain_data = ET.SubElement(terrain_layer, "data")
+    terrain_data.set("encoding", "csv")
+    terrain_data.text = layer_to_csv(terrain)
+    layer_id += 1
+
     struct_layer = ET.SubElement(root, "layer")
     struct_layer.set("id", str(layer_id))
     struct_layer.set("name", "structures")
@@ -204,6 +220,11 @@ def create_tmx(ground, structures, collision, tileset_path, output_path):
     struct_data = ET.SubElement(struct_layer, "data")
     struct_data.set("encoding", "csv")
     struct_data.text = layer_to_csv(structures)
+    layer_id += 1
+
+    objects_group = ET.SubElement(root, "objectgroup")
+    objects_group.set("id", str(layer_id))
+    objects_group.set("name", "objects")
     layer_id += 1
 
     coll_layer = ET.SubElement(root, "layer")
@@ -215,6 +236,24 @@ def create_tmx(ground, structures, collision, tileset_path, output_path):
     coll_data = ET.SubElement(coll_layer, "data")
     coll_data.set("encoding", "csv")
     coll_data.text = layer_to_csv(collision)
+    layer_id += 1
+
+    triggers_group = ET.SubElement(root, "objectgroup")
+    triggers_group.set("id", str(layer_id))
+    triggers_group.set("name", "triggers")
+    layer_id += 1
+
+    deco_layer = ET.SubElement(root, "layer")
+    deco_layer.set("id", str(layer_id))
+    deco_layer.set("name", "decorations")
+    deco_layer.set("width", str(MAP_WIDTH))
+    deco_layer.set("height", str(MAP_HEIGHT))
+    deco_data = ET.SubElement(deco_layer, "data")
+    deco_data.set("encoding", "csv")
+    deco_data.text = layer_to_csv(decorations)
+    layer_id += 1
+
+    root.set("nextlayerid", str(layer_id))
 
     tree = ET.ElementTree(root)
     ET.indent(tree, space=" ")
@@ -225,7 +264,6 @@ def create_tmx(ground, structures, collision, tileset_path, output_path):
 
 if __name__ == "__main__":
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    project_dir = os.path.dirname(os.path.abspath(__file__))
 
     tileset_output = os.path.join(base_dir, "assets", "tilesets", "test_tileset.png")
     tmx_output = os.path.join(base_dir, "world", "map_data", "test_map.tmx")
@@ -234,5 +272,5 @@ if __name__ == "__main__":
     tileset_rel_path = tileset_rel_path.replace("\\", "/")
 
     create_tileset(tileset_output)
-    ground, structures, collision = design_map()
-    create_tmx(ground, structures, collision, tileset_rel_path, tmx_output)
+    ground, terrain, structures, decorations, collision = design_map()
+    create_tmx(ground, terrain, structures, decorations, collision, tileset_rel_path, tmx_output)
