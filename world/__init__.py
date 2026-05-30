@@ -1,1 +1,2 @@
-from world.test_map import TestMap
+from world.tilemap import TileMap
+from world.entity import Entity

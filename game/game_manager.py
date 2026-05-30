@@ -1,3 +1,4 @@
+import os
 import pygame
 import pygame_gui
 from config import (
@@ -15,7 +16,7 @@ from config import (
 from game.game_state import GameState
 from game.camera import Camera
 from player.player import Player
-from world.test_map import TestMap
+from world.tilemap import TileMap
 
 
 class GameManager:
@@ -30,10 +31,14 @@ class GameManager:
             theme_path="assets/ui/theme.json",
         )
 
-        self.test_map = TestMap()
-        spawn_x, spawn_y = self.test_map.get_spawn_position()
+        tmx_path = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+            "world", "map_data", "test_map.tmx",
+        )
+        self.tile_map = TileMap(tmx_path)
+        spawn_x, spawn_y = self.tile_map.get_spawn_position()
         self.player = Player(spawn_x, spawn_y)
-        self.camera = Camera(self.test_map.width, self.test_map.height)
+        self.camera = Camera(self.tile_map.width, self.tile_map.height)
 
         self.title_font = pygame.font.Font(None, 32)
         self.info_font = pygame.font.Font(None, 16)
@@ -88,12 +93,12 @@ class GameManager:
         center_x = SCREEN_WIDTH // 2 - btn_w // 2
         self._pause_continue_btn = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect(center_x, SCREEN_HEIGHT // 2 - 60, btn_w, btn_h),
-            text="Continue (Esc)",
+            text="继续游戏 (Esc)",
             manager=self.ui_manager,
         )
         self._pause_title_btn = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect(center_x, SCREEN_HEIGHT // 2, btn_w, btn_h),
-            text="Back to Title (Q)",
+            text="返回标题 (Q)",
             manager=self.ui_manager,
         )
 
@@ -113,9 +118,9 @@ class GameManager:
             keys = pygame.key.get_pressed()
             self.player.update(
                 dt, keys,
-                self.test_map.collision_map,
-                self.test_map.width,
-                self.test_map.height,
+                self.tile_map.collision_map,
+                self.tile_map.width,
+                self.tile_map.height,
             )
             self.camera.update(self.player.x, self.player.y - PLAYER_HEIGHT / 2)
 
@@ -163,7 +168,7 @@ class GameManager:
             self.internal_surface.blit(enter_text, enter_rect)
 
     def _draw_game(self):
-        self.test_map.draw(self.internal_surface, self.camera)
+        self.tile_map.draw(self.internal_surface, self.camera)
         self.player.draw(self.internal_surface, self.camera)
 
         pos_text = self.info_font.render(

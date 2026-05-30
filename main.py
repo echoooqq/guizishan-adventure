@@ -8,7 +8,7 @@ def main():
     pygame.init()
 
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-    pygame.display.set_caption("GuiZiShan Adventure - Campus Mystery Exploration")
+    pygame.display.set_caption("桂子山秘境探险")
 
     game_manager = GameManager(screen)
 
