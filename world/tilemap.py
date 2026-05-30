@@ -16,6 +16,9 @@ class TileMap:
         self.collision_map = []
         self.spawn_points = {}
         self.transitions = []
+        self.interactive_objects = []
+        self.npcs = []
+        self.triggers = []
         self._visible_layers = []
         self._collision_layer_index = -1
         self._load_failed = False
@@ -55,9 +58,13 @@ class TileMap:
                 if layer.name == "triggers":
                     self._parse_triggers(layer)
                 elif layer.name == "objects":
-                    pass
+                    self._parse_objects(layer)
+                elif layer.name == "npcs":
+                    self._parse_npcs(layer)
 
     def _parse_triggers(self, layer):
+        from entities.trigger import Trigger
+
         for obj in layer:
             trigger = {
                 "x": obj.x,
@@ -76,6 +83,46 @@ class TileMap:
                 sx = obj.x + obj.width / 2
                 sy = obj.y + obj.height / 2
                 self.spawn_points[trigger["properties"]["spawn_id"]] = (sx, sy)
+            trigger_obj = Trigger(
+                x=obj.x, y=obj.y,
+                width=obj.width, height=obj.height,
+                trigger_type=obj.type or "generic",
+                properties=dict(obj.properties) if obj.properties else {},
+            )
+            self.triggers.append(trigger_obj)
+
+    def _parse_objects(self, layer):
+        from entities.interactive_object import InteractiveObject
+
+        for obj in layer:
+            props = dict(obj.properties) if obj.properties else {}
+            interactive_type = props.get("interactive_type", "examine")
+            obj_instance = InteractiveObject(
+                x=obj.x, y=obj.y,
+                width=obj.width, height=obj.height,
+                interactive_type=interactive_type,
+                properties=props,
+            )
+            self.interactive_objects.append(obj_instance)
+
+    def _parse_npcs(self, layer):
+        from entities.npc import NPC
+
+        for obj in layer:
+            props = dict(obj.properties) if obj.properties else {}
+            npc_id = props.get("npc_id", "unknown_npc")
+            dialogue_id = props.get("dialogue_id", npc_id)
+            center_x = obj.x + obj.width / 2
+            bottom_y = obj.y + obj.height
+            npc = NPC(
+                x=center_x, y=bottom_y,
+                npc_id=npc_id,
+                dialogue_id=dialogue_id,
+                properties=props,
+            )
+            if "direction" in props:
+                npc.direction = props["direction"]
+            self.npcs.append(npc)
 
     def _build_collision(self):
         solid_gids = set()

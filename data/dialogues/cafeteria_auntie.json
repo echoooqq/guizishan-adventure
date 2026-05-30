@@ -1,0 +1,25 @@
+{
+  "default": [
+    {"speaker": "食堂阿姨", "text": "同学，来吃饭吗？今天的菜可香了！"},
+    {"type": "choice", "options": [
+      {"text": "有什么好吃的？", "next": "menu"},
+      {"text": "阿姨，您看起来有心事？", "next": "lost_card"},
+      {"text": "我先看看", "next": "look_around"}
+    ]}
+  ],
+  "menu": [
+    {"speaker": "食堂阿姨", "text": "今天有红烧肉、宫保鸡丁、还有桂花糕！"},
+    {"speaker": "食堂阿姨", "text": "不过有个学生把饭卡弄丢了，我正发愁呢……"}
+  ],
+  "lost_card": [
+    {"speaker": "食堂阿姨", "text": "唉，有个粗心的学生把饭卡弄丢了，说是落在二楼了。"},
+    {"speaker": "食堂阿姨", "text": "你要是能帮我找到就好了，阿姨给你加菜！"}
+  ],
+  "look_around": [
+    {"speaker": "食堂阿姨", "text": "好的，慢慢看，不着急。"}
+  ],
+  "card_returned": [
+    {"speaker": "食堂阿姨", "text": "太好了！你找到饭卡了！阿姨太感谢你了！"},
+    {"speaker": "食堂阿姨", "text": "来来来，阿姨给你开后厨门，里面有惊喜哦！"}
+  ]
+}

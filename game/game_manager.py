@@ -1,3 +1,4 @@
+import json
 import os
 import pygame
 import pygame_gui
@@ -20,6 +21,7 @@ from game.game_state import GameState
 from game.camera import Camera
 from player.player import Player
 from world.tilemap import TileMap
+from ui.dialog_box import DialogBox
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -52,10 +54,87 @@ class GameManager:
         self._pause_title_btn = None
         self._create_title_ui()
 
+        self.dialog_box = DialogBox()
+        self._dialogues_cache = {}
+        self._nearby_interactable = None
+        self._nearby_type = None
+
+        self.interactive_objects = list(self.tile_map.interactive_objects)
+        self.npcs = list(self.tile_map.npcs)
+        self.triggers = list(self.tile_map.triggers)
+
+        self._setup_test_entities()
+
+    def _setup_test_entities(self):
+        from entities.npc import NPC
+        from entities.interactive_object import InteractiveObject
+
+        spawn_x, spawn_y = self.tile_map.get_spawn_position()
+
+        test_npc = NPC(
+            x=spawn_x + 48, y=spawn_y,
+            npc_id="librarian",
+            dialogue_id="librarian",
+            properties={"direction": "down"},
+        )
+        self.npcs.append(test_npc)
+
+        test_npc2 = NPC(
+            x=spawn_x - 48, y=spawn_y,
+            npc_id="senior_student",
+            dialogue_id="senior_student",
+            properties={
+                "direction": "right",
+                "body_color": (80, 140, 80),
+                "hair_color": (40, 30, 20),
+            },
+        )
+        self.npcs.append(test_npc2)
+
+        test_obj = InteractiveObject(
+            x=spawn_x + 80, y=spawn_y - 16,
+            width=16, height=16,
+            interactive_type="examine",
+            properties={"prompt_text": "查看告示牌", "color": (160, 140, 100)},
+        )
+        test_obj.on_interact = lambda obj: {
+            "type": "dialog",
+            "dialogue_id": "_builtin",
+            "dialogue_data": {
+                "default": [
+                    {"speaker": "", "text": "告示牌上写着：欢迎来到桂子山！请注意校园内的安全提示。"},
+                ]
+            },
+        }
+        self.interactive_objects.append(test_obj)
+
+    def _load_dialogue(self, dialogue_id):
+        if dialogue_id in self._dialogues_cache:
+            return self._dialogues_cache[dialogue_id]
+
+        dialogue_path = os.path.join(
+            PROJECT_ROOT, "data", "dialogues", f"{dialogue_id}.json"
+        )
+        if os.path.exists(dialogue_path):
+            with open(dialogue_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            self._dialogues_cache[dialogue_id] = data
+            return data
+        return None
+
     def _create_title_ui(self):
         pass
 
     def handle_event(self, event):
+        if self.state == GameState.DIALOG:
+            consumed = self.dialog_box.handle_event(event)
+            if consumed:
+                return
+            if not self.dialog_box.active:
+                self.state = GameState.PLAYING
+            self.ui_manager.process_events(event)
+            return
+
         if event.type == pygame_gui.UI_BUTTON_PRESSED:
             if self.state == GameState.PAUSED:
                 if event.ui_element == self._pause_continue_btn:
@@ -77,6 +156,8 @@ class GameManager:
                 if event.key == pygame.K_ESCAPE:
                     self.state = GameState.PAUSED
                     self._create_pause_ui()
+                elif event.key == pygame.K_f:
+                    self._handle_interaction()
 
         elif self.state == GameState.PAUSED:
             if event.type == pygame.KEYDOWN:
@@ -89,6 +170,43 @@ class GameManager:
                     self._create_title_ui()
 
         self.ui_manager.process_events(event)
+
+    def _handle_interaction(self):
+        if self._nearby_interactable is None:
+            return
+
+        result = self._nearby_interactable.interact()
+        if result is None:
+            return
+
+        if result.get("type") == "dialog":
+            dialogue_id = result.get("dialogue_id", "")
+            dialogue_data = result.get("dialogue_data")
+
+            if dialogue_data is None:
+                dialogue_data = self._load_dialogue(dialogue_id)
+
+            if dialogue_data is None:
+                dialogue_data = {
+                    "default": [
+                        {"speaker": "", "text": "..."},
+                    ]
+                }
+
+            portrait_color = None
+            if self._nearby_type == "npc":
+                portrait_color = getattr(self._nearby_interactable, "body_color", None)
+
+            self.state = GameState.DIALOG
+            self.dialog_box.start(
+                dialogue_data,
+                start_key="default",
+                on_complete=self._on_dialog_complete,
+                portrait_color=portrait_color,
+            )
+
+    def _on_dialog_complete(self):
+        self.state = GameState.PLAYING
 
     def _create_pause_ui(self):
         self.ui_manager.clear_and_reset()
@@ -127,6 +245,40 @@ class GameManager:
             )
             self.camera.update(self.player.x, self.player.y - PLAYER_HEIGHT / 2)
 
+            for npc in self.npcs:
+                npc.update(dt)
+
+            self._check_nearby_interactables()
+
+        elif self.state == GameState.DIALOG:
+            self.dialog_box.update(dt)
+
+    def _check_nearby_interactables(self):
+        px, py = self.player.x, self.player.y
+        self._nearby_interactable = None
+        self._nearby_type = None
+
+        best_dist = float("inf")
+        for npc in self.npcs:
+            if npc.is_player_nearby(px, py):
+                dx = px - npc.x
+                dy = py - npc.y
+                dist = dx * dx + dy * dy
+                if dist < best_dist:
+                    best_dist = dist
+                    self._nearby_interactable = npc
+                    self._nearby_type = "npc"
+
+        for obj in self.interactive_objects:
+            if obj.is_player_nearby(px, py):
+                dx = px - obj.center_x
+                dy = py - obj.center_y
+                dist = dx * dx + dy * dy
+                if dist < best_dist:
+                    best_dist = dist
+                    self._nearby_interactable = obj
+                    self._nearby_type = "object"
+
     def draw(self):
         self.internal_surface.fill(COLOR_BLACK)
 
@@ -134,9 +286,13 @@ class GameManager:
             self._draw_title()
         elif self.state == GameState.PLAYING:
             self._draw_game()
+            self._draw_interaction_prompts()
         elif self.state == GameState.PAUSED:
             self._draw_game()
             self._draw_pause_overlay()
+        elif self.state == GameState.DIALOG:
+            self._draw_game()
+            self.dialog_box.draw(self.internal_surface)
 
         scaled = pygame.transform.scale(
             self.internal_surface, (SCREEN_WIDTH, SCREEN_HEIGHT)
@@ -172,6 +328,13 @@ class GameManager:
 
     def _draw_game(self):
         self.tile_map.draw(self.internal_surface, self.camera)
+
+        for obj in self.interactive_objects:
+            obj.draw(self.internal_surface, self.camera)
+
+        for npc in self.npcs:
+            npc.draw(self.internal_surface, self.camera)
+
         self.player.draw(self.internal_surface, self.camera)
 
         pos_text = self.info_font.render(
@@ -185,6 +348,12 @@ class GameManager:
         bg_surf.fill((0, 0, 0, 128))
         self.internal_surface.blit(bg_surf, (2, 3))
         self.internal_surface.blit(pos_text, (4, 4))
+
+    def _draw_interaction_prompts(self):
+        if self._nearby_interactable is not None:
+            self._nearby_interactable.draw_prompt(
+                self.internal_surface, self.camera, self.info_font
+            )
 
     def _draw_pause_overlay(self):
         overlay = pygame.Surface((INTERNAL_WIDTH, INTERNAL_HEIGHT), pygame.SRCALPHA)

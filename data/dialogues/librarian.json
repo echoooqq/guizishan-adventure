@@ -1,0 +1,25 @@
+{
+  "default": [
+    {"speaker": "图书管理员", "text": "欢迎来到图书馆，有什么需要帮助的吗？"},
+    {"type": "choice", "options": [
+      {"text": "我想借书", "next": "borrow_book"},
+      {"text": "只是看看", "next": "just_looking"},
+      {"text": "再见", "next": "goodbye"}
+    ]}
+  ],
+  "borrow_book": [
+    {"speaker": "图书管理员", "text": "那先回答我几个问题吧！答对了才能借书哦。"},
+    {"speaker": "图书管理员", "text": "准备好就来找我挑战吧！"}
+  ],
+  "just_looking": [
+    {"speaker": "图书管理员", "text": "好的，随便看看吧。书架上的书都是分类排列的。"},
+    {"speaker": "图书管理员", "text": "如果需要帮助，随时来找我。"}
+  ],
+  "goodbye": [
+    {"speaker": "图书管理员", "text": "再见，祝你阅读愉快！"}
+  ],
+  "puzzle_hint": [
+    {"speaker": "图书管理员", "text": "你看起来在找什么东西？"},
+    {"speaker": "图书管理员", "text": "图书馆里藏着不少秘密，仔细观察书架上的编号吧。"}
+  ]
+}
