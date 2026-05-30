@@ -10,7 +10,6 @@ from config import (
     PLAYER_HEIGHT,
     PLAYER_HITBOX_WIDTH,
     PLAYER_HITBOX_HEIGHT,
-    PLAYER_HITBOX_OFFSET_Y,
     TILE_SOLID,
     COLOR_BLACK,
     COLOR_PLAYER_BODY,
@@ -45,20 +44,20 @@ class Player:
             self.direction = "up"
         elif dy > 0 and dx == 0:
             self.direction = "down"
-        elif dx < 0:
+        elif dx < 0 and dy == 0:
             self.direction = "left"
-        elif dx > 0:
+        elif dx > 0 and dy == 0:
             self.direction = "right"
 
         self.is_moving = dx != 0 or dy != 0
 
-        self.is_sprinting = keys[pygame.K_LSHIFT] and self.is_moving and self.stamina > 0
+        self.is_sprinting = (keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]) and self.is_moving and self.stamina > 0
         speed = SPRINT_SPEED * TILE_SIZE if self.is_sprinting else PLAYER_SPEED * TILE_SIZE
 
         if self.is_sprinting:
-            self.stamina = max(0, self.stamina - SPRINT_STAMINA_COST * dt * 20)
+            self.stamina = max(0, self.stamina - SPRINT_STAMINA_COST * dt)
         elif not self.is_moving:
-            self.stamina = min(MAX_STAMINA, self.stamina + STAMINA_REGEN * dt * 20)
+            self.stamina = min(MAX_STAMINA, self.stamina + STAMINA_REGEN * dt)
 
         if dx != 0 and dy != 0:
             factor = 0.7071
@@ -84,15 +83,15 @@ class Player:
 
     def _check_collision(self, x, y, collision_map, map_width, map_height):
         hb_x = x - PLAYER_HITBOX_WIDTH / 2
-        hb_y = y + PLAYER_HITBOX_OFFSET_Y - PLAYER_HITBOX_HEIGHT
+        hb_y = y - PLAYER_HITBOX_HEIGHT
         hb_w = PLAYER_HITBOX_WIDTH
         hb_h = PLAYER_HITBOX_HEIGHT
 
         corners = [
-            (hb_x + 1, hb_y + 1),
-            (hb_x + hb_w - 2, hb_y + 1),
-            (hb_x + 1, hb_y + hb_h - 1),
-            (hb_x + hb_w - 2, hb_y + hb_h - 1),
+            (hb_x, hb_y),
+            (hb_x + hb_w - 1, hb_y),
+            (hb_x, hb_y + hb_h - 1),
+            (hb_x + hb_w - 1, hb_y + hb_h - 1),
         ]
 
         for cx, cy in corners:

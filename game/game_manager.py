@@ -40,6 +40,8 @@ class GameManager:
         self.blink_timer = 0.0
         self.show_press_enter = True
 
+        self._pause_continue_btn = None
+        self._pause_title_btn = None
         self._create_title_ui()
 
     def _create_title_ui(self):
@@ -47,7 +49,14 @@ class GameManager:
 
     def handle_event(self, event):
         if event.type == pygame_gui.UI_BUTTON_PRESSED:
-            pass
+            if self.state == GameState.PAUSED:
+                if event.ui_element == self._pause_continue_btn:
+                    self.state = GameState.PLAYING
+                    self.ui_manager.clear_and_reset()
+                elif event.ui_element == self._pause_title_btn:
+                    self.state = GameState.TITLE
+                    self.ui_manager.clear_and_reset()
+                    self._create_title_ui()
 
         if self.state == GameState.TITLE:
             if event.type == pygame.KEYDOWN:
@@ -77,12 +86,12 @@ class GameManager:
         self.ui_manager.clear_and_reset()
         btn_w, btn_h = 160, 36
         center_x = SCREEN_WIDTH // 2 - btn_w // 2
-        pygame_gui.elements.UIButton(
+        self._pause_continue_btn = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect(center_x, SCREEN_HEIGHT // 2 - 60, btn_w, btn_h),
             text="Continue (Esc)",
             manager=self.ui_manager,
         )
-        pygame_gui.elements.UIButton(
+        self._pause_title_btn = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect(center_x, SCREEN_HEIGHT // 2, btn_w, btn_h),
             text="Back to Title (Q)",
             manager=self.ui_manager,

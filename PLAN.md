@@ -61,7 +61,7 @@ Pygame窗口框架 → Tile地图渲染 → 玩家移动+碰撞 → 摄像机跟
 | 5 | 编写 `game/game_manager.py`：状态机（标题/游戏/菜单） | game_manager.py | 1h |
 | 6 | 编写 `player/player.py`：玩家移动（4方向，暂用色块代替精灵） | player.py | 2h |
 | 7 | 编写 `game/camera.py`：摄像机跟随玩家 | camera.py | 1.5h |
-| 8 | 用纯代码创建一个简单的测试地图（10×10 tiles）验证渲染+移动 | 测试通过 | 1h |
+| 8 | 用纯代码创建一个简单的测试地图（40×25 tiles）验证渲染+移动 | 测试通过 | 1h |
 | 9 | 学习 pygame_gui 基础用法（UIManager、窗口、按钮、主题） | 掌握工具 | 0.5h |
 | 10 | 创建 `assets/ui/` 目录结构 + 初始 `theme.json` | UI基础结构 | 0.2h |
 
