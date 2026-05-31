@@ -515,6 +515,7 @@
     <property name="display_name" value="图书馆入口" />
     <property name="target_map" value="library_f1" />
     <property name="spawn_point" value="library_entrance" />
+    <property name="transition_type" value="indoor_enter" />
    </properties>
   </object>
   <object id="57" x="1360" y="208" width="32" height="32" type="sculpture">
@@ -530,6 +531,7 @@
     <property name="display_name" value="佑铭体育馆入口" />
     <property name="target_map" value="gym" />
     <property name="spawn_point" value="gym_entrance" />
+    <property name="transition_type" value="indoor_enter" />
    </properties>
   </object>
   <object id="59" x="1504" y="928" width="32" height="16" type="building_entrance">
@@ -538,6 +540,7 @@
     <property name="display_name" value="学子食堂入口" />
     <property name="target_map" value="dining_hall_f1" />
     <property name="spawn_point" value="dining_entrance" />
+    <property name="transition_type" value="indoor_enter" />
    </properties>
   </object>
   <object id="60" x="912" y="832" width="96" height="96" type="fountain">

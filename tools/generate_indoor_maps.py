@@ -47,8 +47,8 @@ def create_tileset(output_path):
     pygame.init()
     surface = pygame.Surface((TILE_COUNT * TILE_SIZE, TILE_SIZE))
 
-    for i in range(TILE_COUNT):
-        x = i * TILE_SIZE
+    for i in range(1, TILE_COUNT + 1):
+        x = (i - 1) * TILE_SIZE
         _draw_tile(surface, i, x)
 
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
@@ -365,6 +365,13 @@ def design_library_f1():
     structures[1][21] = GID_STAIRS_UP
     collision[1][21] = GID_EMPTY
 
+    for sy in range(1, 4):
+        for sx in range(20, 22):
+            if sy == 1 and sx == 21:
+                continue
+            structures[sy][sx] = GID_EMPTY
+            collision[sy][sx] = GID_EMPTY
+
     interactive_objects.append({
         "x": 21 * TILE_SIZE, "y": 1 * TILE_SIZE,
         "width": TILE_SIZE, "height": TILE_SIZE,
@@ -496,6 +503,13 @@ def design_library_f2():
     structures[1][2] = GID_STAIRS_DOWN
     collision[1][2] = GID_EMPTY
 
+    for sy in range(1, 4):
+        for sx in range(2, 5):
+            if sy == 1 and sx == 2:
+                continue
+            structures[sy][sx] = GID_EMPTY
+            collision[sy][sx] = GID_EMPTY
+
     interactive_objects.append({
         "x": 2 * TILE_SIZE, "y": 1 * TILE_SIZE,
         "width": TILE_SIZE, "height": TILE_SIZE,
@@ -520,7 +534,7 @@ def design_library_f2():
         }
     })
 
-    for x in range(2, 7):
+    for x in range(5, 7):
         interactive_objects.append({
             "x": x * TILE_SIZE, "y": 1 * TILE_SIZE,
             "width": TILE_SIZE, "height": 3 * TILE_SIZE,
@@ -644,7 +658,7 @@ def design_dining_hall_f1():
         structures[y][0] = GID_INDOOR_WALL
         structures[y][W - 1] = GID_INDOOR_WALL
 
-    for tx, ty in [(3, 3), (8, 3), (13, 3), (3, 7), (8, 7), (13, 7)]:
+    for tx, ty in [(8, 3), (13, 3), (3, 7), (8, 7), (13, 7)]:
         structures[ty][tx] = GID_TABLE
         structures[ty][tx + 1] = GID_TABLE
         collision[ty][tx] = GID_COLLISION
@@ -671,6 +685,11 @@ def design_dining_hall_f1():
     structures[1][2] = GID_STAIRS_UP
     collision[1][2] = GID_EMPTY
 
+    for sy in range(2, 4):
+        for sx in range(2, 5):
+            structures[sy][sx] = GID_EMPTY
+            collision[sy][sx] = GID_EMPTY
+
     interactive_objects.append({
         "x": 2 * TILE_SIZE, "y": 1 * TILE_SIZE,
         "width": TILE_SIZE, "height": TILE_SIZE,
@@ -695,7 +714,7 @@ def design_dining_hall_f1():
         }
     })
 
-    for tx, ty in [(3, 3), (8, 3), (13, 3)]:
+    for tx, ty in [(8, 3), (13, 3)]:
         interactive_objects.append({
             "x": tx * TILE_SIZE, "y": ty * TILE_SIZE,
             "width": 2 * TILE_SIZE, "height": TILE_SIZE,
@@ -729,7 +748,7 @@ def design_dining_hall_f2():
         structures[y][0] = GID_INDOOR_WALL
         structures[y][W - 1] = GID_INDOOR_WALL
 
-    for tx, ty in [(3, 3), (8, 3), (13, 3), (3, 7), (8, 7), (13, 7)]:
+    for tx, ty in [(8, 3), (13, 3), (3, 7), (8, 7), (13, 7)]:
         structures[ty][tx] = GID_TABLE
         structures[ty][tx + 1] = GID_TABLE
         collision[ty][tx] = GID_COLLISION
@@ -756,6 +775,11 @@ def design_dining_hall_f2():
     structures[1][2] = GID_STAIRS_DOWN
     collision[1][2] = GID_EMPTY
 
+    for sy in range(2, 4):
+        for sx in range(2, 5):
+            structures[sy][sx] = GID_EMPTY
+            collision[sy][sx] = GID_EMPTY
+
     interactive_objects.append({
         "x": 2 * TILE_SIZE, "y": 1 * TILE_SIZE,
         "width": TILE_SIZE, "height": TILE_SIZE,
@@ -780,7 +804,7 @@ def design_dining_hall_f2():
         }
     })
 
-    for tx, ty in [(3, 3), (8, 3), (13, 3)]:
+    for tx, ty in [(8, 3), (13, 3)]:
         interactive_objects.append({
             "x": tx * TILE_SIZE, "y": ty * TILE_SIZE,
             "width": 2 * TILE_SIZE, "height": TILE_SIZE,

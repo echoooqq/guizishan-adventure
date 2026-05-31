@@ -451,6 +451,7 @@ def _place_building(ground, structures, collision, bx, by, bw, bh,
             "display_name": building_name + "入口",
             "target_map": target_map,
             "spawn_point": spawn_id,
+            "transition_type": "indoor_enter",
         }
     })
 

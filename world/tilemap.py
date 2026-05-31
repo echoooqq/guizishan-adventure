@@ -128,24 +128,23 @@ class TileMap:
             for y in range(self.height):
                 for x in range(self.width):
                     gid = layer.data[y][x]
+                    if gid != 0:
+                        self.collision_map[y][x] = True
+
+        for layer_index in self._visible_layers:
+            layer = self.tmx_data.layers[layer_index]
+            if not isinstance(layer, pytmx.TiledTileLayer):
+                continue
+            if layer.name not in ("structures", "terrain"):
+                continue
+            for y in range(self.height):
+                for x in range(self.width):
+                    gid = layer.data[y][x]
                     if gid == 0:
                         continue
                     props = self.tmx_data.get_tile_properties_by_gid(gid)
                     if props and props.get("solid", False):
                         self.collision_map[y][x] = True
-        else:
-            for layer_index in self._visible_layers:
-                layer = self.tmx_data.layers[layer_index]
-                if not isinstance(layer, pytmx.TiledTileLayer):
-                    continue
-                for y in range(self.height):
-                    for x in range(self.width):
-                        gid = layer.data[y][x]
-                        if gid == 0:
-                            continue
-                        props = self.tmx_data.get_tile_properties_by_gid(gid)
-                        if props and props.get("solid", False):
-                            self.collision_map[y][x] = True
 
     def draw(self, surface, camera):
         if self._load_failed:
@@ -157,13 +156,17 @@ class TileMap:
             layer = self.tmx_data.layers[layer_index]
             if not isinstance(layer, pytmx.TiledTileLayer):
                 continue
-            for x, y, tile_image in layer.tiles():
-                if tile_image is None:
-                    continue
-                if y < start_row or y >= end_row or x < start_col or x >= end_col:
-                    continue
-                sx, sy = camera.apply(x * TILE_SIZE, y * TILE_SIZE)
-                surface.blit(tile_image, (int(sx), int(sy)))
+            for row in range(start_row, end_row):
+                for col in range(start_col, end_col):
+                    gid = layer.data[row][col]
+                    if gid == 0:
+                        continue
+                    tile_image = self.tmx_data.get_tile_image_by_gid(gid)
+                    if tile_image:
+                        sx, sy = camera.apply(
+                            col * TILE_SIZE, row * TILE_SIZE
+                        )
+                        surface.blit(tile_image, (int(sx), int(sy)))
 
     def get_spawn_position(self, spawn_id="default"):
         if spawn_id in self.spawn_points:
