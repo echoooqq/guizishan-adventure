@@ -58,6 +58,8 @@ class GameManager:
         self._dialogues_cache = {}
         self._nearby_interactable = None
         self._nearby_type = None
+        self._puzzle_states = {}
+        self._dialog_flags = {}
 
         self.interactive_objects = list(self.tile_map.interactive_objects)
         self.npcs = list(self.tile_map.npcs)
@@ -127,9 +129,7 @@ class GameManager:
 
     def handle_event(self, event):
         if self.state == GameState.DIALOG:
-            consumed = self.dialog_box.handle_event(event)
-            if consumed:
-                return
+            self.dialog_box.handle_event(event)
             if not self.dialog_box.active:
                 self.state = GameState.PLAYING
             self.ui_manager.process_events(event)
@@ -179,7 +179,9 @@ class GameManager:
         if result is None:
             return
 
-        if result.get("type") == "dialog":
+        interact_type = result.get("type", "")
+
+        if interact_type == "dialog":
             dialogue_id = result.get("dialogue_id", "")
             dialogue_data = result.get("dialogue_data")
 
@@ -203,7 +205,65 @@ class GameManager:
                 start_key="default",
                 on_complete=self._on_dialog_complete,
                 portrait_color=portrait_color,
+                game_state=self._get_dialog_game_state(),
             )
+        elif interact_type == "examine":
+            examine_text = result.get("text", "")
+            if not examine_text:
+                obj = result.get("object")
+                if obj and hasattr(obj, "properties"):
+                    examine_text = obj.properties.get("examine_text", "没有什么特别的。")
+                else:
+                    examine_text = "没有什么特别的。"
+            self.state = GameState.DIALOG
+            self.dialog_box.start(
+                {"default": [{"speaker": "", "text": examine_text}]},
+                start_key="default",
+                on_complete=self._on_dialog_complete,
+                game_state=self._get_dialog_game_state(),
+            )
+        elif interact_type == "pickup":
+            obj = result.get("object")
+            pickup_text = "拾取了物品。"
+            if obj and hasattr(obj, "properties"):
+                pickup_text = obj.properties.get("pickup_text", "拾取了物品。")
+            self.state = GameState.DIALOG
+            self.dialog_box.start(
+                {"default": [{"speaker": "", "text": pickup_text}]},
+                start_key="default",
+                on_complete=self._on_dialog_complete,
+                game_state=self._get_dialog_game_state(),
+            )
+        elif interact_type == "use":
+            obj = result.get("object")
+            use_text = "使用了物品。"
+            if obj and hasattr(obj, "properties"):
+                use_text = obj.properties.get("use_text", "使用了物品。")
+            self.state = GameState.DIALOG
+            self.dialog_box.start(
+                {"default": [{"speaker": "", "text": use_text}]},
+                start_key="default",
+                on_complete=self._on_dialog_complete,
+                game_state=self._get_dialog_game_state(),
+            )
+        elif interact_type == "mechanism":
+            obj = result.get("object")
+            mech_text = "操作了机关。"
+            if obj and hasattr(obj, "properties"):
+                mech_text = obj.properties.get("mechanism_text", "操作了机关。")
+            self.state = GameState.DIALOG
+            self.dialog_box.start(
+                {"default": [{"speaker": "", "text": mech_text}]},
+                start_key="default",
+                on_complete=self._on_dialog_complete,
+                game_state=self._get_dialog_game_state(),
+            )
+
+    def _get_dialog_game_state(self):
+        return {
+            "puzzle_states": getattr(self, "_puzzle_states", {}),
+            "dialog_flags": getattr(self, "_dialog_flags", {}),
+        }
 
     def _on_dialog_complete(self):
         self.state = GameState.PLAYING
@@ -252,6 +312,10 @@ class GameManager:
 
         elif self.state == GameState.DIALOG:
             self.dialog_box.update(dt)
+            for npc in self.npcs:
+                npc.update(dt)
+            if not self.dialog_box.active:
+                self.state = GameState.PLAYING
 
     def _check_nearby_interactables(self):
         px, py = self.player.x, self.player.y
@@ -262,7 +326,7 @@ class GameManager:
         for npc in self.npcs:
             if npc.is_player_nearby(px, py):
                 dx = px - npc.x
-                dy = py - npc.y
+                dy = py - (npc.y - npc.height / 2)
                 dist = dx * dx + dy * dy
                 if dist < best_dist:
                     best_dist = dist

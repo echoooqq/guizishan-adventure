@@ -1,0 +1,34 @@
+{
+  "default": [
+    {"speaker": "体育老师", "text": "同学，来体育馆有什么事？"},
+    {"type": "choice", "options": [
+      {"text": "老师好，我想锻炼身体", "next": "exercise"},
+      {"text": "这里有什么特别的活动吗？", "next": "special"},
+      {"text": "我听说器材室里有秘密？", "next": "secret_hint", "condition": {"key": "puzzle_states.gym", "value": "discovered"}}
+    ]}
+  ],
+  "exercise": [
+    {"speaker": "体育老师", "text": "好！先完成我的投篮挑战再说！"},
+    {"speaker": "体育老师", "text": "3次投篮中2次就算你通过，怎么样？"},
+    {"speaker": "体育老师", "text": "准备好了就跟我说！"}
+  ],
+  "special": [
+    {"speaker": "体育老师", "text": "体育馆可是有很多故事的，这栋建筑有几十年历史了。"},
+    {"speaker": "体育老师", "text": "听说器材室的柜子里藏着什么老物件，不过钥匙在我这里。"},
+    {"speaker": "体育老师", "text": "你要是能通过投篮挑战，我就把钥匙给你看看。"}
+  ],
+  "secret_hint": [
+    {"speaker": "体育老师", "text": "你消息挺灵通的嘛！那就来挑战投篮吧！"},
+    {"speaker": "体育老师", "text": "通过了我就把器材室钥匙给你。"}
+  ],
+  "challenge_start": [
+    {"speaker": "体育老师", "text": "好，投篮挑战开始！看准时机按下F键！"}
+  ],
+  "challenge_success": [
+    {"speaker": "体育老师", "text": "不错不错！你通过了！这把器材室钥匙给你。"},
+    {"speaker": "体育老师", "text": "器材室里那个旧记分牌，你留意一下上面的数字。"}
+  ],
+  "challenge_fail": [
+    {"speaker": "体育老师", "text": "差一点！再试一次吧，3次中2次就行。"}
+  ]
+}

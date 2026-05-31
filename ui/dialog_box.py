@@ -29,6 +29,12 @@ def draw_nine_slice(surface, border_image, rect, border_size=3):
     img_w = border_image.get_width()
     img_h = border_image.get_height()
 
+    min_size = 2 * bw + 1
+    if w < min_size or h < min_size:
+        scaled = pygame.transform.scale(border_image, (max(1, w), max(1, h)))
+        surface.blit(scaled, (x, y))
+        return
+
     corners_src = [
         (0, 0, bw, bw),
         (img_w - bw, 0, bw, bw),
@@ -94,6 +100,7 @@ class DialogBox:
         self.on_complete = None
         self.speaker_color = COLOR_DIALOG_NAME
         self.portrait_color = None
+        self.game_state = {}
 
         self.font = pygame.font.Font(FONT_PATH, FONT_INFO_SIZE)
         self.border_image = create_border_surface()
@@ -109,12 +116,13 @@ class DialogBox:
         self._text_y = self._box_y + 6
         self._text_max_width = self._box_x + self._box_w - self._text_x - self.PORTRAIT_MARGIN
 
-    def start(self, dialogue_data, start_key="default", on_complete=None, speaker_color=None, portrait_color=None):
+    def start(self, dialogue_data, start_key="default", on_complete=None, speaker_color=None, portrait_color=None, game_state=None):
         self.active = True
         self.dialogue_data = dialogue_data
         self.on_complete = on_complete
         self.speaker_color = speaker_color or COLOR_DIALOG_NAME
         self.portrait_color = portrait_color or (180, 80, 80)
+        self.game_state = game_state or {}
         self._load_key(start_key)
 
     def _load_key(self, key):
@@ -129,8 +137,25 @@ class DialogBox:
             return
 
         line = self.current_lines[self.current_index]
+
+        condition = line.get("condition")
+        if condition and not self._check_condition(condition):
+            self.current_index += 1
+            self._setup_line()
+            return
+
         if line.get("type") == "choice":
-            self.choices = line.get("options", [])
+            filtered = []
+            for opt in line.get("options", []):
+                opt_cond = opt.get("condition")
+                if opt_cond and not self._check_condition(opt_cond):
+                    continue
+                filtered.append(opt)
+            self.choices = filtered if filtered else None
+            if self.choices is None:
+                self.current_index += 1
+                self._setup_line()
+                return
             self.selected_choice = 0
             self.displayed_text = ""
             self.full_text = ""
@@ -144,6 +169,28 @@ class DialogBox:
             self.text_complete = False
             self.char_timer = 0.0
             self.choices = None
+
+    def _check_condition(self, condition):
+        if isinstance(condition, str):
+            return self.game_state.get(condition, False)
+        if isinstance(condition, dict):
+            key = condition.get("key", "")
+            value = condition.get("value")
+            current = self._resolve_key(key)
+            if value is not None:
+                return current == value
+            return bool(current)
+        return True
+
+    def _resolve_key(self, key):
+        parts = key.split(".")
+        current = self.game_state
+        for part in parts:
+            if isinstance(current, dict):
+                current = current.get(part)
+            else:
+                return None
+        return current
 
     def _advance(self):
         if not self.text_complete:
@@ -168,6 +215,12 @@ class DialogBox:
         self.dialogue_data = None
         self.current_lines = []
         self.choices = None
+        self.displayed_text = ""
+        self.full_text = ""
+        self.speaker = ""
+        self.text_complete = False
+        self.char_timer = 0.0
+        self.current_index = 0
         if self.on_complete:
             callback = self.on_complete
             self.on_complete = None
@@ -231,6 +284,8 @@ class DialogBox:
         if self.speaker:
             text_y += self.font.get_linesize() + 2
 
+        max_y = self._box_y + self._box_h - 6
+
         if self.displayed_text:
             words = self.displayed_text
             line = ""
@@ -238,13 +293,15 @@ class DialogBox:
             for ch in words:
                 test = line + ch
                 if self.font.size(test)[0] > self._text_max_width:
+                    if line_y + self.font.get_linesize() > max_y:
+                        break
                     text_surf = self.font.render(line, True, COLOR_DIALOG_TEXT)
                     surface.blit(text_surf, (self._text_x, line_y))
                     line_y += self.font.get_linesize()
                     line = ch
                 else:
                     line = test
-            if line:
+            if line and line_y + self.font.get_linesize() <= max_y:
                 text_surf = self.font.render(line, True, COLOR_DIALOG_TEXT)
                 surface.blit(text_surf, (self._text_x, line_y))
 
@@ -253,6 +310,8 @@ class DialogBox:
             if self.displayed_text:
                 choice_y += self.font.get_linesize() + 2
             for i, choice in enumerate(self.choices):
+                if choice_y + self.font.get_linesize() > max_y:
+                    break
                 prefix = "> " if i == self.selected_choice else "  "
                 choice_text = f"{prefix}{choice.get('text', '')}"
                 color = COLOR_CHOICE_HIGHLIGHT if i == self.selected_choice else COLOR_DIALOG_TEXT

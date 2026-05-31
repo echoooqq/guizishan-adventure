@@ -1,0 +1,31 @@
+{
+  "default": [
+    {"speaker": "秘境守护者", "text": "……你终于来了。"},
+    {"speaker": "秘境守护者", "text": "我已在此等候多时。七枚徽章碎片，你集齐了吗？"},
+    {"type": "choice", "options": [
+      {"text": "徽章碎片？这是什么？", "next": "explain"},
+      {"text": "我正在收集碎片", "next": "collecting"},
+      {"text": "我已经集齐了！", "next": "all_collected", "condition": {"key": "puzzle_states.badge_count", "value": 6}}
+    ]}
+  ],
+  "explain": [
+    {"speaker": "秘境守护者", "text": "桂子山秘境已存在百年，七枚徽章碎片是封印的关键。"},
+    {"speaker": "秘境守护者", "text": "它们散落在校园各处，只有心怀勇气与智慧之人才能集齐。"},
+    {"speaker": "秘境守护者", "text": "去探索吧，每解开一个谜题，就能获得一枚碎片。"}
+  ],
+  "collecting": [
+    {"speaker": "秘境守护者", "text": "很好，继续你的探索。校园中隐藏着七个谜题，每个谜题守护着一枚碎片。"},
+    {"speaker": "秘境守护者", "text": "当六枚碎片归位，第七枚将自行显现。"},
+    {"speaker": "秘境守护者", "text": "届时，回到这喷泉广场，将它们按正确顺序嵌入基座。"}
+  ],
+  "all_collected": [
+    {"speaker": "秘境守护者", "text": "七枚碎片已齐！现在，将它们按正确顺序嵌入喷泉基座吧。"},
+    {"speaker": "秘境守护者", "text": "顺序的线索，就藏在你一路走来的发现之中。"}
+  ],
+  "wrong_order": [
+    {"speaker": "秘境守护者", "text": "顺序似乎不对……再仔细回忆一下你的发现吧。"}
+  ],
+  "final_success": [
+    {"speaker": "秘境守护者", "text": "七徽归位，封印解除！桂子山秘境的真相，将由你来揭晓……"}
+  ]
+}

@@ -32,12 +32,14 @@ class NPC(Entity):
         self.body_color = self.properties.get("body_color", COLOR_NPC_BODY)
         self.head_color = self.properties.get("head_color", COLOR_NPC_HEAD)
         self.hair_color = self.properties.get("hair_color", COLOR_NPC_HAIR)
+        if "direction" in self.properties:
+            self.direction = self.properties["direction"]
         self._idle_timer = 0.0
         self._idle_offset = 0
 
     def is_player_nearby(self, player_x, player_y):
-        dx = player_x - self.x
-        dy = player_y - self.y
+        dx = player_x - (self.x)
+        dy = player_y - (self.y - self.height / 2)
         return dx * dx + dy * dy <= self.interaction_range * self.interaction_range
 
     def interact(self):

@@ -40,11 +40,16 @@ class InteractiveObject:
         return dx * dx + dy * dy <= self.interaction_range * self.interaction_range
 
     def interact(self):
-        if self.interactive_type == "pickup" and not self.interacted:
+        if self.interactive_type == "pickup" and self.interacted:
+            return None
+        if self.interactive_type == "pickup":
             self.interacted = True
         if self.on_interact:
             return self.on_interact(self)
-        return {"type": self.interactive_type, "object": self}
+        result = {"type": self.interactive_type, "object": self}
+        if self.interactive_type == "dialog":
+            result["dialogue_id"] = self.properties.get("dialogue_id", "")
+        return result
 
     def draw(self, surface, camera):
         sx, sy = camera.apply(self.x, self.y)

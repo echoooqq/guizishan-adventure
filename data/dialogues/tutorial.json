@@ -1,0 +1,10 @@
+{
+  "default": [
+    {"speaker": "", "text": "欢迎来到桂子山！这里有一些基本操作提示："},
+    {"speaker": "", "text": "WASD 或 方向键：移动角色"},
+    {"speaker": "", "text": "按住 Shift：冲刺（消耗体力）"},
+    {"speaker": "", "text": "靠近物体或NPC时，按 F 键互动"},
+    {"speaker": "", "text": "按 Esc 键暂停游戏"},
+    {"speaker": "", "text": "探索校园，解开谜题，收集七枚徽章碎片吧！"}
+  ]
+}

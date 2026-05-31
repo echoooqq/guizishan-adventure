@@ -120,8 +120,6 @@ class TileMap:
                 dialogue_id=dialogue_id,
                 properties=props,
             )
-            if "direction" in props:
-                npc.direction = props["direction"]
             self.npcs.append(npc)
 
     def _build_collision(self):
