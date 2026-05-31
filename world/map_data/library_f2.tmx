@@ -1,0 +1,156 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<map version="1.5" orientation="orthogonal" renderorder="right-down" width="24" height="18" tilewidth="16" tileheight="16" infinite="0" nextobjectid="9" nextlayerid="7">
+ <tileset firstgid="1" name="indoor_tileset" tilewidth="16" tileheight="16" tilecount="24" columns="24">
+  <image source="../../assets/tilesets/indoor_tileset.png" width="384" height="16" />
+  <tile id="4">
+   <properties>
+    <property name="solid" type="bool" value="true" />
+   </properties>
+  </tile>
+  <tile id="5">
+   <properties>
+    <property name="solid" type="bool" value="true" />
+   </properties>
+  </tile>
+  <tile id="6">
+   <properties>
+    <property name="solid" type="bool" value="true" />
+   </properties>
+  </tile>
+  <tile id="7">
+   <properties>
+    <property name="solid" type="bool" value="true" />
+   </properties>
+  </tile>
+  <tile id="8">
+   <properties>
+    <property name="solid" type="bool" value="true" />
+   </properties>
+  </tile>
+  <tile id="9">
+   <properties>
+    <property name="solid" type="bool" value="true" />
+   </properties>
+  </tile>
+  <tile id="10">
+   <properties>
+    <property name="solid" type="bool" value="true" />
+   </properties>
+  </tile>
+  <tile id="11">
+   <properties>
+    <property name="solid" type="bool" value="true" />
+   </properties>
+  </tile>
+  <tile id="15">
+   <properties>
+    <property name="solid" type="bool" value="true" />
+   </properties>
+  </tile>
+  <tile id="16">
+   <properties>
+    <property name="solid" type="bool" value="true" />
+   </properties>
+  </tile>
+  <tile id="17">
+   <properties>
+    <property name="solid" type="bool" value="true" />
+   </properties>
+  </tile>
+  <tile id="19">
+   <properties>
+    <property name="solid" type="bool" value="true" />
+   </properties>
+  </tile>
+  <tile id="22">
+   <properties>
+    <property name="solid" type="bool" value="true" />
+   </properties>
+  </tile>
+  <tile id="23">
+   <properties>
+    <property name="solid" type="bool" value="true" />
+   </properties>
+  </tile>
+ </tileset>
+ <layer id="1" name="ground" width="24" height="18">
+  <data encoding="csv">
+2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,22,22,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,22,22,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2
+</data>
+ </layer>
+ <layer id="2" name="structures" width="24" height="18">
+  <data encoding="csv">
+6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,0,13,8,8,8,8,0,0,8,8,8,8,8,8,0,0,8,8,8,8,8,0,6,5,0,7,7,7,7,7,0,0,7,7,7,7,7,7,0,0,7,7,7,7,7,0,5,5,0,7,7,7,7,7,0,0,7,7,7,7,7,7,0,0,7,7,7,7,7,0,5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,5,0,0,0,0,0,0,0,0,0,0,9,9,0,0,0,0,0,0,0,0,0,0,5,5,0,0,0,0,0,0,0,0,0,0,10,10,0,0,0,0,0,0,0,0,0,0,5,5,0,7,7,7,7,7,0,0,0,0,0,0,0,0,0,0,7,7,7,7,7,0,5,5,0,7,7,7,7,7,0,0,0,0,0,0,0,0,0,0,7,7,7,7,7,0,5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,5,0,0,0,0,0,0,0,0,0,0,9,9,0,0,0,0,0,0,0,0,0,0,5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,5,0,0,0,0,23,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6
+</data>
+ </layer>
+ <objectgroup id="3" name="objects">
+  <object id="1" x="32" y="16" width="16" height="16" type="stairs_down">
+   <properties>
+    <property name="interactive_type" value="enter" />
+    <property name="prompt_text" value="下楼" />
+    <property name="target_map" value="library_f1" />
+    <property name="spawn_point" value="library_f1_stairs" />
+    <property name="transition_type" value="floor_change" />
+   </properties>
+  </object>
+  <object id="2" x="80" y="240" width="16" height="16" type="blackboard">
+   <properties>
+    <property name="interactive_type" value="examine" />
+    <property name="prompt_text" value="查看黑板" />
+    <property name="display_name" value="黑板" />
+   </properties>
+  </object>
+  <object id="3" x="32" y="16" width="16" height="48" type="bookshelf">
+   <properties>
+    <property name="interactive_type" value="examine" />
+    <property name="prompt_text" value="查看书架" />
+    <property name="display_name" value="书架B" />
+   </properties>
+  </object>
+  <object id="4" x="48" y="16" width="16" height="48" type="bookshelf">
+   <properties>
+    <property name="interactive_type" value="examine" />
+    <property name="prompt_text" value="查看书架" />
+    <property name="display_name" value="书架B" />
+   </properties>
+  </object>
+  <object id="5" x="64" y="16" width="16" height="48" type="bookshelf">
+   <properties>
+    <property name="interactive_type" value="examine" />
+    <property name="prompt_text" value="查看书架" />
+    <property name="display_name" value="书架B" />
+   </properties>
+  </object>
+  <object id="6" x="80" y="16" width="16" height="48" type="bookshelf">
+   <properties>
+    <property name="interactive_type" value="examine" />
+    <property name="prompt_text" value="查看书架" />
+    <property name="display_name" value="书架B" />
+   </properties>
+  </object>
+  <object id="7" x="96" y="16" width="16" height="48" type="bookshelf">
+   <properties>
+    <property name="interactive_type" value="examine" />
+    <property name="prompt_text" value="查看书架" />
+    <property name="display_name" value="书架B" />
+   </properties>
+  </object>
+ </objectgroup>
+ <layer id="4" name="collision" width="24" height="18" visible="0">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20,20,20,20,0,0,20,20,20,20,20,20,0,0,20,20,20,20,20,0,0,0,0,20,20,20,20,20,0,0,20,20,20,20,20,20,0,0,20,20,20,20,20,0,0,0,0,20,20,20,20,20,0,0,20,20,20,20,20,20,0,0,20,20,20,20,20,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20,20,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20,20,0,0,0,0,0,0,0,0,0,0,0,0,0,20,20,20,20,20,0,0,0,0,0,0,0,0,0,0,20,20,20,20,20,0,0,0,0,20,20,20,20,20,0,0,0,0,0,0,0,0,0,0,20,20,20,20,20,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20,20,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <objectgroup id="5" name="triggers">
+  <object id="8" x="48" y="32" width="32" height="32" type="spawn">
+   <properties>
+    <property name="spawn_id" value="library_f2_stairs" />
+   </properties>
+  </object>
+ </objectgroup>
+ <layer id="6" name="decorations" width="24" height="18">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
+</map>

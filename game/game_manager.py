@@ -22,10 +22,22 @@ from game.camera import Camera
 from player.player import Player
 from player.inventory import Inventory, get_item_data
 from world.tilemap import TileMap
+from world.transition import TransitionManager, TransitionType
 from ui.dialog_box import DialogBox
 from ui.inventory_ui import InventoryUI
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+MAP_FILES = {
+    "main_campus": "main_campus.tmx",
+    "library_f1": "library_f1.tmx",
+    "library_f2": "library_f2.tmx",
+    "gym": "gym.tmx",
+    "dining_hall_f1": "dining_hall_f1.tmx",
+    "dining_hall_f2": "dining_hall_f2.tmx",
+}
+
+INDOOR_MAPS = {"library_f1", "library_f2", "gym", "dining_hall_f1", "dining_hall_f2"}
 
 
 class GameManager:
@@ -41,7 +53,8 @@ class GameManager:
             theme_path=theme_path,
         )
 
-        tmx_path = os.path.join(PROJECT_ROOT, "world", "map_data", "main_campus.tmx")
+        self.current_map_id = "main_campus"
+        tmx_path = self._get_tmx_path("main_campus")
         self.tile_map = TileMap(tmx_path)
         spawn_x, spawn_y = self.tile_map.get_spawn_position()
         self.player = Player(spawn_x, spawn_y)
@@ -64,11 +77,55 @@ class GameManager:
         self._puzzle_states = {}
         self._dialog_flags = {}
 
+        self.transition_manager = TransitionManager()
+        self._map_cache = {}
+        self._map_cache["main_campus"] = self.tile_map
+
         self.interactive_objects = list(self.tile_map.interactive_objects)
         self.npcs = list(self.tile_map.npcs)
         self.triggers = list(self.tile_map.triggers)
 
         self._setup_test_entities()
+
+    def _get_tmx_path(self, map_id):
+        filename = MAP_FILES.get(map_id, f"{map_id}.tmx")
+        return os.path.join(PROJECT_ROOT, "world", "map_data", filename)
+
+    def _load_map(self, map_id, spawn_point="default"):
+        if map_id == self.current_map_id:
+            new_tile_map = self.tile_map
+        elif map_id in self._map_cache:
+            new_tile_map = self._map_cache[map_id]
+        else:
+            tmx_path = self._get_tmx_path(map_id)
+            new_tile_map = TileMap(tmx_path)
+            self._map_cache[map_id] = new_tile_map
+
+        self.current_map_id = map_id
+        self.tile_map = new_tile_map
+
+        spawn_x, spawn_y = self.tile_map.get_spawn_position(spawn_point)
+        self.player.x = spawn_x
+        self.player.y = spawn_y
+
+        self.camera = Camera(self.tile_map.width, self.tile_map.height)
+        self.camera.update(self.player.x, self.player.y - PLAYER_HEIGHT / 2)
+
+        self.interactive_objects = list(self.tile_map.interactive_objects)
+        self.npcs = list(self.tile_map.npcs)
+        self.triggers = list(self.tile_map.triggers)
+
+        if map_id == "main_campus":
+            self._setup_test_entities()
+
+    def _start_transition(self, transition_type, target_map, spawn_point):
+        self.transition_manager.start_transition(
+            transition_type, target_map, spawn_point,
+            on_load_callback=self._on_transition_load,
+        )
+
+    def _on_transition_load(self, target_map, spawn_point):
+        self._load_map(target_map, spawn_point)
 
     def _setup_test_entities(self):
         from entities.npc import NPC
@@ -196,6 +253,9 @@ class GameManager:
         pass
 
     def handle_event(self, event):
+        if self.transition_manager.is_active:
+            return
+
         if self.state == GameState.DIALOG:
             self.dialog_box.handle_event(event)
             if not self.dialog_box.active:
@@ -261,6 +321,36 @@ class GameManager:
             return
 
         interact_type = result.get("type", "")
+
+        if interact_type == "enter":
+            obj = result.get("object", self._nearby_interactable)
+            target_map = None
+            spawn_point = None
+            transition_type_str = "indoor_enter"
+
+            if hasattr(obj, "properties"):
+                target_map = obj.properties.get("target_map")
+                spawn_point = obj.properties.get("spawn_point")
+                transition_type_str = obj.properties.get(
+                    "transition_type", "indoor_enter"
+                )
+
+            if not target_map:
+                if hasattr(obj, "target_map"):
+                    target_map = obj.target_map
+                if hasattr(obj, "spawn_point"):
+                    spawn_point = obj.spawn_point
+
+            if target_map:
+                try:
+                    t_type = TransitionType(transition_type_str)
+                except ValueError:
+                    if target_map in INDOOR_MAPS:
+                        t_type = TransitionType.INDOOR_ENTER
+                    else:
+                        t_type = TransitionType.CAMPUS_BUS
+                self._start_transition(t_type, target_map, spawn_point or "default")
+            return
 
         if interact_type == "dialog":
             dialogue_id = result.get("dialogue_id", "")
@@ -389,6 +479,11 @@ class GameManager:
 
         self.ui_manager.update(dt)
 
+        self.transition_manager.update(dt)
+
+        if self.transition_manager.is_active:
+            return
+
         if self.state == GameState.TITLE:
             self.blink_timer += dt
             if self.blink_timer >= 0.8:
@@ -409,6 +504,7 @@ class GameManager:
                 npc.update(dt)
 
             self._check_nearby_interactables()
+            self._check_auto_triggers()
 
         elif self.state == GameState.DIALOG:
             self.dialog_box.update(dt)
@@ -419,6 +515,25 @@ class GameManager:
 
         elif self.state == GameState.INVENTORY:
             self.inventory_ui.update(dt)
+
+    def _check_auto_triggers(self):
+        player_rect = self.player.get_hitbox_rect()
+        for trigger in self.triggers:
+            if not trigger.auto_trigger:
+                continue
+            if trigger.overlaps_rect(player_rect):
+                target_map = trigger.target_map or trigger.properties.get("target_map")
+                spawn_point = trigger.spawn_point or trigger.properties.get("spawn_point")
+                transition_type_str = trigger.properties.get(
+                    "transition_type", "indoor_exit"
+                )
+                if target_map:
+                    try:
+                        t_type = TransitionType(transition_type_str)
+                    except ValueError:
+                        t_type = TransitionType.INDOOR_EXIT
+                    self._start_transition(t_type, target_map, spawn_point or "default")
+                    return
 
     def _check_nearby_interactables(self):
         px, py = self.player.x, self.player.y
@@ -446,6 +561,20 @@ class GameManager:
                     self._nearby_interactable = obj
                     self._nearby_type = "object"
 
+        for trigger in self.triggers:
+            if trigger.auto_trigger:
+                continue
+            if trigger.contains_point(px, py):
+                target_map = trigger.target_map or trigger.properties.get("target_map")
+                if target_map:
+                    dx = px - (trigger.x + trigger.width / 2)
+                    dy = py - (trigger.y + trigger.height / 2)
+                    dist = dx * dx + dy * dy
+                    if dist < best_dist:
+                        best_dist = dist
+                        self._nearby_interactable = trigger
+                        self._nearby_type = "trigger"
+
     def draw(self):
         self.internal_surface.fill(COLOR_BLACK)
 
@@ -463,6 +592,8 @@ class GameManager:
         elif self.state == GameState.INVENTORY:
             self._draw_game()
             self.inventory_ui.draw(self.internal_surface)
+
+        self.transition_manager.draw(self.internal_surface)
 
         scaled = pygame.transform.scale(
             self.internal_surface, (SCREEN_WIDTH, SCREEN_HEIGHT)
@@ -508,7 +639,9 @@ class GameManager:
         self.player.draw(self.internal_surface, self.camera)
 
         badge_count = self.player.inventory.get_badge_count()
+        map_label = "室内" if self.current_map_id in INDOOR_MAPS else "室外"
         pos_text = self.info_font.render(
+            f"{map_label} "
             f"位置:({int(self.player.x)},{int(self.player.y)}) "
             f"方向:{self.player.direction} "
             f"体力:{int(self.player.stamina)} "
@@ -524,9 +657,34 @@ class GameManager:
 
     def _draw_interaction_prompts(self):
         if self._nearby_interactable is not None:
-            self._nearby_interactable.draw_prompt(
-                self.internal_surface, self.camera, self.info_font
-            )
+            if self._nearby_type == "trigger":
+                trigger = self._nearby_interactable
+                sx, sy = self.camera.apply(
+                    trigger.x + trigger.width / 2,
+                    trigger.y - 4,
+                )
+                transition_type_str = trigger.properties.get(
+                    "transition_type", "indoor_enter"
+                )
+                if transition_type_str == "floor_change":
+                    prompt = "按 F 切换楼层"
+                elif transition_type_str == "campus_bus":
+                    prompt = "按 F 乘校车"
+                else:
+                    prompt = "按 F 进入"
+                text_surf = self.info_font.render(prompt, True, (255, 255, 255))
+                text_rect = text_surf.get_rect(centerx=int(sx), bottom=int(sy))
+                bg_rect = text_rect.inflate(6, 4)
+                bg_surf = pygame.Surface(
+                    (bg_rect.width, bg_rect.height), pygame.SRCALPHA
+                )
+                bg_surf.fill((0, 0, 0, 160))
+                self.internal_surface.blit(bg_surf, bg_rect.topleft)
+                self.internal_surface.blit(text_surf, text_rect)
+            else:
+                self._nearby_interactable.draw_prompt(
+                    self.internal_surface, self.camera, self.info_font
+                )
 
     def _draw_pause_overlay(self):
         overlay = pygame.Surface((INTERNAL_WIDTH, INTERNAL_HEIGHT), pygame.SRCALPHA)

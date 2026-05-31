@@ -79,7 +79,7 @@ class NPC(Entity):
 
     def draw_prompt(self, surface, camera, font):
         sx, sy = camera.apply(self.x, self.y - self.height - 4)
-        text_surf = font.render(f"[F] {self.prompt_text}", True, (255, 255, 255))
+        text_surf = font.render(f"按 F {self.prompt_text}", True, (255, 255, 255))
         text_rect = text_surf.get_rect(centerx=int(sx), bottom=int(sy))
         bg_rect = text_rect.inflate(6, 4)
         bg_surf = pygame.Surface((bg_rect.width, bg_rect.height), pygame.SRCALPHA)

@@ -449,6 +449,8 @@ def _place_library(ground, structures, collision, interactive_objects, trigger_o
         ground[by + bh][x] = GID_PATH_STONE
         ground[by + bh + 1][x] = GID_PATH_STONE
 
+    _add_exit_spawn(trigger_objects, "library_exit", bx + 6, by + bh + 1)
+
 
 def _place_boya_square(ground, structures, decorations, collision, interactive_objects, trigger_objects):
     sx, sy, sw, sh = 76, 6, 20, 16
@@ -506,6 +508,8 @@ def _place_gym(ground, structures, collision, interactive_objects, trigger_objec
         ground[by - 1][x] = GID_PATH_STONE
         ground[by - 2][x] = GID_PATH_STONE
 
+    _add_exit_spawn(trigger_objects, "gym_exit", bx + 7, by + bh + 1)
+
 
 def _place_dining_hall(ground, structures, collision, interactive_objects, trigger_objects):
     bx, by, bw, bh = 89, 49, 12, 10
@@ -520,6 +524,8 @@ def _place_dining_hall(ground, structures, collision, interactive_objects, trigg
     for x in range(bx - 1, bx + bw + 1):
         ground[by - 1][x] = GID_PATH_STONE
         ground[by - 2][x] = GID_PATH_STONE
+
+    _add_exit_spawn(trigger_objects, "dining_exit", bx + 5, by + bh + 1)
 
 
 def _place_fountain_square(ground, structures, decorations, collision, interactive_objects, trigger_objects):
@@ -801,6 +807,19 @@ def _add_default_spawn(trigger_objects):
         "type": "spawn",
         "properties": {
             "spawn_id": "default",
+        }
+    })
+
+
+def _add_exit_spawn(trigger_objects, spawn_id, tile_x, tile_y):
+    trigger_objects.append({
+        "x": tile_x * TILE_SIZE,
+        "y": tile_y * TILE_SIZE,
+        "width": 2 * TILE_SIZE,
+        "height": 2 * TILE_SIZE,
+        "type": "spawn",
+        "properties": {
+            "spawn_id": spawn_id,
         }
     })
 

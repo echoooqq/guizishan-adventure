@@ -24,6 +24,7 @@ class InteractiveObject:
             "pickup": "拾取",
             "use": "使用",
             "mechanism": "操作",
+            "enter": "进入",
         }
         return prompts.get(self.interactive_type, "互动")
 
@@ -55,6 +56,8 @@ class InteractiveObject:
     def draw(self, surface, camera):
         if self.interactive_type == "pickup" and self.interacted:
             return
+        if self.interactive_type == "enter":
+            return
         sx, sy = camera.apply(self.x, self.y)
         ix, iy = int(sx), int(sy)
         rect = pygame.Rect(ix, iy, self.width, self.height)
@@ -63,7 +66,7 @@ class InteractiveObject:
 
     def draw_prompt(self, surface, camera, font):
         sx, sy = camera.apply(self.center_x, self.y - 4)
-        text_surf = font.render(f"[F] {self.prompt_text}", True, (255, 255, 255))
+        text_surf = font.render(f"按 F {self.prompt_text}", True, (255, 255, 255))
         text_rect = text_surf.get_rect(centerx=int(sx), bottom=int(sy))
         bg_rect = text_rect.inflate(6, 4)
         bg_surf = pygame.Surface((bg_rect.width, bg_rect.height), pygame.SRCALPHA)
