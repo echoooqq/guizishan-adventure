@@ -163,6 +163,108 @@ def create_badge_fragment_icon(path, s=32, index=1):
     pygame.image.save(surf, path)
 
 
+def create_branch_icon(path, s=32):
+    surf = pygame.Surface((s, s), pygame.SRCALPHA)
+    surf.fill((0, 0, 0, 0))
+    pygame.draw.line(surf, (100, 70, 30), (8, 26), (16, 12), 3)
+    pygame.draw.line(surf, (100, 70, 30), (16, 12), (24, 8), 2)
+    pygame.draw.line(surf, (100, 70, 30), (16, 12), (12, 6), 2)
+    pygame.draw.circle(surf, (255, 200, 50), (24, 6), 3)
+    pygame.draw.circle(surf, (255, 220, 80), (12, 4), 3)
+    pygame.draw.circle(surf, (255, 200, 50), (20, 14), 2)
+    pygame.image.save(surf, path)
+
+
+def create_bookmark_icon(path, s=32):
+    surf = pygame.Surface((s, s), pygame.SRCALPHA)
+    surf.fill((0, 0, 0, 0))
+    pygame.draw.rect(surf, (180, 150, 100), (10, 4, 12, 24))
+    pygame.draw.polygon(surf, (160, 130, 80), [(10, 28), (16, 22), (22, 28)])
+    pygame.draw.rect(surf, (140, 110, 70), (10, 4, 12, 24), 1)
+    pygame.draw.line(surf, (120, 90, 50), (13, 10), (19, 10), 1)
+    pygame.draw.line(surf, (120, 90, 50), (13, 14), (19, 14), 1)
+    pygame.image.save(surf, path)
+
+
+def create_magnifier_icon(path, s=32):
+    surf = pygame.Surface((s, s), pygame.SRCALPHA)
+    surf.fill((0, 0, 0, 0))
+    pygame.draw.circle(surf, (180, 200, 220), (14, 14), 8, 2)
+    pygame.draw.circle(surf, (200, 220, 240), (14, 14), 6, 1)
+    pygame.draw.line(surf, (140, 120, 80), (20, 20), (27, 27), 3)
+    pygame.image.save(surf, path)
+
+
+def create_badge_old_icon(path, s=32):
+    surf = pygame.Surface((s, s), pygame.SRCALPHA)
+    surf.fill((0, 0, 0, 0))
+    cx, cy = s // 2, s // 2
+    pygame.draw.circle(surf, (180, 160, 60), (cx, cy), 10)
+    pygame.draw.circle(surf, (200, 180, 80), (cx, cy), 8)
+    pygame.draw.circle(surf, (160, 140, 40), (cx, cy), 10, 2)
+    pygame.draw.circle(surf, (120, 100, 30), (cx, cy), 4, 1)
+    pygame.image.save(surf, path)
+
+
+def create_bottle_icon(path, s=32):
+    surf = pygame.Surface((s, s), pygame.SRCALPHA)
+    surf.fill((0, 0, 0, 0))
+    pygame.draw.rect(surf, (100, 160, 220), (10, 10, 12, 18))
+    pygame.draw.rect(surf, (80, 140, 200), (10, 10, 12, 18), 1)
+    pygame.draw.rect(surf, (120, 80, 60), (12, 6, 8, 6))
+    pygame.draw.rect(surf, (100, 60, 40), (12, 6, 8, 6), 1)
+    pygame.draw.rect(surf, (80, 200, 255), (12, 16, 8, 10))
+    pygame.image.save(surf, path)
+
+
+def create_sauce_icon(path, s=32):
+    surf = pygame.Surface((s, s), pygame.SRCALPHA)
+    surf.fill((0, 0, 0, 0))
+    pygame.draw.rect(surf, (200, 50, 30), (8, 12, 16, 16))
+    pygame.draw.rect(surf, (180, 40, 20), (8, 12, 16, 16), 1)
+    pygame.draw.rect(surf, (220, 200, 160), (10, 6, 12, 8))
+    pygame.draw.rect(surf, (200, 180, 140), (10, 6, 12, 8), 1)
+    pygame.draw.rect(surf, (100, 80, 60), (13, 4, 6, 4))
+    pygame.image.save(surf, path)
+
+
+def create_card_icon(path, s=32):
+    surf = pygame.Surface((s, s), pygame.SRCALPHA)
+    surf.fill((0, 0, 0, 0))
+    pygame.draw.rect(surf, (220, 220, 200), (6, 6, 20, 20))
+    pygame.draw.rect(surf, (180, 180, 160), (6, 6, 20, 20), 1)
+    pygame.draw.rect(surf, (200, 60, 60), (6, 6, 20, 4))
+    pygame.draw.line(surf, (160, 160, 140), (8, 14), (24, 14), 1)
+    pygame.draw.line(surf, (160, 160, 140), (8, 18), (20, 18), 1)
+    pygame.image.save(surf, path)
+
+
+def create_bookmark_special_icon(path, s=32):
+    surf = pygame.Surface((s, s), pygame.SRCALPHA)
+    surf.fill((0, 0, 0, 0))
+    pygame.draw.rect(surf, (220, 180, 100), (8, 4, 16, 24))
+    pygame.draw.polygon(surf, (200, 160, 80), [(8, 28), (16, 20), (24, 28)])
+    pygame.draw.rect(surf, (180, 140, 60), (8, 4, 16, 24), 1)
+    pygame.draw.circle(surf, (255, 200, 50), (16, 12), 4)
+    pygame.draw.circle(surf, (255, 230, 100), (16, 12), 2)
+    pygame.image.save(surf, path)
+
+
+def create_badge_pattern_icon(path, s=32):
+    surf = pygame.Surface((s, s), pygame.SRCALPHA)
+    surf.fill((0, 0, 0, 0))
+    cx, cy = s // 2, s // 2
+    pygame.draw.circle(surf, (160, 140, 60), (cx, cy), 10)
+    pygame.draw.circle(surf, (180, 160, 80), (cx, cy), 8)
+    pygame.draw.circle(surf, (140, 120, 40), (cx, cy), 10, 2)
+    for angle in range(0, 360, 60):
+        px = cx + int(5 * math.cos(math.radians(angle)))
+        py = cy + int(5 * math.sin(math.radians(angle)))
+        pygame.draw.circle(surf, (100, 255, 100), (px, py), 1)
+    pygame.draw.circle(surf, (100, 255, 100), (cx, cy), 2)
+    pygame.image.save(surf, path)
+
+
 if __name__ == "__main__":
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     ui_dir = os.path.join(base_dir, "assets", "ui", "sprites")
@@ -189,6 +291,16 @@ if __name__ == "__main__":
 
     for i in range(1, 8):
         create_badge_fragment_icon(os.path.join(ui_dir, f"badge_fragment_{i}.png"), index=i)
+
+    create_branch_icon(os.path.join(ui_dir, "branch.png"))
+    create_bookmark_icon(os.path.join(ui_dir, "bookmark.png"))
+    create_magnifier_icon(os.path.join(ui_dir, "magnifier.png"))
+    create_badge_old_icon(os.path.join(ui_dir, "badge_old.png"))
+    create_bottle_icon(os.path.join(ui_dir, "bottle.png"))
+    create_sauce_icon(os.path.join(ui_dir, "sauce.png"))
+    create_card_icon(os.path.join(ui_dir, "card.png"))
+    create_bookmark_special_icon(os.path.join(ui_dir, "bookmark_special.png"))
+    create_badge_pattern_icon(os.path.join(ui_dir, "badge_pattern.png"))
 
     pygame.quit()
     print(f"UI sprites saved to {ui_dir}")

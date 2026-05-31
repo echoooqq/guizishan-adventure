@@ -16,6 +16,7 @@ from config import (
     COLOR_PLAYER_HAIR,
 )
 from world.entity import Entity
+from player.inventory import Inventory
 
 
 class Player(Entity):
@@ -29,6 +30,7 @@ class Player(Entity):
         )
         self.stamina = MAX_STAMINA
         self.is_sprinting = False
+        self.inventory = Inventory()
 
     def update(self, dt, keys, collision_map, map_width, map_height):
         dx, dy = 0.0, 0.0

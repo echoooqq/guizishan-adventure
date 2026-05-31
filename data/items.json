@@ -1,0 +1,202 @@
+{
+  "badge_1": {
+    "name": "桂花徽章碎片·壹",
+    "category": "key_item",
+    "description": "散发着微光的桂花形徽章碎片，似乎属于某个完整的器物……",
+    "droppable": false,
+    "combinable_with": [],
+    "combine_result": "",
+    "sprite": "badge_1"
+  },
+  "badge_2": {
+    "name": "桂花徽章碎片·贰",
+    "category": "key_item",
+    "description": "散发着微光的桂花形徽章碎片，触感温润如玉……",
+    "droppable": false,
+    "combinable_with": [],
+    "combine_result": "",
+    "sprite": "badge_2"
+  },
+  "badge_3": {
+    "name": "桂花徽章碎片·叁",
+    "category": "key_item",
+    "description": "散发着微光的桂花形徽章碎片，隐约可见古老纹路……",
+    "droppable": false,
+    "combinable_with": [],
+    "combine_result": "",
+    "sprite": "badge_3"
+  },
+  "badge_4": {
+    "name": "桂花徽章碎片·肆",
+    "category": "key_item",
+    "description": "散发着微光的桂花形徽章碎片，似乎在低声吟唱……",
+    "droppable": false,
+    "combinable_with": [],
+    "combine_result": "",
+    "sprite": "badge_4"
+  },
+  "badge_5": {
+    "name": "桂花徽章碎片·伍",
+    "category": "key_item",
+    "description": "散发着微光的桂花形徽章碎片，蕴含着运动的力量……",
+    "droppable": false,
+    "combinable_with": [],
+    "combine_result": "",
+    "sprite": "badge_5"
+  },
+  "badge_6": {
+    "name": "桂花徽章碎片·陆",
+    "category": "key_item",
+    "description": "散发着微光的桂花形徽章碎片，带着淡淡的饭菜香气……",
+    "droppable": false,
+    "combinable_with": [],
+    "combine_result": "",
+    "sprite": "badge_6"
+  },
+  "badge_7": {
+    "name": "桂花徽章碎片·柒",
+    "category": "key_item",
+    "description": "散发着耀眼金光的桂花形徽章碎片，七枚碎片中的核心……",
+    "droppable": false,
+    "combinable_with": [],
+    "combine_result": "",
+    "sprite": "badge_7"
+  },
+  "lab_key": {
+    "name": "实验室钥匙",
+    "category": "tool",
+    "description": "一把普通的钥匙，上面标着'实验室'。",
+    "droppable": true,
+    "combinable_with": [],
+    "combine_result": "",
+    "sprite": "key"
+  },
+  "equipment_key": {
+    "name": "器材室钥匙",
+    "category": "tool",
+    "description": "体育老师给的钥匙，可以打开器材室的柜子。",
+    "droppable": true,
+    "combinable_with": [],
+    "combine_result": "",
+    "sprite": "key"
+  },
+  "bulletin_scrap": {
+    "name": "公告栏残页",
+    "category": "clue",
+    "description": "一张泛黄的残页，上面依稀可辨：'1903年，华师肇始'。",
+    "droppable": true,
+    "combinable_with": [],
+    "combine_result": "",
+    "sprite": "note"
+  },
+  "call_number_note": {
+    "name": "索书号便签",
+    "category": "clue",
+    "description": "一张写着索书号的小便签：'K291.5/Z3'，似乎指向某个书架位置。",
+    "droppable": true,
+    "combinable_with": [],
+    "combine_result": "",
+    "sprite": "note"
+  },
+  "scoreboard_note": {
+    "name": "记分牌便条",
+    "category": "clue",
+    "description": "器材柜里发现的便条，上面写着：'将记分牌拨至1-9-0-3'。",
+    "droppable": true,
+    "combinable_with": [],
+    "combine_result": "",
+    "sprite": "note"
+  },
+  "sculpture_rubbing": {
+    "name": "雕塑铭文拓片",
+    "category": "clue",
+    "description": "博雅广场雕塑底座的铭文拓片，隐含着地砖阵法的踩踏顺序。",
+    "droppable": true,
+    "combinable_with": [],
+    "combine_result": "",
+    "sprite": "note"
+  },
+  "meal_card": {
+    "name": "饭卡",
+    "category": "clue",
+    "description": "一张学生饭卡，上面写着'2019级 张同学'。得赶紧还给食堂阿姨。",
+    "droppable": true,
+    "combinable_with": [],
+    "combine_result": "",
+    "sprite": "card"
+  },
+  "osmanthus_branch": {
+    "name": "桂花枝",
+    "category": "material",
+    "description": "一枝散发着淡淡清香的桂花枝，花瓣金黄细密。",
+    "droppable": true,
+    "combinable_with": ["old_bookmark"],
+    "combine_result": "osmanthus_bookmark",
+    "sprite": "branch"
+  },
+  "old_bookmark": {
+    "name": "古旧书签",
+    "category": "material",
+    "description": "一枚古旧的竹制书签，表面光滑，似乎可以夹入桂花枝。",
+    "droppable": true,
+    "combinable_with": ["osmanthus_branch"],
+    "combine_result": "osmanthus_bookmark",
+    "sprite": "bookmark"
+  },
+  "old_badge": {
+    "name": "旧校徽",
+    "category": "material",
+    "description": "一枚旧版校徽，表面有些磨损，也许用放大镜能看到隐藏的信息。",
+    "droppable": true,
+    "combinable_with": ["magnifying_glass"],
+    "combine_result": "badge_pattern",
+    "sprite": "badge_old"
+  },
+  "magnifying_glass": {
+    "name": "放大镜",
+    "category": "tool",
+    "description": "一把普通的放大镜，也许能发现肉眼看不到的细节。",
+    "droppable": true,
+    "combinable_with": ["old_badge"],
+    "combine_result": "badge_pattern",
+    "sprite": "magnifier"
+  },
+  "osmanthus_bookmark": {
+    "name": "桂花书签",
+    "category": "key_item",
+    "description": "将桂花枝嵌入古旧书签制成的精美书签，散发着持久不散的桂花清香。",
+    "droppable": false,
+    "combinable_with": [],
+    "combine_result": "",
+    "sprite": "bookmark_special"
+  },
+  "badge_pattern": {
+    "name": "校徽暗纹",
+    "category": "key_item",
+    "description": "用放大镜观察旧校徽发现的隐藏暗纹，似乎是某种古老的符文图案。",
+    "droppable": false,
+    "combinable_with": [],
+    "combine_result": "",
+    "sprite": "badge_pattern"
+  },
+  "water_bottle": {
+    "name": "水壶",
+    "category": "consumable",
+    "description": "一壶清凉的饮用水，可以恢复少量体力。",
+    "droppable": true,
+    "combinable_with": [],
+    "combine_result": "",
+    "sprite": "bottle",
+    "effect": {"type": "stamina_restore", "value": 30}
+  },
+  "chili_sauce": {
+    "name": "辣椒酱",
+    "category": "consumable",
+    "description": "食堂阿姨特制的辣椒酱，辣得让人精神一振！",
+    "droppable": true,
+    "combinable_with": [],
+    "combine_result": "",
+    "sprite": "sauce",
+    "effect": {"type": "stamina_restore", "value": 50}
+  }
+}

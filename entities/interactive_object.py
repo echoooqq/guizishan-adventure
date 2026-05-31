@@ -15,6 +15,7 @@ class InteractiveObject:
         self.interacted = False
         self.on_interact = None
         self.color = self.properties.get("color", (120, 100, 80))
+        self.item_id = self.properties.get("item_id", "")
 
     def _default_prompt(self):
         prompts = {
@@ -35,6 +36,8 @@ class InteractiveObject:
         return self.y + self.height / 2
 
     def is_player_nearby(self, player_x, player_y):
+        if self.interactive_type == "pickup" and self.interacted:
+            return False
         dx = player_x - self.center_x
         dy = player_y - self.center_y
         return dx * dx + dy * dy <= self.interaction_range * self.interaction_range
@@ -42,8 +45,6 @@ class InteractiveObject:
     def interact(self):
         if self.interactive_type == "pickup" and self.interacted:
             return None
-        if self.interactive_type == "pickup":
-            self.interacted = True
         if self.on_interact:
             return self.on_interact(self)
         result = {"type": self.interactive_type, "object": self}
@@ -52,6 +53,8 @@ class InteractiveObject:
         return result
 
     def draw(self, surface, camera):
+        if self.interactive_type == "pickup" and self.interacted:
+            return
         sx, sy = camera.apply(self.x, self.y)
         ix, iy = int(sx), int(sy)
         rect = pygame.Rect(ix, iy, self.width, self.height)

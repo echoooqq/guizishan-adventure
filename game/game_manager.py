@@ -20,8 +20,10 @@ from config import (
 from game.game_state import GameState
 from game.camera import Camera
 from player.player import Player
+from player.inventory import Inventory, get_item_data
 from world.tilemap import TileMap
 from ui.dialog_box import DialogBox
+from ui.inventory_ui import InventoryUI
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -55,6 +57,7 @@ class GameManager:
         self._create_title_ui()
 
         self.dialog_box = DialogBox()
+        self.inventory_ui = InventoryUI()
         self._dialogues_cache = {}
         self._nearby_interactable = None
         self._nearby_type = None
@@ -110,6 +113,71 @@ class GameManager:
         }
         self.interactive_objects.append(test_obj)
 
+        pickup_obj1 = InteractiveObject(
+            x=spawn_x - 32, y=spawn_y - 32,
+            width=12, height=12,
+            interactive_type="pickup",
+            properties={
+                "prompt_text": "拾取桂花枝",
+                "color": (180, 160, 60),
+                "item_id": "osmanthus_branch",
+                "pickup_text": "拾取了桂花枝！散发着淡淡的桂花清香。",
+            },
+        )
+        self.interactive_objects.append(pickup_obj1)
+
+        pickup_obj2 = InteractiveObject(
+            x=spawn_x - 56, y=spawn_y - 32,
+            width=12, height=12,
+            interactive_type="pickup",
+            properties={
+                "prompt_text": "拾取古旧书签",
+                "color": (140, 100, 60),
+                "item_id": "old_bookmark",
+                "pickup_text": "拾取了古旧书签！一枚精致的竹制书签。",
+            },
+        )
+        self.interactive_objects.append(pickup_obj2)
+
+        pickup_obj3 = InteractiveObject(
+            x=spawn_x + 32, y=spawn_y - 32,
+            width=12, height=12,
+            interactive_type="pickup",
+            properties={
+                "prompt_text": "拾取水壶",
+                "color": (100, 160, 220),
+                "item_id": "water_bottle",
+                "pickup_text": "拾取了水壶！可以恢复体力。",
+            },
+        )
+        self.interactive_objects.append(pickup_obj3)
+
+        pickup_obj4 = InteractiveObject(
+            x=spawn_x + 56, y=spawn_y - 32,
+            width=12, height=12,
+            interactive_type="pickup",
+            properties={
+                "prompt_text": "拾取旧校徽",
+                "color": (180, 180, 60),
+                "item_id": "old_badge",
+                "pickup_text": "拾取了旧校徽！表面似乎有隐藏的纹路。",
+            },
+        )
+        self.interactive_objects.append(pickup_obj4)
+
+        pickup_obj5 = InteractiveObject(
+            x=spawn_x + 80, y=spawn_y - 32,
+            width=12, height=12,
+            interactive_type="pickup",
+            properties={
+                "prompt_text": "拾取放大镜",
+                "color": (160, 200, 220),
+                "item_id": "magnifying_glass",
+                "pickup_text": "拾取了放大镜！也许能发现隐藏的细节。",
+            },
+        )
+        self.interactive_objects.append(pickup_obj5)
+
     def _load_dialogue(self, dialogue_id):
         if dialogue_id in self._dialogues_cache:
             return self._dialogues_cache[dialogue_id]
@@ -131,6 +199,13 @@ class GameManager:
         if self.state == GameState.DIALOG:
             self.dialog_box.handle_event(event)
             if not self.dialog_box.active:
+                self._on_dialog_complete()
+            self.ui_manager.process_events(event)
+            return
+
+        if self.state == GameState.INVENTORY:
+            self.inventory_ui.handle_event(event)
+            if not self.inventory_ui.active:
                 self.state = GameState.PLAYING
             self.ui_manager.process_events(event)
             return
@@ -158,6 +233,8 @@ class GameManager:
                     self._create_pause_ui()
                 elif event.key == pygame.K_f:
                     self._handle_interaction()
+                elif event.key in (pygame.K_TAB, pygame.K_i):
+                    self._open_inventory()
 
         elif self.state == GameState.PAUSED:
             if event.type == pygame.KEYDOWN:
@@ -170,6 +247,10 @@ class GameManager:
                     self._create_title_ui()
 
         self.ui_manager.process_events(event)
+
+    def _open_inventory(self):
+        self.inventory_ui.open(self.player.inventory, self.player)
+        self.state = GameState.INVENTORY
 
     def _handle_interaction(self):
         if self._nearby_interactable is None:
@@ -224,9 +305,26 @@ class GameManager:
             )
         elif interact_type == "pickup":
             obj = result.get("object")
-            pickup_text = "拾取了物品。"
+            item_id = ""
+            if obj and hasattr(obj, "item_id"):
+                item_id = obj.item_id
             if obj and hasattr(obj, "properties"):
-                pickup_text = obj.properties.get("pickup_text", "拾取了物品。")
+                item_id = item_id or obj.properties.get("item_id", "")
+
+            if item_id:
+                item_data = get_item_data(item_id)
+                item_name = item_data.get("name", item_id) if item_data else item_id
+                if self.player.inventory.add_item(item_id):
+                    if obj:
+                        obj.interacted = True
+                    pickup_text = f"拾取了{item_name}！"
+                else:
+                    pickup_text = "背包已满，无法拾取！"
+            else:
+                pickup_text = "拾取了物品。"
+                if obj and hasattr(obj, "properties"):
+                    pickup_text = obj.properties.get("pickup_text", "拾取了物品。")
+
             self.state = GameState.DIALOG
             self.dialog_box.start(
                 {"default": [{"speaker": "", "text": pickup_text}]},
@@ -315,7 +413,10 @@ class GameManager:
             for npc in self.npcs:
                 npc.update(dt)
             if not self.dialog_box.active:
-                self.state = GameState.PLAYING
+                self._on_dialog_complete()
+
+        elif self.state == GameState.INVENTORY:
+            self.inventory_ui.update(dt)
 
     def _check_nearby_interactables(self):
         px, py = self.player.x, self.player.y
@@ -357,6 +458,9 @@ class GameManager:
         elif self.state == GameState.DIALOG:
             self._draw_game()
             self.dialog_box.draw(self.internal_surface)
+        elif self.state == GameState.INVENTORY:
+            self._draw_game()
+            self.inventory_ui.draw(self.internal_surface)
 
         scaled = pygame.transform.scale(
             self.internal_surface, (SCREEN_WIDTH, SCREEN_HEIGHT)
@@ -401,10 +505,13 @@ class GameManager:
 
         self.player.draw(self.internal_surface, self.camera)
 
+        badge_count = self.player.inventory.get_badge_count()
         pos_text = self.info_font.render(
             f"位置:({int(self.player.x)},{int(self.player.y)}) "
             f"方向:{self.player.direction} "
-            f"体力:{int(self.player.stamina)}",
+            f"体力:{int(self.player.stamina)} "
+            f"徽章:{badge_count}/7 "
+            f"背包:Tab",
             True, COLOR_WHITE,
         )
         bg_rect = pos_text.get_rect(topleft=(4, 4))
