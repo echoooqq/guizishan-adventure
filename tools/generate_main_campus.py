@@ -35,8 +35,11 @@ GID_SCULPTURE = 21
 GID_BUS_STOP = 22
 GID_HEDGE = 23
 GID_COLLISION = 24
+GID_FLOWER_GARDEN = 25
+GID_TREE_CLUSTER = 26
+GID_LAWN_ROCK = 27
 
-TILE_COUNT = 24
+TILE_COUNT = 27
 
 SOLID_GIDS = {
     GID_WALL_BRICK, GID_WALL_BRICK_TOP, GID_WALL_GRAY,
@@ -45,6 +48,7 @@ SOLID_GIDS = {
     GID_FLOWER_BED, GID_LAMP, GID_BENCH, GID_FENCE,
     GID_FOUNTAIN_BASE, GID_FOUNTAIN_WATER, GID_SCULPTURE,
     GID_BUS_STOP, GID_HEDGE, GID_COLLISION,
+    GID_FLOWER_GARDEN, GID_TREE_CLUSTER,
 }
 
 
@@ -223,6 +227,34 @@ def _draw_tile(surface, gid, x):
         overlay = pygame.Surface((TILE_SIZE, TILE_SIZE), pygame.SRCALPHA)
         overlay.fill((255, 0, 0, 60))
         surface.blit(overlay, (x, 0))
+    elif gid == GID_FLOWER_GARDEN:
+        surface.fill((76, 153, 0), rect)
+        pygame.draw.rect(surface, (101, 67, 33), (x, 0, TILE_SIZE, TILE_SIZE), 1)
+        pygame.draw.rect(surface, (60, 100, 20), (x + 1, 1, 14, 14))
+        for fx, fy, c in [(3, 3, (255, 80, 80)), (7, 2, (255, 200, 50)),
+                          (12, 4, (200, 80, 200)), (2, 8, (255, 150, 50)),
+                          (8, 7, (255, 255, 100)), (13, 9, (100, 150, 255)),
+                          (5, 12, (255, 100, 100)), (10, 12, (255, 220, 80)),
+                          (1, 5, (180, 80, 180)), (14, 6, (255, 180, 60))]:
+            pygame.draw.circle(surface, c, (x + fx, fy), 2)
+        for fx, fy in [(4, 5), (9, 4), (6, 10), (11, 8)]:
+            surface.set_at((x + fx, fy), (40, 80, 10))
+    elif gid == GID_TREE_CLUSTER:
+        surface.fill((76, 153, 0), rect)
+        pygame.draw.rect(surface, (80, 55, 25), (x + 2, 8, 3, 7))
+        pygame.draw.rect(surface, (80, 55, 25), (x + 11, 9, 3, 6))
+        pygame.draw.circle(surface, (34, 139, 34), (x + 3, 5), 4)
+        pygame.draw.circle(surface, (0, 100, 0), (x + 2, 4), 2)
+        pygame.draw.circle(surface, (34, 139, 34), (x + 12, 6), 4)
+        pygame.draw.circle(surface, (50, 160, 50), (x + 13, 5), 2)
+        pygame.draw.circle(surface, (40, 120, 20), (x + 8, 4), 5)
+        pygame.draw.circle(surface, (30, 110, 15), (x + 7, 3), 3)
+    elif gid == GID_LAWN_ROCK:
+        surface.fill((76, 153, 0), rect)
+        pygame.draw.ellipse(surface, (140, 140, 130), (x + 3, 6, 10, 8))
+        pygame.draw.ellipse(surface, (160, 160, 150), (x + 4, 7, 8, 5))
+        pygame.draw.ellipse(surface, (120, 120, 110), (x + 5, 8, 4, 3))
+        surface.set_at((x + 7, 7), (180, 180, 170))
 
 
 def design_map():
@@ -688,7 +720,7 @@ def _place_nature_decor(ground, structures, decorations, collision, interactive_
     random.seed(123)
 
     tree_positions = []
-    for _ in range(60):
+    for _ in range(70):
         tx = random.randint(4, MAP_WIDTH - 5)
         ty = random.randint(4, MAP_HEIGHT - 5)
         if ground[ty][tx] != GID_GRASS:
@@ -723,7 +755,7 @@ def _place_nature_decor(ground, structures, decorations, collision, interactive_
         collision[ty][tx] = GID_COLLISION
 
     bush_positions = []
-    for _ in range(30):
+    for _ in range(50):
         bx = random.randint(4, MAP_WIDTH - 5)
         by = random.randint(4, MAP_HEIGHT - 5)
         if ground[by][bx] != GID_GRASS:
@@ -739,6 +771,88 @@ def _place_nature_decor(ground, structures, decorations, collision, interactive_
     for bx, by in bush_positions:
         decorations[by][bx] = GID_BUSH
         collision[by][bx] = GID_COLLISION
+
+    flower_garden_positions = []
+    for _ in range(10):
+        gx = random.randint(5, MAP_WIDTH - 8)
+        gy = random.randint(5, MAP_HEIGHT - 8)
+        can_place = True
+        for dy in range(3):
+            for dx in range(3):
+                ny, nx = gy + dy, gx + dx
+                if not (0 <= ny < MAP_HEIGHT and 0 <= nx < MAP_WIDTH):
+                    can_place = False
+                    break
+                if ground[ny][nx] != GID_GRASS or structures[ny][nx] != GID_EMPTY or decorations[ny][nx] != GID_EMPTY or collision[ny][nx] != GID_EMPTY:
+                    can_place = False
+                    break
+            if not can_place:
+                break
+        if not can_place:
+            continue
+        for px, py in flower_garden_positions:
+            if abs(gx - px) < 5 and abs(gy - py) < 5:
+                can_place = False
+                break
+        if not can_place:
+            continue
+        flower_garden_positions.append((gx, gy))
+        for dy in range(3):
+            for dx in range(3):
+                decorations[gy + dy][gx + dx] = GID_FLOWER_GARDEN
+                collision[gy + dy][gx + dx] = GID_COLLISION
+
+    tree_cluster_positions = []
+    for _ in range(8):
+        cx = random.randint(5, MAP_WIDTH - 7)
+        cy = random.randint(5, MAP_HEIGHT - 7)
+        can_place = True
+        for dy in range(2):
+            for dx in range(2):
+                ny, nx = cy + dy, cx + dx
+                if not (0 <= ny < MAP_HEIGHT and 0 <= nx < MAP_WIDTH):
+                    can_place = False
+                    break
+                if ground[ny][nx] != GID_GRASS or structures[ny][nx] != GID_EMPTY or decorations[ny][nx] != GID_EMPTY or collision[ny][nx] != GID_EMPTY:
+                    can_place = False
+                    break
+            if not can_place:
+                break
+        if not can_place:
+            continue
+        for px, py in tree_cluster_positions:
+            if abs(cx - px) < 4 and abs(cy - py) < 4:
+                can_place = False
+                break
+        if not can_place:
+            continue
+        tree_cluster_positions.append((cx, cy))
+        for dy in range(2):
+            for dx in range(2):
+                structures[cy + dy][cx + dx] = GID_TREE_CLUSTER
+                collision[cy + dy][cx + dx] = GID_COLLISION
+
+    for _ in range(18):
+        rx = random.randint(4, MAP_WIDTH - 5)
+        ry = random.randint(4, MAP_HEIGHT - 5)
+        if ground[ry][rx] == GID_GRASS and structures[ry][rx] == GID_EMPTY and decorations[ry][rx] == GID_EMPTY and collision[ry][rx] == GID_EMPTY:
+            decorations[ry][rx] = GID_LAWN_ROCK
+
+    building_doors = []
+    for obj in interactive_objects:
+        if obj.get("type") == "building_entrance":
+            building_doors.append((obj["x"] // TILE_SIZE, obj["y"] // TILE_SIZE))
+    for door_x, door_y in building_doors:
+        for direction in [(0, -1), (0, 1), (-1, 0), (1, 0)]:
+            path_x = door_x + direction[0]
+            path_y = door_y + direction[1]
+            while 0 <= path_x < MAP_WIDTH and 0 <= path_y < MAP_HEIGHT:
+                if ground[path_y][path_x] == GID_GRASS:
+                    ground[path_y][path_x] = GID_PATH_DIRT
+                    path_x += direction[0]
+                    path_y += direction[1]
+                else:
+                    break
 
     pond_x, pond_y, pond_w, pond_h = 35, 20, 6, 4
     for y in range(pond_y, pond_y + pond_h):
