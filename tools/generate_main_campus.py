@@ -792,24 +792,22 @@ def _place_nature_decor(ground, structures, decorations, collision, interactive_
 
 def _add_grass_variation(ground):
     random.seed(777)
-    visited = [[False] * MAP_WIDTH for _ in range(MAP_HEIGHT)]
     for y in range(MAP_HEIGHT):
         for x in range(MAP_WIDTH):
-            if ground[y][x] != GID_GRASS or visited[y][x]:
+            if ground[y][x] != GID_GRASS:
                 continue
-            if random.random() < 0.08:
-                cluster_size = random.randint(2, 5)
+            if random.random() < 0.06:
+                ground[y][x] = GID_GRASS_DARK
+            elif random.random() < 0.02:
+                cluster_size = random.randint(1, 2)
                 for dy in range(-cluster_size, cluster_size + 1):
                     for dx in range(-cluster_size, cluster_size + 1):
                         ny, nx = y + dy, x + dx
                         if (0 <= ny < MAP_HEIGHT and 0 <= nx < MAP_WIDTH
                                 and ground[ny][nx] == GID_GRASS
-                                and not visited[ny][nx]
                                 and dx * dx + dy * dy <= cluster_size * cluster_size
-                                and random.random() < 0.6):
+                                and random.random() < 0.5):
                             ground[ny][nx] = GID_GRASS_DARK
-                            visited[ny][nx] = True
-            visited[y][x] = True
 
 
 def _add_default_spawn(trigger_objects):
