@@ -321,6 +321,8 @@ class GameManager:
                 else:
                     pickup_text = "背包已满，无法拾取！"
             else:
+                if obj:
+                    obj.interacted = True
                 pickup_text = "拾取了物品。"
                 if obj and hasattr(obj, "properties"):
                     pickup_text = obj.properties.get("pickup_text", "拾取了物品。")

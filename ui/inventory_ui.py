@@ -103,7 +103,7 @@ class InventoryUI:
         self.inventory = None
         self.selected_index = 0
         self.combine_mode = False
-        self.combine_first_index = -1
+        self.combine_first_id = ""
         self.message = ""
         self.message_timer = 0.0
 
@@ -153,7 +153,7 @@ class InventoryUI:
         self.player = player
         self.selected_index = 0
         self.combine_mode = False
-        self.combine_first_index = -1
+        self.combine_first_id = ""
         self.message = ""
         self.message_timer = 0.0
 
@@ -161,7 +161,7 @@ class InventoryUI:
         self.active = False
         self.inventory = None
         self.combine_mode = False
-        self.combine_first_index = -1
+        self.combine_first_id = ""
 
     def handle_event(self, event):
         if not self.active:
@@ -172,7 +172,7 @@ class InventoryUI:
         if event.key in (pygame.K_TAB, pygame.K_i, pygame.K_ESCAPE):
             if self.combine_mode:
                 self.combine_mode = False
-                self.combine_first_index = -1
+                self.combine_first_id = ""
                 self.message = ""
             else:
                 self.close()
@@ -252,23 +252,23 @@ class InventoryUI:
             combinable = self.inventory.get_combinable_items(item.id)
             if combinable:
                 self.combine_mode = True
-                self.combine_first_index = self.selected_index
+                self.combine_first_id = item.id
                 self.message = f"选择与{item.name}组合的道具"
                 self.message_timer = 5.0
             else:
                 self.message = f"{item.name}无法与其他道具组合"
                 self.message_timer = 2.0
         else:
-            if self.selected_index == self.combine_first_index:
+            if item.id == self.combine_first_id:
                 self.combine_mode = False
-                self.combine_first_index = -1
+                self.combine_first_id = ""
                 self.message = "取消组合"
                 self.message_timer = 2.0
                 return
-            first_item = self.inventory.items[self.combine_first_index] if self.combine_first_index < len(self.inventory.items) else None
+            first_item = self.inventory.get_item(self.combine_first_id)
             if not first_item:
                 self.combine_mode = False
-                self.combine_first_index = -1
+                self.combine_first_id = ""
                 return
             result_id = self.inventory.combine(first_item.id, item.id)
             if result_id:
@@ -280,7 +280,7 @@ class InventoryUI:
                 self.message = "这两个道具无法组合"
                 self.message_timer = 2.0
             self.combine_mode = False
-            self.combine_first_index = -1
+            self.combine_first_id = ""
             if self.selected_index >= len(self.inventory.items) and self.selected_index > 0:
                 self.selected_index = len(self.inventory.items) - 1
 
@@ -353,7 +353,7 @@ class InventoryUI:
                 sy = self.grid_y + row * (SLOT_SIZE + SLOT_GAP)
 
                 is_selected = idx == self.selected_index
-                is_combine_first = self.combine_mode and idx == self.combine_first_index
+                is_combine_first = self.combine_mode and idx < len(self.inventory.items) and self.inventory.items[idx].id == self.combine_first_id
 
                 if is_selected:
                     highlight = pygame.Surface((SLOT_SIZE, SLOT_SIZE), pygame.SRCALPHA)
