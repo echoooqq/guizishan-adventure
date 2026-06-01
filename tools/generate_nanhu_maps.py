@@ -302,6 +302,7 @@ def _place_nanhu_shuttle(ground, structures, decorations, collision, interactive
             "prompt_text": "乘校车",
             "desc": "返回本部校区的校车",
             "target_map": "main_campus",
+            "spawn_point": "shuttle_return",
             "transition_type": "campus_bus",
         }
     })

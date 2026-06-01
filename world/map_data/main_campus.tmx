@@ -557,6 +557,7 @@
     <property name="prompt_text" value="乘校车" />
     <property name="desc" value="前往南湖校区的校车" />
     <property name="target_map" value="nanhu_campus" />
+    <property name="spawn_point" value="nanhu_entrance" />
     <property name="transition_type" value="campus_bus" />
    </properties>
   </object>

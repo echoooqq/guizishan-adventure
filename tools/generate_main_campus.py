@@ -636,6 +636,7 @@ def _place_shuttle_station(ground, structures, decorations, collision, interacti
             "prompt_text": "乘校车",
             "desc": "前往南湖校区的校车",
             "target_map": "nanhu_campus",
+            "spawn_point": "nanhu_entrance",
             "transition_type": "campus_bus",
         }
     })
