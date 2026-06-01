@@ -274,7 +274,7 @@
     <property name="transition_type" value="campus_bus" />
    </properties>
   </object>
-  <object id="21" x="320" y="192" width="32" height="32" type="spawn">
+  <object id="21" x="320" y="224" width="32" height="32" type="spawn">
    <properties>
     <property name="spawn_id" value="nanhu_entrance" />
    </properties>

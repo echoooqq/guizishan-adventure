@@ -23,9 +23,6 @@ class TransitionManager:
     FADE_DURATION = 0.5
     BUS_ANIM_DURATION = 2.5
 
-    NANHU_LABEL = "前往南湖校区..."
-    MAIN_LABEL = "返回本部校区..."
-
     def __init__(self):
         self.state = TransitionState.IDLE
         self.transition_type = TransitionType.INDOOR_ENTER
@@ -46,7 +43,7 @@ class TransitionManager:
             self._font = pygame.font.Font(None, FONT_INFO_SIZE)
 
     def start_transition(self, transition_type, target_map, spawn_point,
-                         on_load_callback=None):
+                         on_load_callback=None, bus_label=""):
         if self.state != TransitionState.IDLE:
             return
         self.transition_type = transition_type
@@ -57,10 +54,7 @@ class TransitionManager:
         self.alpha = 0
 
         if transition_type == TransitionType.CAMPUS_BUS:
-            if target_map and "nanhu" in target_map:
-                self._bus_label = self.NANHU_LABEL
-            else:
-                self._bus_label = self.MAIN_LABEL
+            self._bus_label = bus_label
         else:
             self._bus_label = ""
 

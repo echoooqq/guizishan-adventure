@@ -492,7 +492,7 @@ def _add_grass_variation(ground):
 def _add_nanhu_spawn(trigger_objects):
     trigger_objects.append({
         "x": 20 * TILE_SIZE,
-        "y": 12 * TILE_SIZE,
+        "y": 14 * TILE_SIZE,
         "width": 2 * TILE_SIZE,
         "height": 2 * TILE_SIZE,
         "type": "spawn",

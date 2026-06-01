@@ -131,9 +131,16 @@ class GameManager:
             self._setup_nanhulou_f1_entities()
 
     def _start_transition(self, transition_type, target_map, spawn_point):
+        bus_label = ""
+        if transition_type == TransitionType.CAMPUS_BUS:
+            if target_map in NANHU_MAPS:
+                bus_label = "前往南湖校区..."
+            else:
+                bus_label = "返回本部校区..."
         self.transition_manager.start_transition(
             transition_type, target_map, spawn_point,
             on_load_callback=self._on_transition_load,
+            bus_label=bus_label,
         )
 
     def _on_transition_load(self, target_map, spawn_point):
@@ -272,14 +279,13 @@ class GameManager:
         self.npcs.append(senior_student)
 
     def _trigger_nanhu_intro(self):
-        intro_data = {
-            "default": [
-                {"speaker": "", "text": "校车缓缓驶入南湖校区……"},
-                {"speaker": "", "text": "眼前是一片宁静的校园，远处波光粼粼的南湖映着天空的倒影。"},
-                {"speaker": "", "text": "综合楼矗立在校区中央，似乎隐藏着什么秘密……"},
-                {"speaker": "", "text": "也许该去综合楼里看看。"},
-            ]
-        }
+        intro_data = self._load_dialogue("nanhu_intro")
+        if intro_data is None:
+            intro_data = {
+                "default": [
+                    {"speaker": "", "text": "校车缓缓驶入南湖校区……"},
+                ]
+            }
         self.state = GameState.DIALOG
         self.dialog_box.start(
             intro_data,
