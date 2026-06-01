@@ -633,6 +633,7 @@ def _place_shuttle_station(ground, structures, decorations, collision, interacti
         "properties": {
             "interactive_type": "enter",
             "display_name": "校区接驳站",
+            "prompt_text": "乘校车",
             "desc": "前往南湖校区的校车",
             "target_map": "nanhu_campus",
             "transition_type": "campus_bus",
@@ -934,6 +935,16 @@ def _add_default_spawn(trigger_objects):
         "type": "spawn",
         "properties": {
             "spawn_id": "default",
+        }
+    })
+    trigger_objects.append({
+        "x": 58 * TILE_SIZE,
+        "y": 68 * TILE_SIZE,
+        "width": 2 * TILE_SIZE,
+        "height": 2 * TILE_SIZE,
+        "type": "spawn",
+        "properties": {
+            "spawn_id": "shuttle_return",
         }
     })
 

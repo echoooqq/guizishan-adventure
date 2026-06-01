@@ -1,6 +1,7 @@
+import os
 import pygame
 from enum import Enum, auto
-from config import INTERNAL_WIDTH, INTERNAL_HEIGHT
+from config import INTERNAL_WIDTH, INTERNAL_HEIGHT, FONT_PATH, FONT_INFO_SIZE
 
 
 class TransitionType(Enum):
@@ -22,6 +23,9 @@ class TransitionManager:
     FADE_DURATION = 0.5
     BUS_ANIM_DURATION = 2.5
 
+    NANHU_LABEL = "前往南湖校区..."
+    MAIN_LABEL = "返回本部校区..."
+
     def __init__(self):
         self.state = TransitionState.IDLE
         self.transition_type = TransitionType.INDOOR_ENTER
@@ -31,6 +35,15 @@ class TransitionManager:
         self.spawn_point = None
         self.on_load_callback = None
         self._bus_offset = 0.0
+        self._bus_label = ""
+        self._font = None
+        self._init_font()
+
+    def _init_font(self):
+        try:
+            self._font = pygame.font.Font(FONT_PATH, FONT_INFO_SIZE)
+        except Exception:
+            self._font = pygame.font.Font(None, FONT_INFO_SIZE)
 
     def start_transition(self, transition_type, target_map, spawn_point,
                          on_load_callback=None):
@@ -42,6 +55,15 @@ class TransitionManager:
         self.on_load_callback = on_load_callback
         self.timer = 0.0
         self.alpha = 0
+
+        if transition_type == TransitionType.CAMPUS_BUS:
+            if target_map and "nanhu" in target_map:
+                self._bus_label = self.NANHU_LABEL
+            else:
+                self._bus_label = self.MAIN_LABEL
+        else:
+            self._bus_label = ""
+
         self.state = TransitionState.FADE_OUT
 
     def update(self, dt):
@@ -100,9 +122,18 @@ class TransitionManager:
             overlay = pygame.Surface(
                 (INTERNAL_WIDTH, INTERNAL_HEIGHT), pygame.SRCALPHA
             )
-            overlay.fill((0, 0, 0, 230))
+            overlay.fill((20, 25, 40, 235))
             surface.blit(overlay, (0, 0))
+
+            road_y = INTERNAL_HEIGHT // 2 + 22
+            pygame.draw.rect(surface, (60, 60, 60),
+                             (0, road_y, INTERNAL_WIDTH, 12))
+            for x in range(0, INTERNAL_WIDTH, 20):
+                pygame.draw.rect(surface, (200, 200, 100),
+                                 (x, road_y + 5, 10, 2))
+
             self._draw_bus(surface)
+            self._draw_bus_label(surface)
 
         elif self.state == TransitionState.LOADING:
             overlay = pygame.Surface(
@@ -145,6 +176,30 @@ class TransitionManager:
                          (bus_x + bus_w - 3, bus_y + 12, 4, 4))
         pygame.draw.rect(surface, (255, 100, 100),
                          (bus_x - 1, bus_y + 12, 4, 4))
+
+    def _draw_bus_label(self, surface):
+        if not self._bus_label or not self._font:
+            return
+
+        label_surf = self._font.render(self._bus_label, True, (255, 255, 255))
+        label_rect = label_surf.get_rect(
+            centerx=INTERNAL_WIDTH // 2,
+            centery=INTERNAL_HEIGHT // 2 - 40
+        )
+
+        bg_rect = label_rect.inflate(12, 6)
+        bg_surf = pygame.Surface((bg_rect.width, bg_rect.height), pygame.SRCALPHA)
+        bg_surf.fill((0, 0, 0, 160))
+        surface.blit(bg_surf, bg_rect.topleft)
+        surface.blit(label_surf, label_rect)
+
+        dots = "." * (int(self.timer * 2) % 4)
+        dot_surf = self._font.render(dots, True, (200, 200, 200))
+        dot_rect = dot_surf.get_rect(
+            left=label_rect.right + 2,
+            centery=label_rect.centery
+        )
+        surface.blit(dot_surf, dot_rect)
 
     @property
     def is_active(self):

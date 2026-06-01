@@ -35,9 +35,15 @@ MAP_FILES = {
     "gym": "gym.tmx",
     "dining_hall_f1": "dining_hall_f1.tmx",
     "dining_hall_f2": "dining_hall_f2.tmx",
+    "nanhu_campus": "nanhu_campus.tmx",
+    "nanhulou_f1": "nanhulou_f1.tmx",
+    "nanhulou_f2": "nanhulou_f2.tmx",
 }
 
-INDOOR_MAPS = {"library_f1", "library_f2", "gym", "dining_hall_f1", "dining_hall_f2"}
+INDOOR_MAPS = {"library_f1", "library_f2", "gym", "dining_hall_f1", "dining_hall_f2",
+               "nanhulou_f1", "nanhulou_f2"}
+
+NANHU_MAPS = {"nanhu_campus", "nanhulou_f1", "nanhulou_f2"}
 
 
 class GameManager:
@@ -76,6 +82,8 @@ class GameManager:
         self._nearby_type = None
         self._puzzle_states = {}
         self._dialog_flags = {}
+        self._visited_nanhu = False
+        self._pending_nanhu_intro = False
 
         self.transition_manager = TransitionManager()
         self._map_cache = {}
@@ -117,6 +125,10 @@ class GameManager:
 
         if map_id == "main_campus":
             self._setup_test_entities()
+        elif map_id == "nanhu_campus":
+            self._setup_nanhu_entities()
+        elif map_id == "nanhulou_f1":
+            self._setup_nanhulou_f1_entities()
 
     def _start_transition(self, transition_type, target_map, spawn_point):
         self.transition_manager.start_transition(
@@ -234,6 +246,47 @@ class GameManager:
             },
         )
         self.interactive_objects.append(pickup_obj5)
+
+    def _setup_nanhu_entities(self):
+        from entities.npc import NPC
+
+        if not self._visited_nanhu:
+            self._visited_nanhu = True
+            self._pending_nanhu_intro = True
+
+    def _setup_nanhulou_f1_entities(self):
+        from entities.npc import NPC
+
+        spawn_x, spawn_y = self.tile_map.get_spawn_position()
+
+        senior_student = NPC(
+            x=spawn_x + 32, y=spawn_y - 16,
+            npc_id="senior_student",
+            dialogue_id="senior_student",
+            properties={
+                "direction": "down",
+                "body_color": (80, 140, 80),
+                "hair_color": (40, 30, 20),
+            },
+        )
+        self.npcs.append(senior_student)
+
+    def _trigger_nanhu_intro(self):
+        intro_data = {
+            "default": [
+                {"speaker": "", "text": "校车缓缓驶入南湖校区……"},
+                {"speaker": "", "text": "眼前是一片宁静的校园，远处波光粼粼的南湖映着天空的倒影。"},
+                {"speaker": "", "text": "综合楼矗立在校区中央，似乎隐藏着什么秘密……"},
+                {"speaker": "", "text": "也许该去综合楼里看看。"},
+            ]
+        }
+        self.state = GameState.DIALOG
+        self.dialog_box.start(
+            intro_data,
+            start_key="default",
+            on_complete=self._on_dialog_complete,
+            game_state=self._get_dialog_game_state(),
+        )
 
     def _load_dialogue(self, dialogue_id):
         if dialogue_id in self._dialogues_cache:
@@ -506,6 +559,10 @@ class GameManager:
             self._check_nearby_interactables()
             self._check_auto_triggers()
 
+            if self._pending_nanhu_intro:
+                self._pending_nanhu_intro = False
+                self._trigger_nanhu_intro()
+
         elif self.state == GameState.DIALOG:
             self.dialog_box.update(dt)
             for npc in self.npcs:
@@ -640,8 +697,9 @@ class GameManager:
 
         badge_count = self.player.inventory.get_badge_count()
         map_label = "室内" if self.current_map_id in INDOOR_MAPS else "室外"
+        campus_label = "南湖" if self.current_map_id in NANHU_MAPS else "本部"
         pos_text = self.info_font.render(
-            f"{map_label} "
+            f"{campus_label}{map_label} "
             f"位置:({int(self.player.x)},{int(self.player.y)}) "
             f"方向:{self.player.direction} "
             f"体力:{int(self.player.stamina)} "
