@@ -199,6 +199,15 @@
     "sprite": "bottle",
     "effect": {"type": "stamina_restore", "value": 30}
   },
+  "special_book": {
+    "name": "古旧典籍",
+    "category": "clue",
+    "description": "一本泛黄的古旧典籍，封面标注着'K291.5/Z3'。管理员说它属于某个特定的书架。",
+    "droppable": true,
+    "combinable_with": [],
+    "combine_result": "",
+    "sprite": "icon_book"
+  },
   "chili_sauce": {
     "name": "辣椒酱",
     "category": "consumable",

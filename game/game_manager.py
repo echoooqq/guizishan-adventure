@@ -31,6 +31,10 @@ from puzzle.puzzle_manager import PuzzleManager, PuzzleState
 from puzzle.guizhong_puzzle import GuizhongPuzzle
 from puzzle.nanhulou_puzzle import NanhulouPuzzle
 from puzzle.dining_puzzle import DiningPuzzle
+from puzzle.library_puzzle import LibraryPuzzle
+from puzzle.boya_puzzle import BoyaPuzzle
+from puzzle.gym_puzzle import GymPuzzle
+from puzzle.fountain_puzzle import FountainPuzzle
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -95,6 +99,10 @@ class GameManager:
         self.guizhong_puzzle = GuizhongPuzzle(self.puzzle_manager, self.player.inventory)
         self.nanhulou_puzzle = NanhulouPuzzle(self.puzzle_manager, self.player.inventory)
         self.dining_puzzle = DiningPuzzle(self.puzzle_manager, self.player.inventory)
+        self.library_puzzle = LibraryPuzzle(self.puzzle_manager, self.player.inventory)
+        self.boya_puzzle = BoyaPuzzle(self.puzzle_manager, self.player.inventory)
+        self.gym_puzzle = GymPuzzle(self.puzzle_manager, self.player.inventory)
+        self.fountain_puzzle = FountainPuzzle(self.puzzle_manager, self.player.inventory)
         self._active_puzzle = None
         self._is_night = True
 
@@ -106,6 +114,15 @@ class GameManager:
         self._nanhulou_bookshelf_animating = False
         self._nanhulou_bookshelf_anim_timer = 0.0
         self._nanhulou_bookshelf_anim_duration = 1.5
+
+        self._boya_sculpture_obj = None
+        self._boya_badge_obj = None
+        self._gym_equipment_cabinet_obj = None
+        self._gym_scoreboard_obj = None
+        self._library_bookshelf_obj = None
+        self._library_badge_obj = None
+        self._pending_library_quiz = False
+        self._last_dialog_key = ""
 
         self.transition_manager = TransitionManager()
         self._map_cache = {}
@@ -159,6 +176,12 @@ class GameManager:
             self._setup_dining_hall_f2_entities()
         elif map_id == "nanhulou_secret":
             self._setup_nanhulou_secret_entities()
+        elif map_id == "library_f1":
+            self._setup_library_f1_entities()
+        elif map_id == "library_f2":
+            self._setup_library_f2_entities()
+        elif map_id == "gym":
+            self._setup_gym_entities()
 
     def _start_transition(self, transition_type, target_map, spawn_point):
         bus_label = ""
@@ -182,13 +205,25 @@ class GameManager:
 
         spawn_x, spawn_y = self.tile_map.get_spawn_position()
 
-        test_npc = NPC(
+        passing_student = NPC(
             x=spawn_x + 48, y=spawn_y,
-            npc_id="librarian",
-            dialogue_id="librarian",
-            properties={"direction": "down"},
+            npc_id="passing_student",
+            dialogue_id="passing_student",
+            properties={
+                "direction": "left",
+                "body_color": (120, 100, 160),
+                "hair_color": (50, 30, 20),
+            },
         )
-        self.npcs.append(test_npc)
+        passing_student.on_interact = lambda npc_self: {
+            "type": "dialog",
+            "dialogue_data": {
+                "default": [
+                    {"speaker": "路过的学生", "text": "听说图书馆最近在搞读书活动，往西北方向走就能看到。"},
+                ]
+            },
+        }
+        self.npcs.append(passing_student)
 
         test_npc2 = NPC(
             x=spawn_x - 48, y=spawn_y,
@@ -285,6 +320,8 @@ class GameManager:
         self.interactive_objects.append(pickup_obj5)
 
         self._setup_guizhong_entities()
+        self._setup_boya_entities()
+        self._setup_fountain_entities()
 
     def _setup_guizhong_entities(self):
         from entities.interactive_object import InteractiveObject
@@ -377,6 +414,7 @@ class GameManager:
 
         def on_badge_pickup(obj):
             obj.interacted = True
+            gm.player.inventory.add_item("badge_1")
             puzzle_ref.mark_solved()
             if obj in gm.interactive_objects:
                 gm.interactive_objects.remove(obj)
@@ -681,13 +719,476 @@ class GameManager:
             table.on_interact = make_table_interact(i)
             self.interactive_objects.append(table)
 
+    def _setup_boya_entities(self):
+        from entities.interactive_object import InteractiveObject
+        from entities.npc import NPC
+
+        spawn_x, spawn_y = self.tile_map.get_spawn_position()
+
+        sculpture_x = spawn_x + 96
+        sculpture_y = spawn_y + 64
+
+        sculpture = InteractiveObject(
+            x=sculpture_x, y=sculpture_y,
+            width=16, height=16,
+            interactive_type="examine",
+            properties={
+                "prompt_text": "查看雕塑",
+                "color": (180, 180, 160),
+                "puzzle_id": "boya",
+            },
+        )
+
+        gm = self
+
+        def on_sculpture_interact(obj):
+            if gm.puzzle_manager.get_state("boya") == PuzzleState.SOLVED:
+                return {"type": "dialog", "dialogue_data": {
+                    "default": [{"speaker": "", "text": "雕塑底座的铭文已经看过了，地砖阵法也已破解。"}]
+                }}
+            if gm.player.inventory.has_item("sculpture_rubbing"):
+                return {"type": "dialog", "dialogue_data": {
+                    "default": [{"speaker": "", "text": "雕塑底座铭文：'东·南·西·北·中·东南·西北·东北·西南'。你已经拓印过了。"}]
+                }}
+            gm.player.inventory.add_item("sculpture_rubbing")
+            gm.puzzle_manager.discover("boya")
+            return {"type": "dialog", "dialogue_data": {
+                "default": [
+                    {"speaker": "", "text": "雕塑底座刻着古老的铭文：'东·南·西·北·中·东南·西北·东北·西南'"},
+                    {"speaker": "", "text": "你将铭文拓印下来，收入背包。广场上的异色地砖似乎与这顺序有关……"},
+                ]
+            }}
+
+        sculpture.on_interact = on_sculpture_interact
+        self.interactive_objects.append(sculpture)
+        self._boya_sculpture_obj = sculpture
+
+        tile_entrance = InteractiveObject(
+            x=sculpture_x + 20, y=sculpture_y,
+            width=16, height=16,
+            interactive_type="mechanism",
+            properties={
+                "prompt_text": "地砖阵法",
+                "color": (100, 100, 140),
+                "puzzle_id": "boya",
+                "mechanism_text": "",
+            },
+        )
+
+        puzzle_ref = self.boya_puzzle
+
+        def on_tile_entrance_interact(obj):
+            if gm.puzzle_manager.get_state("boya") == PuzzleState.SOLVED:
+                return {"type": "dialog", "dialogue_data": {
+                    "default": [{"speaker": "", "text": "地砖阵法已经破解了。"}]
+                }}
+            gm._active_puzzle = puzzle_ref
+            gm.state = GameState.PUZZLE
+            puzzle_ref.start(on_complete=gm._on_puzzle_complete)
+            return None
+
+        tile_entrance.on_interact = on_tile_entrance_interact
+        self.interactive_objects.append(tile_entrance)
+
+        dancing_auntie = NPC(
+            x=sculpture_x - 16, y=sculpture_y + 16,
+            npc_id="dancing_auntie",
+            dialogue_id="dancing_auntie",
+            properties={
+                "direction": "down",
+                "body_color": (200, 100, 160),
+                "hair_color": (60, 40, 30),
+            },
+        )
+        self.npcs.append(dancing_auntie)
+
+    def _setup_fountain_entities(self):
+        from entities.interactive_object import InteractiveObject
+        from entities.npc import NPC
+
+        spawn_x, spawn_y = self.tile_map.get_spawn_position()
+
+        fountain_x = spawn_x
+        fountain_y = spawn_y + 96
+
+        fountain = InteractiveObject(
+            x=fountain_x, y=fountain_y,
+            width=20, height=20,
+            interactive_type="mechanism",
+            properties={
+                "prompt_text": "喷泉基座",
+                "color": (100, 140, 180),
+                "puzzle_id": "fountain",
+                "mechanism_text": "",
+            },
+        )
+
+        gm = self
+        puzzle_ref = self.fountain_puzzle
+
+        def on_fountain_interact(obj):
+            if not gm.puzzle_manager.is_fountain_unlocked():
+                return {"type": "dialog", "dialogue_data": {
+                    "default": [{"speaker": "", "text": "喷泉被一层神秘的力量封锁着……需要集齐六枚徽章碎片才能解除。"}]
+                }}
+            if gm.puzzle_manager.get_state("fountain") == PuzzleState.SOLVED:
+                return {"type": "dialog", "dialogue_data": {
+                    "default": [{"speaker": "", "text": "喷泉散发着温暖的光芒，封印已经解除了。"}]
+                }}
+            gm._active_puzzle = puzzle_ref
+            gm.state = GameState.PUZZLE
+            puzzle_ref.start(on_complete=gm._on_puzzle_complete)
+            return None
+
+        fountain.on_interact = on_fountain_interact
+        self.interactive_objects.append(fountain)
+
+        guardian = NPC(
+            x=fountain_x + 24, y=fountain_y,
+            npc_id="guardian",
+            dialogue_id="guardian",
+            properties={
+                "direction": "left",
+                "body_color": (120, 100, 180),
+                "hair_color": (180, 180, 200),
+            },
+        )
+
+        original_guardian_interact = guardian.interact
+
+        def on_guardian_interact(npc_self):
+            if not gm.puzzle_manager.is_fountain_unlocked():
+                return {"type": "dialog", "dialogue_data": {
+                    "default": [
+                        {"speaker": "秘境守护者", "text": "……还不到时候。"},
+                        {"speaker": "秘境守护者", "text": "集齐六枚徽章碎片后，再来找我吧。"},
+                    ]
+                }}
+            return original_guardian_interact()
+
+        guardian.on_interact = on_guardian_interact
+        self.npcs.append(guardian)
+
+    def _setup_library_f1_entities(self):
+        from entities.npc import NPC
+
+        spawn_x, spawn_y = self.tile_map.get_spawn_position()
+
+        librarian = NPC(
+            x=spawn_x + 16, y=spawn_y - 16,
+            npc_id="librarian",
+            dialogue_id="librarian",
+            properties={
+                "direction": "down",
+                "body_color": (100, 120, 180),
+                "hair_color": (60, 40, 30),
+            },
+        )
+
+        gm = self
+        puzzle_ref = self.library_puzzle
+
+        def on_librarian_interact(npc_self):
+            if gm.puzzle_manager.get_state("library") == PuzzleState.SOLVED:
+                return {"type": "dialog", "dialogue_id": "librarian", "dialogue_data": None}
+            if gm.library_puzzle.quiz_passed:
+                return {"type": "dialog", "dialogue_data": {
+                    "default": [
+                        {"speaker": "图书管理员", "text": "你已经通过答题了！快去2楼找到对应的书架放置书籍吧。"},
+                    ]
+                }}
+            gm._pending_library_quiz = True
+            dialogue_data = gm._load_dialogue("librarian")
+            return {
+                "type": "dialog",
+                "dialogue_data": dialogue_data,
+                "start_key": "default",
+            }
+
+        librarian.on_interact = on_librarian_interact
+        self.npcs.append(librarian)
+
+        self.puzzle_manager.discover("library")
+
+    def _setup_library_f2_entities(self):
+        from entities.interactive_object import InteractiveObject
+
+        spawn_x, spawn_y = self.tile_map.get_spawn_position()
+
+        if self.puzzle_manager.get_state("library") == PuzzleState.SOLVED:
+            return
+
+        bookshelf = InteractiveObject(
+            x=spawn_x, y=spawn_y - 16,
+            width=16, height=16,
+            interactive_type="mechanism",
+            properties={
+                "prompt_text": "放置书籍",
+                "color": (120, 80, 40),
+                "puzzle_id": "library",
+                "mechanism_text": "",
+            },
+        )
+
+        gm = self
+
+        def on_bookshelf_interact(obj):
+            if gm.puzzle_manager.get_state("library") == PuzzleState.SOLVED:
+                return {"type": "dialog", "dialogue_data": {
+                    "default": [{"speaker": "", "text": "书架已经归位了。"}]
+                }}
+            if not gm.library_puzzle.quiz_passed:
+                return {"type": "dialog", "dialogue_data": {
+                    "default": [{"speaker": "", "text": "这个书架上方标着'K291.5/Z3'。也许需要先通过管理员的答题挑战……"}]
+                }}
+            if not gm.player.inventory.has_item("special_book"):
+                return {"type": "dialog", "dialogue_data": {
+                    "default": [{"speaker": "", "text": "书架上方标着'K291.5/Z3'。你似乎需要找到对应的书籍才能放置……"}]
+                }}
+            gm.player.inventory.remove_item("special_book")
+            gm.player.inventory.remove_item("call_number_note")
+            gm.puzzle_manager.solve("library", gm.player.inventory)
+            if obj in gm.interactive_objects:
+                gm.interactive_objects.remove(obj)
+            gm._library_bookshelf_obj = None
+            return {"type": "dialog", "dialogue_data": {
+                "default": [
+                    {"speaker": "", "text": "你将古旧典籍放回书架……"},
+                    {"speaker": "", "text": "书架缓缓移开，露出了隐藏的密室！"},
+                    {"speaker": "", "text": "获得了桂花徽章碎片·叁！"},
+                ]
+            }}
+
+        bookshelf.on_interact = on_bookshelf_interact
+        self.interactive_objects.append(bookshelf)
+        self._library_bookshelf_obj = bookshelf
+
+    def _setup_gym_entities(self):
+        from entities.npc import NPC
+        from entities.interactive_object import InteractiveObject
+
+        spawn_x, spawn_y = self.tile_map.get_spawn_position()
+
+        pe_teacher = NPC(
+            x=spawn_x + 16, y=spawn_y - 16,
+            npc_id="pe_teacher",
+            dialogue_id="pe_teacher",
+            properties={
+                "direction": "down",
+                "body_color": (80, 140, 80),
+                "hair_color": (40, 30, 20),
+            },
+        )
+
+        gm = self
+        puzzle_ref = self.gym_puzzle
+
+        def on_pe_teacher_interact(npc_self):
+            if gm.puzzle_manager.get_state("gym") == PuzzleState.SOLVED:
+                return {"type": "dialog", "dialogue_id": "pe_teacher", "dialogue_data": None}
+            if not gm.gym_puzzle.shooting_passed:
+                dialogue_data = gm._load_dialogue("pe_teacher")
+                if dialogue_data and "challenge_start" in dialogue_data:
+                    return {
+                        "type": "dialog",
+                        "dialogue_data": dialogue_data,
+                        "start_key": "challenge_start",
+                    }
+                return {"type": "dialog", "dialogue_id": "pe_teacher", "dialogue_data": None}
+            if gm.gym_puzzle.shooting_passed and not gm.player.inventory.has_item("equipment_key"):
+                gm.player.inventory.add_item("equipment_key")
+                return {"type": "dialog", "dialogue_data": {
+                    "default": [
+                        {"speaker": "体育老师", "text": "不错不错！这把器材室钥匙给你。"},
+                        {"speaker": "体育老师", "text": "器材室里那个旧记分牌，你留意一下上面的数字。"},
+                    ]
+                }}
+            return {"type": "dialog", "dialogue_id": "pe_teacher", "dialogue_data": None}
+
+        pe_teacher.on_interact = on_pe_teacher_interact
+        self.npcs.append(pe_teacher)
+
+        shooting_station = InteractiveObject(
+            x=spawn_x - 32, y=spawn_y - 16,
+            width=16, height=16,
+            interactive_type="mechanism",
+            properties={
+                "prompt_text": "投篮",
+                "color": (180, 120, 60),
+                "puzzle_id": "gym",
+                "mechanism_text": "",
+            },
+        )
+
+        def on_shooting_interact(obj):
+            if gm.puzzle_manager.get_state("gym") == PuzzleState.SOLVED:
+                return {"type": "dialog", "dialogue_data": {
+                    "default": [{"speaker": "", "text": "投篮挑战已经完成了。"}]
+                }}
+            if gm.gym_puzzle.shooting_passed:
+                return {"type": "dialog", "dialogue_data": {
+                    "default": [{"speaker": "", "text": "你已经通过投篮挑战了！"}]
+                }}
+            gm._active_puzzle = puzzle_ref
+            gm.state = GameState.PUZZLE
+            puzzle_ref.start_shooting(on_complete=gm._on_puzzle_complete)
+            return None
+
+        shooting_station.on_interact = on_shooting_interact
+        self.interactive_objects.append(shooting_station)
+
+        if not self.gym_puzzle.shooting_passed:
+            self.puzzle_manager.discover("gym")
+            return
+
+        self._add_gym_post_shooting_entities(spawn_x, spawn_y)
+        self.puzzle_manager.discover("gym")
+
+    def _add_gym_post_shooting_entities(self, spawn_x, spawn_y):
+        from entities.interactive_object import InteractiveObject
+
+        gm = self
+        puzzle_ref = self.gym_puzzle
+
+        cabinet = InteractiveObject(
+            x=spawn_x - 48, y=spawn_y - 16,
+            width=16, height=16,
+            interactive_type="mechanism",
+            properties={
+                "prompt_text": "器材柜",
+                "color": (100, 100, 100),
+                "mechanism_text": "",
+            },
+        )
+
+        def on_cabinet_interact(obj):
+            if gm.player.inventory.has_item("scoreboard_note"):
+                return {"type": "dialog", "dialogue_data": {
+                    "default": [{"speaker": "", "text": "器材柜已经打开过了。"}]
+                }}
+            if not gm.player.inventory.has_item("equipment_key"):
+                return {"type": "dialog", "dialogue_data": {
+                    "default": [{"speaker": "", "text": "器材柜锁着，需要钥匙才能打开。"}]
+                }}
+            gm.player.inventory.remove_item("equipment_key")
+            gm.player.inventory.add_item("scoreboard_note")
+            return {"type": "dialog", "dialogue_data": {
+                "default": [
+                    {"speaker": "", "text": "用器材室钥匙打开了柜子！"},
+                    {"speaker": "", "text": "柜子里有一张便条：'将记分牌拨至1-9-0-3'。"},
+                ]
+            }}
+
+        cabinet.on_interact = on_cabinet_interact
+        self.interactive_objects.append(cabinet)
+        self._gym_equipment_cabinet_obj = cabinet
+
+        scoreboard = InteractiveObject(
+            x=spawn_x + 48, y=spawn_y - 16,
+            width=16, height=16,
+            interactive_type="mechanism",
+            properties={
+                "prompt_text": "记分牌",
+                "color": (60, 60, 80),
+                "mechanism_text": "",
+            },
+        )
+
+        def on_scoreboard_interact(obj):
+            if gm.puzzle_manager.get_state("gym") == PuzzleState.SOLVED:
+                return {"type": "dialog", "dialogue_data": {
+                    "default": [{"speaker": "", "text": "记分牌已经拨到正确位置了。"}]
+                }}
+            if gm.gym_puzzle.scoreboard_opened:
+                return {"type": "dialog", "dialogue_data": {
+                    "default": [{"speaker": "", "text": "记分牌已经拨到正确位置了。"}]
+                }}
+            gm._active_puzzle = puzzle_ref
+            gm.state = GameState.PUZZLE
+            puzzle_ref.start_scoreboard(on_complete=gm._on_puzzle_complete)
+            return None
+
+        scoreboard.on_interact = on_scoreboard_interact
+        self.interactive_objects.append(scoreboard)
+        self._gym_scoreboard_obj = scoreboard
+
     def _on_puzzle_complete(self):
+        puzzle = self._active_puzzle
         self._active_puzzle = None
         self.state = GameState.PLAYING
 
-        if self.nanhulou_puzzle.secret_room_open and \
-           self.puzzle_manager.get_state("nanhulou") != PuzzleState.SOLVED:
-            self._start_bookshelf_animation()
+        if puzzle is self.nanhulou_puzzle:
+            if self.nanhulou_puzzle.secret_room_open and \
+               self.puzzle_manager.get_state("nanhulou") != PuzzleState.SOLVED:
+                self._start_bookshelf_animation()
+
+        elif puzzle is self.library_puzzle:
+            if self.library_puzzle.quiz_passed:
+                self.player.inventory.add_item("special_book")
+                self.player.inventory.add_item("call_number_note")
+                self.state = GameState.DIALOG
+                self.dialog_box.start(
+                    {"default": [
+                        {"speaker": "", "text": "全部答对！管理员递给你一本古旧典籍和一张索书号便签。"},
+                        {"speaker": "", "text": "索书号便签上写着：'K291.5/Z3'。去2楼找到对应的书架放置书籍吧！"},
+                    ]},
+                    start_key="default",
+                    on_complete=self._on_dialog_complete,
+                    game_state=self._get_dialog_game_state(),
+                )
+
+        elif puzzle is self.boya_puzzle:
+            if self.boya_puzzle.solved:
+                self.state = GameState.DIALOG
+                self.dialog_box.start(
+                    {"default": [
+                        {"speaker": "", "text": "地砖阵法破解！广场中央的雕塑缓缓移开了……"},
+                        {"speaker": "", "text": "获得了桂花徽章碎片·肆！"},
+                    ]},
+                    start_key="default",
+                    on_complete=self._on_dialog_complete,
+                    game_state=self._get_dialog_game_state(),
+                )
+
+        elif puzzle is self.gym_puzzle:
+            if self.gym_puzzle.shooting_passed and not self.player.inventory.has_item("equipment_key"):
+                self.player.inventory.add_item("equipment_key")
+                self.state = GameState.DIALOG
+                self.dialog_box.start(
+                    {"default": [
+                        {"speaker": "", "text": "投篮挑战成功！获得了器材室钥匙！"},
+                        {"speaker": "", "text": "用钥匙打开器材柜，看看里面有什么……"},
+                    ]},
+                    start_key="default",
+                    on_complete=self._on_dialog_complete,
+                    game_state=self._get_dialog_game_state(),
+                )
+            elif self.gym_puzzle.scoreboard_opened and \
+                 self.puzzle_manager.get_state("gym") != PuzzleState.SOLVED:
+                self.puzzle_manager.solve("gym", self.player.inventory)
+                self.state = GameState.DIALOG
+                self.dialog_box.start(
+                    {"default": [
+                        {"speaker": "", "text": "密码正确！暗门缓缓开启……"},
+                        {"speaker": "", "text": "获得了桂花徽章碎片·伍！"},
+                    ]},
+                    start_key="default",
+                    on_complete=self._on_dialog_complete,
+                    game_state=self._get_dialog_game_state(),
+                )
+
+        elif puzzle is self.fountain_puzzle:
+            if self.fountain_puzzle.solved:
+                self.state = GameState.DIALOG
+                self.dialog_box.start(
+                    {"default": [
+                        {"speaker": "秘境守护者", "text": "七徽归位，封印解除！"},
+                        {"speaker": "秘境守护者", "text": "桂子山秘境的真相，将由你来揭晓……"},
+                    ]},
+                    start_key="default",
+                    on_complete=self._on_dialog_complete,
+                    game_state=self._get_dialog_game_state(),
+                )
 
     def _start_bookshelf_animation(self):
         if self._nanhulou_bookshelf_obj is None:
@@ -965,6 +1466,17 @@ class GameManager:
         }
 
     def _on_dialog_complete(self):
+        if self.state != GameState.DIALOG:
+            return
+        if self._pending_library_quiz:
+            self._pending_library_quiz = False
+            if self.dialog_box.current_key == "start_quiz" or self._last_dialog_key == "start_quiz":
+                self._last_dialog_key = ""
+                self._active_puzzle = self.library_puzzle
+                self.state = GameState.PUZZLE
+                self.library_puzzle.start(on_complete=self._on_puzzle_complete)
+                return
+            self._last_dialog_key = ""
         self.state = GameState.PLAYING
 
     def _create_pause_ui(self):

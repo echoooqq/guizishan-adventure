@@ -9,7 +9,17 @@
   ],
   "borrow_book": [
     {"speaker": "图书管理员", "text": "那先回答我几个问题吧！答对了才能借书哦。"},
-    {"speaker": "图书管理员", "text": "准备好就来找我挑战吧！"}
+    {"speaker": "图书管理员", "text": "准备好了吗？"},
+    {"type": "choice", "options": [
+      {"text": "准备好了", "next": "start_quiz"},
+      {"text": "还没准备好", "next": "not_ready"}
+    ]}
+  ],
+  "start_quiz": [
+    {"speaker": "图书管理员", "text": "好，开始吧！"}
+  ],
+  "not_ready": [
+    {"speaker": "图书管理员", "text": "没关系，准备好了再来找我。"}
   ],
   "just_looking": [
     {"speaker": "图书管理员", "text": "好的，随便看看吧。书架上的书都是分类排列的。"},
