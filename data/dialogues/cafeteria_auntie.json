@@ -4,7 +4,9 @@
     {"type": "choice", "options": [
       {"text": "有什么好吃的？", "next": "menu"},
       {"text": "阿姨，您看起来有心事？", "next": "lost_card"},
-      {"text": "我先看看", "next": "look_around"}
+      {"text": "我先看看", "next": "look_around"},
+      {"text": "阿姨，我找到饭卡了！", "next": "card_returned",
+       "condition": {"type": "has_item", "item_id": "meal_card"}}
     ]}
   ],
   "menu": [
@@ -20,6 +22,8 @@
   ],
   "card_returned": [
     {"speaker": "食堂阿姨", "text": "太好了！你找到饭卡了！阿姨太感谢你了！"},
-    {"speaker": "食堂阿姨", "text": "来来来，阿姨给你开后厨门，里面有惊喜哦！"}
+    {"speaker": "", "text": "你将饭卡递给阿姨……"},
+    {"speaker": "食堂阿姨", "text": "来来来，这是阿姨的独门秘方做的桂花糕，和外面买的不一样哦……你尝尝看？"},
+    {"speaker": "", "text": "你收下了桂花糕。入手的瞬间，你感到一阵不寻常的温热……"}
   ]
 }

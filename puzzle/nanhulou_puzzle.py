@@ -31,9 +31,6 @@ class NanhulouPuzzle:
         self._message_timer = 0.0
         self._message_duration = 2.0
         self._is_correct = False
-        self._show_result = False
-        self._result_timer = 0.0
-        self._result_duration = 2.5
         self._secret_room_open = False
 
         self.font = pygame.font.Font(FONT_PATH, FONT_INFO_SIZE)
@@ -49,8 +46,6 @@ class NanhulouPuzzle:
         self._message = ""
         self._message_timer = 0.0
         self._is_correct = False
-        self._show_result = False
-        self._result_timer = 0.0
         self._secret_room_open = False
         self.puzzle_manager.start_puzzle("nanhulou")
         return True
@@ -69,16 +64,15 @@ class NanhulouPuzzle:
         if event.type != pygame.KEYDOWN:
             return
 
-        if self._show_result:
-            if event.key in (pygame.K_f, pygame.K_SPACE, pygame.K_RETURN):
-                self._finish()
-            return
-
         if self._message:
             if event.key in (pygame.K_f, pygame.K_SPACE, pygame.K_RETURN):
-                self._message = ""
-                self._message_timer = 0.0
-                if not self._is_correct:
+                if self._is_correct:
+                    self._message = ""
+                    self._message_timer = 0.0
+                    self._finish()
+                else:
+                    self._message = ""
+                    self._message_timer = 0.0
                     self._input_buffer = ""
             return
 
@@ -142,14 +136,6 @@ class NanhulouPuzzle:
         if self._message:
             self._message_timer += dt
 
-        if self._show_result:
-            self._result_timer += dt
-
-    def trigger_badge_pickup(self):
-        self._show_result = True
-        self._result_timer = 0.0
-        self.puzzle_manager.solve("nanhulou", self.inventory)
-
     def _finish(self):
         self.active = False
         if self.on_complete:
@@ -165,9 +151,6 @@ class NanhulouPuzzle:
 
         if self._message:
             self._draw_message(surface)
-
-        if self._show_result:
-            self._draw_result_overlay(surface)
 
     def _draw_terminal(self, surface):
         term_w, term_h = 260, 140
@@ -229,21 +212,3 @@ class NanhulouPuzzle:
         cont = self.font.render("按 F 继续", True, COLOR_WHITE)
         cont_rect = cont.get_rect(centerx=msg_x + msg_w // 2, centery=msg_y + msg_h // 2 + 10)
         surface.blit(cont, cont_rect)
-
-    def _draw_result_overlay(self, surface):
-        box_w, box_h = 240, 50
-        box_x = (INTERNAL_WIDTH - box_w) // 2
-        box_y = (INTERNAL_HEIGHT - box_h) // 2
-
-        draw_nine_slice(
-            surface, self.border_image,
-            (box_x, box_y, box_w, box_h),
-        )
-
-        text = self.font.render("获得了桂花徽章碎片·贰！", True, (255, 215, 0))
-        text_rect = text.get_rect(centerx=box_x + box_w // 2, centery=box_y + box_h // 2 - 6)
-        surface.blit(text, text_rect)
-
-        hint = self.font.render("按 F 继续", True, COLOR_WHITE)
-        hint_rect = hint.get_rect(centerx=box_x + box_w // 2, centery=box_y + box_h // 2 + 10)
-        surface.blit(hint, hint_rect)

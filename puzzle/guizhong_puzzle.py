@@ -24,6 +24,10 @@ class GuizhongPuzzle:
 
         self.glowing_tree_index = random.randint(0, self.TREE_COUNT - 1)
         self.tree_positions = []
+        self._examined = False
+        self._examine_hint_timer = 0.0
+        self._examine_hint_duration = 1.5
+        self._show_examine_hint = False
         self._shaking = False
         self._shake_timer = 0.0
         self._shake_duration = 1.0
@@ -53,6 +57,9 @@ class GuizhongPuzzle:
         self.active = True
         self.solved = False
         self.on_complete = on_complete
+        self._examined = False
+        self._show_examine_hint = False
+        self._examine_hint_timer = 0.0
         self._shaking = False
         self._shake_timer = 0.0
         self._badge_dropped = False
@@ -90,7 +97,11 @@ class GuizhongPuzzle:
         if event.key in (pygame.K_f, pygame.K_SPACE):
             if self._show_result:
                 self._finish()
-            elif not self._shaking and not self._badge_dropped:
+            elif not self._examined and not self._shaking and not self._badge_dropped:
+                self._examined = True
+                self._show_examine_hint = True
+                self._examine_hint_timer = 0.0
+            elif self._examined and not self._shaking and not self._badge_dropped:
                 self.shake_tree()
         elif event.key == pygame.K_ESCAPE:
             self._finish()
@@ -98,6 +109,11 @@ class GuizhongPuzzle:
     def update(self, dt):
         if not self.active:
             return
+
+        if self._show_examine_hint:
+            self._examine_hint_timer += dt
+            if self._examine_hint_timer >= self._examine_hint_duration:
+                self._show_examine_hint = False
 
         if self._shaking:
             self._shake_timer += dt
@@ -158,6 +174,16 @@ class GuizhongPuzzle:
                 badge_y = by + self._badge_y_offset
                 self._draw_badge(surface, int(bx), int(badge_y))
 
+        if self._show_examine_hint:
+            hint_text = "这棵桂花树散发着微光，似乎在呼唤你……"
+            hint_surf = self.font.render(hint_text, True, (200, 255, 150))
+            hint_rect = hint_surf.get_rect(centerx=INTERNAL_WIDTH // 2, centery=INTERNAL_HEIGHT // 2 + 40)
+            bg_rect = hint_rect.inflate(8, 4)
+            bg_surf = pygame.Surface((bg_rect.width, bg_rect.height), pygame.SRCALPHA)
+            bg_surf.fill((0, 0, 0, 180))
+            surface.blit(bg_surf, bg_rect.topleft)
+            surface.blit(hint_surf, hint_rect)
+
         if self._show_result:
             self._draw_result_overlay(surface)
 
@@ -175,7 +201,10 @@ class GuizhongPuzzle:
             pygame.draw.ellipse(glow_surf, (200, 255, 150, alpha), (0, 0, 32, 32))
             surface.blit(glow_surf, (x - 16, y - 24))
 
-            prompt = self.font.render("按 F 摇树", True, COLOR_WHITE)
+            if self._examined:
+                prompt = self.font.render("按 F 摇树", True, COLOR_WHITE)
+            else:
+                prompt = self.font.render("按 F 查看", True, COLOR_WHITE)
             prompt_rect = prompt.get_rect(centerx=x, bottom=y - 20)
             bg_rect = prompt_rect.inflate(6, 4)
             bg_surf = pygame.Surface((bg_rect.width, bg_rect.height), pygame.SRCALPHA)

@@ -131,6 +131,12 @@ class Inventory:
             result = {"success": True, "message": f"使用了{item.name}。", "item": item}
             if effect:
                 result["effect"] = effect
+                if effect.get("type") == "reveal_badge":
+                    badge_target = effect.get("target", "")
+                    if badge_target:
+                        self.add_item(badge_target)
+                        result["message"] = f"{item.name}裂开了！里面竟然藏着一枚桂花徽章碎片！"
+                        result["reveal_badge"] = badge_target
             return result
         if item.category == "tool":
             return {"success": True, "message": f"在合适的地方使用{item.name}吧。", "item": item}

@@ -174,6 +174,11 @@ class DialogBox:
         if isinstance(condition, str):
             return self.game_state.get(condition, False)
         if isinstance(condition, dict):
+            cond_type = condition.get("type", "")
+            if cond_type == "has_item":
+                item_id = condition.get("item_id", "")
+                inventory_items = self.game_state.get("inventory", [])
+                return item_id in inventory_items
             key = condition.get("key", "")
             value = condition.get("value")
             current = self._resolve_key(key)

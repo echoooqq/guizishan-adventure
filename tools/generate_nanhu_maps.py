@@ -824,6 +824,69 @@ def design_nanhulou_f2():
     return W, H, ground, structures, decorations, collision, interactive_objects, trigger_objects
 
 
+def design_nanhulou_secret():
+    W = 16
+    H = 12
+
+    ground = [[GID_TILE_FLOOR] * W for _ in range(H)]
+    structures = [[GID_EMPTY_I] * W for _ in range(H)]
+    decorations = [[GID_EMPTY_I] * W for _ in range(H)]
+    collision = [[GID_EMPTY_I] * W for _ in range(H)]
+    interactive_objects = []
+    trigger_objects = []
+
+    for x in range(W):
+        structures[0][x] = GID_INDOOR_WALL_TOP
+        structures[H - 1][x] = GID_INDOOR_WALL_TOP
+        collision[0][x] = GID_COLLISION_I
+        collision[H - 1][x] = GID_COLLISION_I
+    for y in range(1, H - 1):
+        structures[y][0] = GID_INDOOR_WALL
+        structures[y][W - 1] = GID_INDOOR_WALL
+        collision[y][0] = GID_COLLISION_I
+        collision[y][W - 1] = GID_COLLISION_I
+
+    for y in range(1, H - 1):
+        for x in range(1, W - 1):
+            ground[y][x] = GID_TILE_FLOOR
+
+    structures[3][7] = GID_FOUNTAIN_BASE
+    structures[3][8] = GID_FOUNTAIN_BASE
+    collision[3][7] = GID_COLLISION_I
+    collision[3][8] = GID_COLLISION_I
+
+    structures[5][3] = GID_PLANT_INDOOR
+    collision[5][3] = GID_COLLISION_I
+    structures[5][12] = GID_PLANT_INDOOR
+    collision[5][12] = GID_COLLISION_I
+
+    interactive_objects.append({
+        "x": 7 * TILE_SIZE, "y": 2 * TILE_SIZE,
+        "width": 2 * TILE_SIZE, "height": TILE_SIZE,
+        "type": "badge_pedestal",
+        "properties": {
+            "interactive_type": "pickup",
+            "prompt_text": "拾取徽章碎片",
+            "item_id": "badge_2",
+            "pickup_text": "在密室的基座上，你发现了桂花徽章碎片·贰！",
+            "display_name": "发光基座",
+        }
+    })
+
+    structures[H - 2][1] = GID_DOOR_INDOOR
+    collision[H - 2][1] = GID_EMPTY_I
+
+    _add_exit_trigger(
+        trigger_objects, 1, H - 2, 1, 1,
+        "nanhulou_f2", "nanhulou_f2_secret_return",
+        transition_type="indoor_exit",
+    )
+
+    _add_spawn(trigger_objects, "nanhulou_secret_entrance", 7, 8)
+
+    return W, H, ground, structures, decorations, collision, interactive_objects, trigger_objects
+
+
 def layer_to_csv(layer_data):
     values = []
     for row in layer_data:
@@ -1014,5 +1077,11 @@ if __name__ == "__main__":
     create_tmx(W, H, ground, None, structures, decorations, collision, objs, triggers,
                "indoor_tileset", indoor_tileset_rel, TILE_COUNT_I, SOLID_GIDS_I,
                os.path.join(map_dir, "nanhulou_f2.tmx"))
+
+    print("\n--- Nanhu Building Secret Room ---")
+    W, H, ground, structures, decorations, collision, objs, triggers = design_nanhulou_secret()
+    create_tmx(W, H, ground, None, structures, decorations, collision, objs, triggers,
+               "indoor_tileset", indoor_tileset_rel, TILE_COUNT_I, SOLID_GIDS_I,
+               os.path.join(map_dir, "nanhulou_secret.tmx"))
 
     print("\nAll Nanhu maps generated successfully!")

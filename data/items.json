@@ -119,11 +119,21 @@
   "meal_card": {
     "name": "饭卡",
     "category": "clue",
-    "description": "一张学生饭卡，上面写着'2019级 张同学'。得赶紧还给食堂阿姨。",
+    "description": "一张学生饭卡，上面写着'2019级 张同学'。这张饭卡似乎有些不寻常……",
     "droppable": true,
     "combinable_with": [],
     "combine_result": "",
     "sprite": "card"
+  },
+  "osmanthus_cake": {
+    "name": "桂花糕",
+    "category": "consumable",
+    "description": "阿姨特制的桂花糕，表面隐约浮现着桂花形纹路，触感异常温热。",
+    "droppable": true,
+    "combinable_with": [],
+    "combine_result": "",
+    "sprite": "cake",
+    "effect": {"type": "reveal_badge", "target": "badge_6"}
   },
   "osmanthus_branch": {
     "name": "桂花枝",

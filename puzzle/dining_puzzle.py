@@ -25,8 +25,6 @@ class DiningPuzzle:
         self._searched_tables = set()
         self._card_found = False
         self._card_returned = False
-        self._kitchen_open = False
-        self._badge_obtained = False
 
         self._searching = False
         self._search_timer = 0.0
@@ -53,8 +51,6 @@ class DiningPuzzle:
         self._searched_tables = set()
         self._card_found = False
         self._card_returned = False
-        self._kitchen_open = False
-        self._badge_obtained = False
         self._searching = False
         self._show_message = False
         self._show_result = False
@@ -70,16 +66,21 @@ class DiningPuzzle:
     def card_returned(self):
         return self._card_returned
 
-    @property
-    def kitchen_open(self):
-        return self._kitchen_open
-
     def return_card(self):
         if not self._card_found or self._card_returned:
             return
         self._card_returned = True
-        self._kitchen_open = True
         self.inventory.remove_item("meal_card")
+        self.inventory.add_item("osmanthus_cake")
+        self._show_result = True
+        self._result_timer = 0.0
+
+    def reveal_badge(self):
+        if self.puzzle_manager.get_state("dining_hall").value == "solved":
+            return
+        if self.inventory.has_item("osmanthus_cake"):
+            self.inventory.remove_item("osmanthus_cake")
+        self.puzzle_manager.solve("dining_hall", self.inventory)
 
     def search_table(self, table_index):
         if table_index < 0 or table_index >= self.TABLE_COUNT:
@@ -91,12 +92,6 @@ class DiningPuzzle:
         self._searching = True
         self._search_timer = 0.0
         self._search_table_index = table_index
-
-    def pickup_badge(self):
-        if self._badge_obtained:
-            return
-        self._badge_obtained = True
-        self.puzzle_manager.solve("dining_hall", self.inventory)
 
     def _show_message_text(self, text):
         self._show_message = True
@@ -155,11 +150,6 @@ class DiningPuzzle:
         if self._show_result:
             self._result_timer += dt
 
-    def trigger_badge_pickup(self):
-        self._show_result = True
-        self._result_timer = 0.0
-        self.pickup_badge()
-
     def draw(self, surface):
         if not self.active:
             return
@@ -178,7 +168,7 @@ class DiningPuzzle:
 
         status_y = panel_y + 28
         if self._card_found and self._card_returned:
-            status = self.font.render("饭卡已归还，后厨已开启！", True, (100, 255, 100))
+            status = self.font.render("饭卡已归还，获得了桂花糕！", True, (100, 255, 100))
         elif self._card_found:
             status = self.font.render("已找到饭卡，快去还给阿姨！", True, (255, 255, 100))
         else:
@@ -226,7 +216,7 @@ class DiningPuzzle:
         elif not self._card_returned:
             hint = self.font.render("去1楼找食堂阿姨归还饭卡 | Esc退出", True, (180, 180, 180))
         else:
-            hint = self.font.render("后厨已开启，去冰箱看看吧！", True, (100, 255, 100))
+            hint = self.font.render("试试使用桂花糕吧……", True, (255, 215, 100))
         surface.blit(hint, (panel_x + 10, hint_y))
 
         if self._show_message:
@@ -250,7 +240,7 @@ class DiningPuzzle:
         surface.blit(msg_surf, msg_rect)
 
     def _draw_result_overlay(self, surface):
-        box_w, box_h = 240, 50
+        box_w, box_h = 260, 60
         box_x = (INTERNAL_WIDTH - box_w) // 2
         box_y = (INTERNAL_HEIGHT - box_h) // 2
 
@@ -259,10 +249,14 @@ class DiningPuzzle:
             (box_x, box_y, box_w, box_h),
         )
 
-        text = self.font.render("获得了桂花徽章碎片·陆！", True, (255, 215, 0))
-        text_rect = text.get_rect(centerx=box_x + box_w // 2, centery=box_y + box_h // 2 - 6)
+        text = self.font.render("获得了阿姨特制的桂花糕！", True, (255, 215, 0))
+        text_rect = text.get_rect(centerx=box_x + box_w // 2, centery=box_y + box_h // 2 - 10)
         surface.blit(text, text_rect)
 
-        hint = self.font.render("按 F 继续", True, COLOR_WHITE)
-        hint_rect = hint.get_rect(centerx=box_x + box_w // 2, centery=box_y + box_h // 2 + 10)
+        hint = self.font.render("入手的瞬间，你感到一阵不寻常的温热……", True, (200, 180, 100))
+        hint_rect = hint.get_rect(centerx=box_x + box_w // 2, centery=box_y + box_h // 2 + 8)
         surface.blit(hint, hint_rect)
+
+        cont = self.font.render("按 F 继续", True, COLOR_WHITE)
+        cont_rect = cont.get_rect(centerx=box_x + box_w // 2, centery=box_y + box_h // 2 + 22)
+        surface.blit(cont, cont_rect)

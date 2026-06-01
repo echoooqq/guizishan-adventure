@@ -518,6 +518,7 @@ PAUSED ──返回标题──→ TITLE
 | `dining_hall_f2.tmx` | 食堂2楼 | 22×16 |
 | `nanhulou_f1.tmx` | 综合楼1楼 | 20×15 |
 | `nanhulou_f2.tmx` | 综合楼2楼 | 20×15 |
+| `nanhulou_secret.tmx` | 综合楼密室 | 16×12 |
 
 ---
 

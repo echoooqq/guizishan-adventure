@@ -156,6 +156,7 @@ class InventoryUI:
         self.combine_first_id = ""
         self.message = ""
         self.message_timer = 0.0
+        self.pending_badge_reveal = None
 
     def close(self):
         self.active = False
@@ -239,6 +240,9 @@ class InventoryUI:
                 self.player.stamina = min(MAX_STAMINA, self.player.stamina + effect.get("value", 0))
                 restored = int(self.player.stamina - old_stamina)
                 self.message = f"使用了{item_name}，恢复了{restored}点体力！"
+        if result.get("reveal_badge"):
+            self.pending_badge_reveal = result["reveal_badge"]
+            self.message_timer = 3.0
         if self.selected_index >= len(self.inventory.items) and self.selected_index > 0:
             self.selected_index = len(self.inventory.items) - 1
 
