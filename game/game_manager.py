@@ -553,12 +553,12 @@ class GameManager:
             table = InteractiveObject(
                 x=tx, y=ty,
                 width=20, height=14,
-                interactive_type="mechanism",
+                interactive_type="examine",
                 properties={
                     "prompt_text": f"搜索餐桌{i + 1}",
                     "color": (120, 100, 80),
                     "puzzle_id": "dining_hall",
-                    "mechanism_text": "",
+                    "examine_text": "",
                 },
             )
 
@@ -570,11 +570,19 @@ class GameManager:
                         return {"type": "dialog", "dialogue_data": {
                             "default": [{"speaker": "", "text": "已经找到饭卡了，不用再搜了。"}]
                         }}
-                    self._active_puzzle = puzzle_ref
-                    self.state = GameState.PUZZLE
-                    puzzle_ref.start(on_complete=self._on_puzzle_complete)
-                    puzzle_ref.search_table(idx)
-                    return None
+                    result = puzzle_ref.search_table(idx)
+                    if result.get("already_searched"):
+                        return {"type": "dialog", "dialogue_data": {
+                            "default": [{"speaker": "", "text": "已经搜索过这张桌子了。"}]
+                        }}
+                    elif result.get("found"):
+                        return {"type": "dialog", "dialogue_data": {
+                            "default": [{"speaker": "", "text": "找到了饭卡！赶紧还给食堂阿姨吧！"}]
+                        }}
+                    else:
+                        return {"type": "dialog", "dialogue_data": {
+                            "default": [{"speaker": "", "text": "这里没有……试试其他桌子吧。"}]
+                        }}
                 return on_table_interact
 
             table.on_interact = make_table_interact(i)

@@ -134,7 +134,6 @@ class Inventory:
                 if effect.get("type") == "reveal_badge":
                     badge_target = effect.get("target", "")
                     if badge_target:
-                        self.add_item(badge_target)
                         result["message"] = f"{item.name}裂开了！里面竟然藏着一枚桂花徽章碎片！"
                         result["reveal_badge"] = badge_target
             return result
