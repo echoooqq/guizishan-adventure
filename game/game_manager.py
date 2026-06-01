@@ -1,5 +1,6 @@
 import json
 import os
+import random
 import pygame
 import pygame_gui
 from config import (
@@ -16,6 +17,7 @@ from config import (
     COLOR_TITLE_BG,
     COLOR_TITLE_TEXT,
     COLOR_WHITE,
+    INTERACTION_RANGE,
 )
 from game.game_state import GameState
 from game.camera import Camera
@@ -25,6 +27,10 @@ from world.tilemap import TileMap
 from world.transition import TransitionManager, TransitionType
 from ui.dialog_box import DialogBox
 from ui.inventory_ui import InventoryUI
+from puzzle.puzzle_manager import PuzzleManager, PuzzleState
+from puzzle.guizhong_puzzle import GuizhongPuzzle
+from puzzle.nanhulou_puzzle import NanhulouPuzzle
+from puzzle.dining_puzzle import DiningPuzzle
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -80,10 +86,16 @@ class GameManager:
         self._dialogues_cache = {}
         self._nearby_interactable = None
         self._nearby_type = None
-        self._puzzle_states = {}
         self._dialog_flags = {}
         self._visited_nanhu = False
         self._pending_nanhu_intro = False
+
+        self.puzzle_manager = PuzzleManager()
+        self.guizhong_puzzle = GuizhongPuzzle(self.puzzle_manager, self.player.inventory)
+        self.nanhulou_puzzle = NanhulouPuzzle(self.puzzle_manager, self.player.inventory)
+        self.dining_puzzle = DiningPuzzle(self.puzzle_manager, self.player.inventory)
+        self._active_puzzle = None
+        self._is_night = True
 
         self.transition_manager = TransitionManager()
         self._map_cache = {}
@@ -129,6 +141,12 @@ class GameManager:
             self._setup_nanhu_entities()
         elif map_id == "nanhulou_f1":
             self._setup_nanhulou_f1_entities()
+        elif map_id == "nanhulou_f2":
+            self._setup_nanhulou_f2_entities()
+        elif map_id == "dining_hall_f1":
+            self._setup_dining_hall_f1_entities()
+        elif map_id == "dining_hall_f2":
+            self._setup_dining_hall_f2_entities()
 
     def _start_transition(self, transition_type, target_map, spawn_point):
         bus_label = ""
@@ -254,6 +272,60 @@ class GameManager:
         )
         self.interactive_objects.append(pickup_obj5)
 
+        self._setup_guizhong_entities()
+
+    def _setup_guizhong_entities(self):
+        from entities.interactive_object import InteractiveObject
+
+        if self.puzzle_manager.get_state("guizhong") == PuzzleState.SOLVED:
+            return
+
+        spawn_x, spawn_y = self.tile_map.get_spawn_position()
+
+        tree_positions = []
+        for i in range(GuizhongPuzzle.TREE_COUNT):
+            tx = spawn_x - 90 + i * 30
+            ty = spawn_y + 48
+            tree_positions.append((tx, ty))
+
+        self.guizhong_puzzle.setup_trees(tree_positions)
+
+        glowing_pos = self.guizhong_puzzle.get_glowing_tree_pos()
+        if glowing_pos is None:
+            return
+
+        glow_tree = InteractiveObject(
+            x=glowing_pos[0] - 8, y=glowing_pos[1] - 16,
+            width=16, height=24,
+            interactive_type="mechanism",
+            properties={
+                "prompt_text": "摇树",
+                "color": (100, 200, 80),
+                "puzzle_id": "guizhong",
+                "mechanism_text": "",
+            },
+        )
+
+        puzzle_ref = self.guizhong_puzzle
+
+        def on_glow_tree_interact(obj):
+            if self.puzzle_manager.get_state("guizhong") == PuzzleState.SOLVED:
+                return {"type": "dialog", "dialogue_data": {
+                    "default": [{"speaker": "", "text": "这棵桂花树已经不再发光了……"}]
+                }}
+            if not self._is_night:
+                return {"type": "dialog", "dialogue_data": {
+                    "default": [{"speaker": "", "text": "这棵桂花树看起来很普通，也许夜晚会有不同……"}]
+                }}
+            self._active_puzzle = puzzle_ref
+            self.state = GameState.PUZZLE
+            puzzle_ref.start(on_complete=self._on_puzzle_complete)
+            return None
+
+        glow_tree.on_interact = on_glow_tree_interact
+        self.interactive_objects.append(glow_tree)
+        self._guizhong_tree_obj = glow_tree
+
     def _setup_nanhu_entities(self):
         from entities.npc import NPC
 
@@ -263,6 +335,7 @@ class GameManager:
 
     def _setup_nanhulou_f1_entities(self):
         from entities.npc import NPC
+        from entities.interactive_object import InteractiveObject
 
         spawn_x, spawn_y = self.tile_map.get_spawn_position()
 
@@ -277,6 +350,280 @@ class GameManager:
             },
         )
         self.npcs.append(senior_student)
+
+        if self.puzzle_manager.get_state("nanhulou") != PuzzleState.SOLVED:
+            bulletin = InteractiveObject(
+                x=spawn_x - 48, y=spawn_y - 16,
+                width=16, height=16,
+                interactive_type="examine",
+                properties={
+                    "prompt_text": "查看公告栏",
+                    "color": (180, 160, 120),
+                    "puzzle_id": "nanhulou",
+                },
+            )
+
+            def on_bulletin_interact(obj):
+                if self.player.inventory.has_item("bulletin_scrap"):
+                    return {
+                        "type": "dialog",
+                        "dialogue_data": {
+                            "default": [
+                                {"speaker": "", "text": "公告栏上那张泛黄的残页，上面写着'1903年，华师肇始'。"},
+                            ]
+                        }
+                    }
+                self.player.inventory.add_item("bulletin_scrap")
+                self.puzzle_manager.discover("nanhulou")
+                return {
+                    "type": "dialog",
+                    "dialogue_data": {
+                        "default": [
+                            {"speaker": "", "text": "公告栏上有一张泛黄的残页……上面写着'1903年，华师肇始'。"},
+                            {"speaker": "", "text": "你将残页小心取下，收入背包。"},
+                        ]
+                    }
+                }
+
+            bulletin.on_interact = on_bulletin_interact
+            self.interactive_objects.append(bulletin)
+
+    def _setup_nanhulou_f2_entities(self):
+        from entities.interactive_object import InteractiveObject
+
+        spawn_x, spawn_y = self.tile_map.get_spawn_position()
+
+        if self.puzzle_manager.get_state("nanhulou") == PuzzleState.SOLVED:
+            secret_room = InteractiveObject(
+                x=spawn_x + 48, y=spawn_y - 16,
+                width=16, height=16,
+                interactive_type="examine",
+                properties={
+                    "prompt_text": "查看密室",
+                    "color": (120, 100, 160),
+                    "examine_text": "密室里空空如也，徽章碎片已经被取走了。",
+                },
+            )
+            self.interactive_objects.append(secret_room)
+            return
+
+        computer = InteractiveObject(
+            x=spawn_x, y=spawn_y - 16,
+            width=16, height=16,
+            interactive_type="mechanism",
+            properties={
+                "prompt_text": "使用电脑",
+                "color": (80, 80, 120),
+                "puzzle_id": "nanhulou",
+                "mechanism_text": "",
+            },
+        )
+
+        puzzle_ref = self.nanhulou_puzzle
+
+        def on_computer_interact(obj):
+            if self.puzzle_manager.get_state("nanhulou") == PuzzleState.SOLVED:
+                return {"type": "dialog", "dialogue_data": {
+                    "default": [{"speaker": "", "text": "电脑屏幕已经关闭了。"}]
+                }}
+            self._active_puzzle = puzzle_ref
+            self.state = GameState.PUZZLE
+            puzzle_ref.start(on_complete=self._on_puzzle_complete)
+            return None
+
+        computer.on_interact = on_computer_interact
+        self.interactive_objects.append(computer)
+
+        if self.nanhulou_puzzle.secret_room_open or \
+           self.puzzle_manager.get_state("nanhulou") == PuzzleState.SOLVED:
+            self._add_nanhulou_secret_room(spawn_x, spawn_y)
+
+    def _add_nanhulou_secret_room(self, spawn_x, spawn_y):
+        from entities.interactive_object import InteractiveObject
+
+        badge_obj = InteractiveObject(
+            x=spawn_x + 48, y=spawn_y - 16,
+            width=12, height=12,
+            interactive_type="pickup",
+            properties={
+                "prompt_text": "拾取徽章碎片",
+                "color": (255, 215, 0),
+                "item_id": "badge_2",
+                "pickup_text": "获得了桂花徽章碎片·贰！散发着温润的光芒……",
+            },
+        )
+
+        puzzle_ref = self.nanhulou_puzzle
+
+        original_interact = badge_obj.on_interact
+
+        def on_badge_pickup(obj):
+            result = original_interact(obj) if original_interact else {
+                "type": "pickup", "object": obj
+            }
+            puzzle_ref.trigger_badge_pickup()
+            return result
+
+        badge_obj.on_interact = on_badge_pickup
+        self.interactive_objects.append(badge_obj)
+
+    def _setup_dining_hall_f1_entities(self):
+        from entities.npc import NPC
+        from entities.interactive_object import InteractiveObject
+
+        spawn_x, spawn_y = self.tile_map.get_spawn_position()
+
+        auntie = NPC(
+            x=spawn_x + 16, y=spawn_y - 16,
+            npc_id="cafeteria_auntie",
+            dialogue_id="cafeteria_auntie",
+            properties={
+                "direction": "down",
+                "body_color": (200, 120, 80),
+                "hair_color": (60, 40, 20),
+            },
+        )
+
+        puzzle_ref = self.dining_puzzle
+
+        original_npc = auntie
+
+        def on_auntie_interact(npc_self):
+            if puzzle_ref.card_found and not puzzle_ref.card_returned:
+                puzzle_ref.return_card()
+                return {
+                    "type": "dialog",
+                    "dialogue_id": "cafeteria_auntie",
+                    "dialogue_data": None,
+                }
+            if puzzle_ref.card_returned:
+                return {
+                    "type": "dialog",
+                    "dialogue_data": {
+                        "default": [
+                            {"speaker": "食堂阿姨", "text": "后厨门已经开了，进去看看吧！冰箱里有好东西哦！"},
+                        ]
+                    }
+                }
+            return {
+                "type": "dialog",
+                "dialogue_id": "cafeteria_auntie",
+                "dialogue_data": None,
+            }
+
+        auntie.on_interact = on_auntie_interact
+        self.npcs.append(auntie)
+
+        self.puzzle_manager.discover("dining_hall")
+
+        if self.dining_puzzle.kitchen_open or \
+           self.puzzle_manager.get_state("dining_hall") == PuzzleState.SOLVED:
+            self._add_dining_kitchen(spawn_x, spawn_y)
+
+    def _setup_dining_hall_f2_entities(self):
+        from entities.interactive_object import InteractiveObject
+
+        spawn_x, spawn_y = self.tile_map.get_spawn_position()
+
+        if self.puzzle_manager.get_state("dining_hall") == PuzzleState.SOLVED:
+            return
+
+        if not self.dining_puzzle.card_found:
+            self._add_dining_search_tables(spawn_x, spawn_y)
+        else:
+            hint_obj = InteractiveObject(
+                x=spawn_x, y=spawn_y - 16,
+                width=16, height=16,
+                interactive_type="examine",
+                properties={
+                    "prompt_text": "查看餐桌",
+                    "color": (120, 100, 80),
+                    "examine_text": "已经找到饭卡了，快去还给食堂阿姨吧！",
+                },
+            )
+            self.interactive_objects.append(hint_obj)
+
+    def _add_dining_search_tables(self, spawn_x, spawn_y):
+        from entities.interactive_object import InteractiveObject
+
+        puzzle_ref = self.dining_puzzle
+
+        for i in range(DiningPuzzle.TABLE_COUNT):
+            tx = spawn_x - 40 + i * 32
+            ty = spawn_y - 32
+
+            table = InteractiveObject(
+                x=tx, y=ty,
+                width=20, height=14,
+                interactive_type="mechanism",
+                properties={
+                    "prompt_text": f"搜索餐桌{i + 1}",
+                    "color": (120, 100, 80),
+                    "puzzle_id": "dining_hall",
+                    "mechanism_text": "",
+                },
+            )
+
+            table_idx = i
+
+            def make_table_interact(idx):
+                def on_table_interact(obj):
+                    if puzzle_ref.card_found:
+                        return {"type": "dialog", "dialogue_data": {
+                            "default": [{"speaker": "", "text": "已经找到饭卡了，不用再搜了。"}]
+                        }}
+                    self._active_puzzle = puzzle_ref
+                    self.state = GameState.PUZZLE
+                    puzzle_ref.start(on_complete=self._on_puzzle_complete)
+                    puzzle_ref.search_table(idx)
+                    return None
+                return on_table_interact
+
+            table.on_interact = make_table_interact(i)
+            self.interactive_objects.append(table)
+
+    def _add_dining_kitchen(self, spawn_x, spawn_y):
+        from entities.interactive_object import InteractiveObject
+
+        fridge = InteractiveObject(
+            x=spawn_x + 48, y=spawn_y - 16,
+            width=14, height=16,
+            interactive_type="pickup",
+            properties={
+                "prompt_text": "打开冰箱",
+                "color": (180, 200, 220),
+                "item_id": "badge_6",
+                "pickup_text": "冰箱里竟然有一枚桂花徽章碎片！散发着淡淡的饭菜香气……",
+            },
+        )
+
+        puzzle_ref = self.dining_puzzle
+
+        original_interact = fridge.on_interact
+
+        def on_fridge_interact(obj):
+            result = original_interact(obj) if original_interact else {
+                "type": "pickup", "object": obj
+            }
+            puzzle_ref.trigger_badge_pickup()
+            return result
+
+        fridge.on_interact = on_fridge_interact
+        self.interactive_objects.append(fridge)
+
+    def _on_puzzle_complete(self):
+        self._active_puzzle = None
+        self.state = GameState.PLAYING
+
+        if self.nanhulou_puzzle.secret_room_open and \
+           self.puzzle_manager.get_state("nanhulou") != PuzzleState.SOLVED:
+            spawn_x, spawn_y = self.tile_map.get_spawn_position()
+            self._add_nanhulou_secret_room(spawn_x, spawn_y)
+
+        if self.dining_puzzle.kitchen_open and \
+           self.puzzle_manager.get_state("dining_hall") != PuzzleState.SOLVED:
+            spawn_x, spawn_y = self.tile_map.get_spawn_position()
+            self._add_dining_kitchen(spawn_x, spawn_y)
 
     def _trigger_nanhu_intro(self):
         intro_data = self._load_dialogue("nanhu_intro")
@@ -326,6 +673,12 @@ class GameManager:
             self.inventory_ui.handle_event(event)
             if not self.inventory_ui.active:
                 self.state = GameState.PLAYING
+            self.ui_manager.process_events(event)
+            return
+
+        if self.state == GameState.PUZZLE:
+            if self._active_puzzle:
+                self._active_puzzle.handle_event(event)
             self.ui_manager.process_events(event)
             return
 
@@ -500,18 +853,22 @@ class GameManager:
             mech_text = "操作了机关。"
             if obj and hasattr(obj, "properties"):
                 mech_text = obj.properties.get("mechanism_text", "操作了机关。")
-            self.state = GameState.DIALOG
-            self.dialog_box.start(
-                {"default": [{"speaker": "", "text": mech_text}]},
-                start_key="default",
-                on_complete=self._on_dialog_complete,
-                game_state=self._get_dialog_game_state(),
-            )
+            if mech_text:
+                self.state = GameState.DIALOG
+                self.dialog_box.start(
+                    {"default": [{"speaker": "", "text": mech_text}]},
+                    start_key="default",
+                    on_complete=self._on_dialog_complete,
+                    game_state=self._get_dialog_game_state(),
+                )
 
     def _get_dialog_game_state(self):
+        states_dict = {}
+        for pid, pstate in self.puzzle_manager._states.items():
+            states_dict[pid] = pstate.value
         return {
-            "puzzle_states": getattr(self, "_puzzle_states", {}),
-            "dialog_flags": getattr(self, "_dialog_flags", {}),
+            "puzzle_states": states_dict,
+            "dialog_flags": self._dialog_flags,
         }
 
     def _on_dialog_complete(self):
@@ -578,6 +935,10 @@ class GameManager:
 
         elif self.state == GameState.INVENTORY:
             self.inventory_ui.update(dt)
+
+        elif self.state == GameState.PUZZLE:
+            if self._active_puzzle:
+                self._active_puzzle.update(dt)
 
     def _check_auto_triggers(self):
         player_rect = self.player.get_hitbox_rect()
@@ -655,6 +1016,13 @@ class GameManager:
         elif self.state == GameState.INVENTORY:
             self._draw_game()
             self.inventory_ui.draw(self.internal_surface)
+        elif self.state == GameState.PUZZLE:
+            self._draw_game()
+            if self._active_puzzle:
+                if isinstance(self._active_puzzle, GuizhongPuzzle):
+                    self._active_puzzle.draw(self.internal_surface, self.camera)
+                else:
+                    self._active_puzzle.draw(self.internal_surface)
 
         self.transition_manager.draw(self.internal_surface)
 
@@ -704,12 +1072,14 @@ class GameManager:
         badge_count = self.player.inventory.get_badge_count()
         map_label = "室内" if self.current_map_id in INDOOR_MAPS else "室外"
         campus_label = "南湖" if self.current_map_id in NANHU_MAPS else "本部"
+        night_label = "夜晚" if self._is_night else "白天"
         pos_text = self.info_font.render(
             f"{campus_label}{map_label} "
             f"位置:({int(self.player.x)},{int(self.player.y)}) "
             f"方向:{self.player.direction} "
             f"体力:{int(self.player.stamina)} "
             f"徽章:{badge_count}/7 "
+            f"{night_label} "
             f"背包:Tab",
             True, COLOR_WHITE,
         )

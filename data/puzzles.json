@@ -1,0 +1,65 @@
+{
+  "guizhong": {
+    "name": "桂花密语",
+    "location": "桂中路",
+    "difficulty": 1,
+    "initial_state": "undiscovered",
+    "badge_reward": "badge_1",
+    "prerequisites": [],
+    "night_only": true
+  },
+  "nanhulou": {
+    "name": "建校之钥",
+    "location": "南湖综合楼",
+    "difficulty": 2,
+    "initial_state": "undiscovered",
+    "badge_reward": "badge_2",
+    "prerequisites": [],
+    "night_only": false
+  },
+  "library": {
+    "name": "书海寻踪",
+    "location": "图书馆",
+    "difficulty": 3,
+    "initial_state": "undiscovered",
+    "badge_reward": "badge_3",
+    "prerequisites": [],
+    "night_only": false
+  },
+  "boya": {
+    "name": "地砖阵法",
+    "location": "博雅广场",
+    "difficulty": 2,
+    "initial_state": "undiscovered",
+    "badge_reward": "badge_4",
+    "prerequisites": [],
+    "night_only": false
+  },
+  "gym": {
+    "name": "精准一击",
+    "location": "佑铭体育馆",
+    "difficulty": 2,
+    "initial_state": "undiscovered",
+    "badge_reward": "badge_5",
+    "prerequisites": [],
+    "night_only": false
+  },
+  "dining_hall": {
+    "name": "饭卡迷踪",
+    "location": "学子食堂",
+    "difficulty": 1,
+    "initial_state": "undiscovered",
+    "badge_reward": "badge_6",
+    "prerequisites": [],
+    "night_only": false
+  },
+  "fountain": {
+    "name": "七徽归位",
+    "location": "喷泉广场",
+    "difficulty": 3,
+    "initial_state": "undiscovered",
+    "badge_reward": "badge_7",
+    "prerequisites": ["guizhong", "nanhulou", "library", "boya", "gym", "dining_hall"],
+    "night_only": false
+  }
+}
