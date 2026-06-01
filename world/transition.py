@@ -116,7 +116,7 @@ class TransitionManager:
             overlay = pygame.Surface(
                 (INTERNAL_WIDTH, INTERNAL_HEIGHT), pygame.SRCALPHA
             )
-            overlay.fill((20, 25, 40, 235))
+            overlay.fill((20, 25, 40, 255))
             surface.blit(overlay, (0, 0))
 
             road_y = INTERNAL_HEIGHT // 2 + 22

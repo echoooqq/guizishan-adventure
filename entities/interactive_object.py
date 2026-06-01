@@ -54,6 +54,8 @@ class InteractiveObject:
         return result
 
     def draw(self, surface, camera):
+        if self.properties.get("invisible", False):
+            return
         if self.interactive_type == "pickup" and self.interacted:
             return
         if self.interactive_type == "enter":

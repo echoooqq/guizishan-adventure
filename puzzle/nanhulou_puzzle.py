@@ -116,7 +116,7 @@ class NanhulouPuzzle:
 
         if self._input_buffer == self.CORRECT_CODE:
             self._is_correct = True
-            self._message = "密码正确！密室通道已开启！"
+            self._message = "密码正确！墙上的书架缓缓移开，露出了一条密道……"
             self._message_timer = 0.0
             self._secret_room_open = True
         else:
@@ -195,7 +195,10 @@ class NanhulouPuzzle:
             surface.blit(clue, (term_x + 10, hint_y + 14))
 
     def _draw_message(self, surface):
-        msg_w, msg_h = 240, 40
+        msg_w = 280
+        lines = self._wrap_text(self._message, msg_w - 20)
+        line_height = self.font.get_linesize()
+        msg_h = max(50, len(lines) * line_height + 28)
         msg_x = (INTERNAL_WIDTH - msg_w) // 2
         msg_y = (INTERNAL_HEIGHT + 80) // 2
 
@@ -205,10 +208,30 @@ class NanhulouPuzzle:
         )
 
         color = (0, 255, 0) if self._is_correct else (255, 100, 100)
-        msg_surf = self.font.render(self._message, True, color)
-        msg_rect = msg_surf.get_rect(centerx=msg_x + msg_w // 2, centery=msg_y + msg_h // 2 - 4)
-        surface.blit(msg_surf, msg_rect)
+        text_y = msg_y + 8
+        for line in lines:
+            line_surf = self.font.render(line, True, color)
+            line_rect = line_surf.get_rect(centerx=msg_x + msg_w // 2, top=text_y)
+            surface.blit(line_surf, line_rect)
+            text_y += line_height
 
         cont = self.font.render("按 F 继续", True, COLOR_WHITE)
-        cont_rect = cont.get_rect(centerx=msg_x + msg_w // 2, centery=msg_y + msg_h // 2 + 10)
+        cont_rect = cont.get_rect(centerx=msg_x + msg_w // 2, top=text_y + 2)
         surface.blit(cont, cont_rect)
+
+    def _wrap_text(self, text, max_width):
+        if not text:
+            return [""]
+        lines = []
+        current_line = ""
+        for char in text:
+            test_line = current_line + char
+            if self.font.size(test_line)[0] <= max_width:
+                current_line = test_line
+            else:
+                if current_line:
+                    lines.append(current_line)
+                current_line = char
+        if current_line:
+            lines.append(current_line)
+        return lines

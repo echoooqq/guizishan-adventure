@@ -98,6 +98,15 @@ class GameManager:
         self._active_puzzle = None
         self._is_night = True
 
+        self._guizhong_tree_obj = None
+        self._guizhong_badge_obj = None
+
+        self._nanhulou_bookshelf_obj = None
+        self._nanhulou_bookshelf_base_x = 0
+        self._nanhulou_bookshelf_animating = False
+        self._nanhulou_bookshelf_anim_timer = 0.0
+        self._nanhulou_bookshelf_anim_duration = 1.5
+
         self.transition_manager = TransitionManager()
         self._map_cache = {}
         self._map_cache["main_campus"] = self.tile_map
@@ -280,9 +289,6 @@ class GameManager:
     def _setup_guizhong_entities(self):
         from entities.interactive_object import InteractiveObject
 
-        if self.puzzle_manager.get_state("guizhong") == PuzzleState.SOLVED:
-            return
-
         spawn_x, spawn_y = self.tile_map.get_spawn_position()
 
         tree_positions = []
@@ -292,6 +298,13 @@ class GameManager:
             tree_positions.append((tx, ty))
 
         self.guizhong_puzzle.setup_trees(tree_positions)
+
+        if self.puzzle_manager.get_state("guizhong") == PuzzleState.SOLVED:
+            return
+
+        if self.guizhong_puzzle.is_badge_dropped:
+            self._create_guizhong_badge_pickup()
+            return
 
         glowing_pos = self.guizhong_puzzle.get_glowing_tree_pos()
         if glowing_pos is None:
@@ -306,28 +319,78 @@ class GameManager:
                 "color": (100, 200, 80),
                 "puzzle_id": "guizhong",
                 "mechanism_text": "",
+                "invisible": True,
             },
         )
 
         puzzle_ref = self.guizhong_puzzle
+        gm = self
 
         def on_glow_tree_interact(obj):
-            if self.puzzle_manager.get_state("guizhong") == PuzzleState.SOLVED:
+            if gm.puzzle_manager.get_state("guizhong") == PuzzleState.SOLVED:
                 return {"type": "dialog", "dialogue_data": {
                     "default": [{"speaker": "", "text": "这棵桂花树已经不再发光了……"}]
                 }}
-            if not self._is_night:
+            if not gm._is_night:
                 return {"type": "dialog", "dialogue_data": {
                     "default": [{"speaker": "", "text": "这棵桂花树看起来很普通，也许夜晚会有不同……"}]
                 }}
-            self._active_puzzle = puzzle_ref
-            self.state = GameState.PUZZLE
-            puzzle_ref.start(on_complete=self._on_puzzle_complete)
+            state = puzzle_ref.state
+            if state == GuizhongPuzzle.STATE_IDLE:
+                puzzle_ref.examine_tree()
+                return {"type": "dialog", "dialogue_data": {
+                    "default": [{"speaker": "", "text": "这棵桂花树散发着微光，似乎在呼唤你……"}]
+                }}
+            elif state == GuizhongPuzzle.STATE_EXAMINED:
+                puzzle_ref.shake_tree()
+                if obj in gm.interactive_objects:
+                    gm.interactive_objects.remove(obj)
+                gm._guizhong_tree_obj = None
+                return None
             return None
 
         glow_tree.on_interact = on_glow_tree_interact
         self.interactive_objects.append(glow_tree)
         self._guizhong_tree_obj = glow_tree
+
+    def _create_guizhong_badge_pickup(self):
+        from entities.interactive_object import InteractiveObject
+
+        pos = self.guizhong_puzzle.get_glowing_tree_pos()
+        if pos is None:
+            return
+
+        badge_obj = InteractiveObject(
+            x=pos[0] - 6, y=pos[1] + 2,
+            width=12, height=12,
+            interactive_type="pickup",
+            properties={
+                "prompt_text": "拾取徽章碎片",
+                "invisible": True,
+                "item_id": "badge_1",
+                "pickup_text": "获得了桂花徽章碎片·壹！",
+            },
+        )
+
+        puzzle_ref = self.guizhong_puzzle
+        gm = self
+
+        def on_badge_pickup(obj):
+            obj.interacted = True
+            puzzle_ref.mark_solved()
+            if obj in gm.interactive_objects:
+                gm.interactive_objects.remove(obj)
+            gm._guizhong_badge_obj = None
+            return {
+                "type": "dialog",
+                "dialogue_data": {
+                    "default": [{"speaker": "", "text": "获得了桂花徽章碎片·壹！"}]
+                },
+            }
+
+        badge_obj.on_interact = on_badge_pickup
+        self.interactive_objects.append(badge_obj)
+        self._guizhong_badge_obj = badge_obj
 
     def _setup_nanhu_entities(self):
         from entities.npc import NPC
@@ -396,7 +459,8 @@ class GameManager:
 
         spawn_x, spawn_y = self.tile_map.get_spawn_position()
 
-        if self.puzzle_manager.get_state("nanhulou") == PuzzleState.SOLVED:
+        if self.nanhulou_puzzle.secret_room_open:
+            self._add_secret_room_entrance(spawn_x, spawn_y)
             return
 
         computer = InteractiveObject(
@@ -426,24 +490,45 @@ class GameManager:
         computer.on_interact = on_computer_interact
         self.interactive_objects.append(computer)
 
-        if self.nanhulou_puzzle.secret_room_open:
-            self._add_secret_room_entrance(spawn_x, spawn_y)
-
-    def _add_secret_room_entrance(self, spawn_x, spawn_y):
-        from entities.trigger import Trigger
-
-        entrance = Trigger(
+        bookshelf = InteractiveObject(
             x=spawn_x + 8, y=spawn_y - 16,
             width=16, height=16,
-            trigger_type="door_enter",
+            interactive_type="examine",
             properties={
+                "prompt_text": "查看书架",
+                "color": (120, 80, 40),
+                "examine_text": "一个摆满书籍的书架，看起来很普通。",
+            },
+        )
+        self.interactive_objects.append(bookshelf)
+        self._nanhulou_bookshelf_obj = bookshelf
+        self._nanhulou_bookshelf_base_x = bookshelf.x
+
+    def _add_secret_room_entrance(self, spawn_x, spawn_y):
+        from entities.interactive_object import InteractiveObject
+
+        entrance = InteractiveObject(
+            x=spawn_x + 8, y=spawn_y - 16,
+            width=16, height=16,
+            interactive_type="mechanism",
+            properties={
+                "prompt_text": "进入密室",
+                "color": (40, 30, 20),
                 "target_map": "nanhulou_secret",
                 "spawn_point": "nanhulou_secret_entrance",
                 "transition_type": "indoor_enter",
-                "auto_trigger": False,
+                "mechanism_text": "",
             },
         )
-        self.triggers.append(entrance)
+
+        def on_entrance_interact(obj):
+            return {
+                "type": "enter",
+                "object": obj,
+            }
+
+        entrance.on_interact = on_entrance_interact
+        self.interactive_objects.append(entrance)
 
     def _setup_nanhulou_secret_entities(self):
         from entities.interactive_object import InteractiveObject
@@ -473,7 +558,7 @@ class GameManager:
             result = original_interact(obj) if original_interact else {
                 "type": "pickup", "object": obj
             }
-            self.puzzle_manager.solve("nanhulou", self.player.inventory)
+            self.puzzle_manager.solve("nanhulou")
             return result
 
         badge_pedestal.on_interact = on_badge_pickup
@@ -506,6 +591,14 @@ class GameManager:
                         "type": "dialog",
                         "dialogue_data": dialogue_data,
                         "start_key": "card_returned",
+                    }
+            if puzzle_ref.card_returned:
+                dialogue_data = self._load_dialogue("cafeteria_auntie")
+                if dialogue_data and "after_return" in dialogue_data:
+                    return {
+                        "type": "dialog",
+                        "dialogue_data": dialogue_data,
+                        "start_key": "after_return",
                     }
             return {
                 "type": "dialog",
@@ -594,8 +687,16 @@ class GameManager:
 
         if self.nanhulou_puzzle.secret_room_open and \
            self.puzzle_manager.get_state("nanhulou") != PuzzleState.SOLVED:
+            self._start_bookshelf_animation()
+
+    def _start_bookshelf_animation(self):
+        if self._nanhulou_bookshelf_obj is None:
             spawn_x, spawn_y = self.tile_map.get_spawn_position()
             self._add_secret_room_entrance(spawn_x, spawn_y)
+            return
+        self._nanhulou_bookshelf_animating = True
+        self._nanhulou_bookshelf_anim_timer = 0.0
+        self._nanhulou_bookshelf_base_x = self._nanhulou_bookshelf_obj.x
 
     def _trigger_nanhu_intro(self):
         intro_data = self._load_dialogue("nanhu_intro")
@@ -918,6 +1019,37 @@ class GameManager:
                 self._pending_nanhu_intro = False
                 self._trigger_nanhu_intro()
 
+            if self.guizhong_puzzle.is_animating:
+                was_badge_dropped = self.guizhong_puzzle.is_badge_dropped
+                self.guizhong_puzzle.update(dt)
+                if not was_badge_dropped and self.guizhong_puzzle.is_badge_dropped:
+                    if self.current_map_id == "main_campus":
+                        self._create_guizhong_badge_pickup()
+
+            if self._nanhulou_bookshelf_animating and self._nanhulou_bookshelf_obj:
+                self._nanhulou_bookshelf_anim_timer += dt
+                progress = min(
+                    self._nanhulou_bookshelf_anim_timer / self._nanhulou_bookshelf_anim_duration,
+                    1.0,
+                )
+                self._nanhulou_bookshelf_obj.x = (
+                    self._nanhulou_bookshelf_base_x + 32.0 * progress
+                )
+                if progress >= 1.0:
+                    self._nanhulou_bookshelf_animating = False
+                    if self._nanhulou_bookshelf_obj in self.interactive_objects:
+                        self.interactive_objects.remove(self._nanhulou_bookshelf_obj)
+                    self._nanhulou_bookshelf_obj = None
+                    spawn_x, spawn_y = self.tile_map.get_spawn_position()
+                    self._add_secret_room_entrance(spawn_x, spawn_y)
+                    self.state = GameState.DIALOG
+                    self.dialog_box.start(
+                        {"default": [{"speaker": "", "text": "你注意到角落的书架缓缓移开了，里面似乎有一条暗道……"}]},
+                        start_key="default",
+                        on_complete=self._on_dialog_complete,
+                        game_state=self._get_dialog_game_state(),
+                    )
+
         elif self.state == GameState.DIALOG:
             self.dialog_box.update(dt)
             for npc in self.npcs:
@@ -1011,10 +1143,7 @@ class GameManager:
         elif self.state == GameState.PUZZLE:
             self._draw_game()
             if self._active_puzzle:
-                if isinstance(self._active_puzzle, GuizhongPuzzle):
-                    self._active_puzzle.draw(self.internal_surface, self.camera)
-                else:
-                    self._active_puzzle.draw(self.internal_surface)
+                self._active_puzzle.draw(self.internal_surface)
 
         self.transition_manager.draw(self.internal_surface)
 
@@ -1052,6 +1181,11 @@ class GameManager:
 
     def _draw_game(self):
         self.tile_map.draw(self.internal_surface, self.camera)
+
+        if self.current_map_id == "main_campus" and self.guizhong_puzzle.tree_positions:
+            self.guizhong_puzzle.draw(
+                self.internal_surface, self.camera, self._is_night
+            )
 
         for obj in self.interactive_objects:
             obj.draw(self.internal_surface, self.camera)
@@ -1092,10 +1226,7 @@ class GameManager:
                 transition_type_str = trigger.properties.get(
                     "transition_type", "indoor_enter"
                 )
-                target_map = trigger.target_map or trigger.properties.get("target_map", "")
-                if target_map == "nanhulou_secret":
-                    prompt = "按 F 进入密室"
-                elif transition_type_str == "floor_change":
+                if transition_type_str == "floor_change":
                     prompt = "按 F 切换楼层"
                 elif transition_type_str == "campus_bus":
                     prompt = "按 F 乘校车"
@@ -1110,10 +1241,34 @@ class GameManager:
                 bg_surf.fill((0, 0, 0, 160))
                 self.internal_surface.blit(bg_surf, bg_rect.topleft)
                 self.internal_surface.blit(text_surf, text_rect)
+            elif self._nearby_interactable is self._guizhong_tree_obj:
+                self._draw_guizhong_tree_prompt()
             else:
                 self._nearby_interactable.draw_prompt(
                     self.internal_surface, self.camera, self.info_font
                 )
+
+    def _draw_guizhong_tree_prompt(self):
+        obj = self._guizhong_tree_obj
+        if obj is None:
+            return
+        state = self.guizhong_puzzle.state
+        if state == GuizhongPuzzle.STATE_IDLE:
+            prompt = "按 F 查看"
+        elif state == GuizhongPuzzle.STATE_EXAMINED:
+            prompt = "按 F 摇树"
+        else:
+            return
+        sx, sy = self.camera.apply(obj.center_x, obj.y - 4)
+        text_surf = self.info_font.render(prompt, True, (255, 255, 255))
+        text_rect = text_surf.get_rect(centerx=int(sx), bottom=int(sy))
+        bg_rect = text_rect.inflate(6, 4)
+        bg_surf = pygame.Surface(
+            (bg_rect.width, bg_rect.height), pygame.SRCALPHA
+        )
+        bg_surf.fill((0, 0, 0, 160))
+        self.internal_surface.blit(bg_surf, bg_rect.topleft)
+        self.internal_surface.blit(text_surf, text_rect)
 
     def _draw_pause_overlay(self):
         overlay = pygame.Surface((INTERNAL_WIDTH, INTERNAL_HEIGHT), pygame.SRCALPHA)
