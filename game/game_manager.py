@@ -123,7 +123,6 @@ class GameManager:
         self._library_badge_obj = None
         self._pending_library_quiz = False
         self._pending_gym_shooting = False
-        self._last_dialog_key = ""
 
         self.transition_manager = TransitionManager()
         self._map_cache = {}
@@ -1128,6 +1127,7 @@ class GameManager:
 
         elif puzzle is self.boya_puzzle:
             if self.boya_puzzle.solved:
+                self.puzzle_manager.solve("boya", self.player.inventory)
                 self.state = GameState.DIALOG
                 self.dialog_box.start(
                     {"default": [
@@ -1459,22 +1459,26 @@ class GameManager:
             return
         if self._pending_library_quiz:
             self._pending_library_quiz = False
-            if self.dialog_box.current_key == "start_quiz" or self._last_dialog_key == "start_quiz":
-                self._last_dialog_key = ""
+            # 注意：dialog_box.current_key 在 _end_dialogue() 中不会被重置，
+            # 因此此处可以正确读取到对话结束时的分支 key（如 "start_quiz"）
+            if self.dialog_box.current_key == "start_quiz":
                 self._active_puzzle = self.library_puzzle
-                self.state = GameState.PUZZLE
-                self.library_puzzle.start(on_complete=self._on_puzzle_complete)
+                if not self.library_puzzle.start(on_complete=self._on_puzzle_complete):
+                    self._active_puzzle = None
+                    self.state = GameState.PLAYING
+                else:
+                    self.state = GameState.PUZZLE
                 return
-            self._last_dialog_key = ""
         if self._pending_gym_shooting:
             self._pending_gym_shooting = False
-            if self.dialog_box.current_key == "start_shooting" or self._last_dialog_key == "start_shooting":
-                self._last_dialog_key = ""
+            if self.dialog_box.current_key == "start_shooting":
                 self._active_puzzle = self.gym_puzzle
-                self.state = GameState.PUZZLE
-                self.gym_puzzle.start_shooting(on_complete=self._on_puzzle_complete)
+                if not self.gym_puzzle.start_shooting(on_complete=self._on_puzzle_complete):
+                    self._active_puzzle = None
+                    self.state = GameState.PLAYING
+                else:
+                    self.state = GameState.PUZZLE
                 return
-            self._last_dialog_key = ""
         self.state = GameState.PLAYING
 
     def _create_pause_ui(self):
@@ -1705,7 +1709,7 @@ class GameManager:
 
         self.player.draw(self.internal_surface, self.camera)
 
-        badge_count = self.player.inventory.get_badge_count()
+        badge_count = self.puzzle_manager.get_badge_count()
         map_label = "室内" if self.current_map_id in INDOOR_MAPS else "室外"
         campus_label = "南湖" if self.current_map_id in NANHU_MAPS else "本部"
         night_label = "夜晚" if self._is_night else "白天"

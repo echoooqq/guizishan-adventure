@@ -116,7 +116,6 @@ class BoyaPuzzle:
                 self._is_correct = True
                 self._message = "地砖阵法破解！雕塑缓缓移开了……"
                 self._message_timer = 0.0
-                self.puzzle_manager.solve("boya", self.inventory)
         else:
             self._is_correct = False
             self._message = "顺序不对，重新开始！"
