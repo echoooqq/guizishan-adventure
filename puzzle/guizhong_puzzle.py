@@ -125,6 +125,20 @@ class GuizhongPuzzle:
         crown_rect = pygame.Rect(x - 8, y - 16, 16, 14)
         pygame.draw.ellipse(surface, crown_color, crown_rect)
 
+        flower_color = (255, 200, 0) if not is_glowing else (255, 230, 100)
+        flower_highlight = (255, 230, 100) if not is_glowing else (255, 245, 180)
+        surface_rect = surface.get_rect()
+        for fx, fy in [(-5, -14), (-2, -12), (2, -14), (5, -12),
+                       (-6, -10), (-1, -9), (3, -10), (6, -8),
+                       (-4, -7), (0, -6), (4, -7)]:
+            px, py = x + fx, y + fy
+            if surface_rect.collidepoint(px, py):
+                surface.set_at((px, py), flower_color)
+        for fx, fy in [(-3, -13), (1, -11), (4, -13), (-4, -8), (2, -7)]:
+            px, py = x + fx, y + fy
+            if surface_rect.collidepoint(px, py):
+                surface.set_at((px, py), flower_highlight)
+
         if is_glowing and self._state not in (self.STATE_SOLVED,):
             glow_surf = pygame.Surface((32, 32), pygame.SRCALPHA)
             alpha = int(80 + 40 * abs(pygame.time.get_ticks() % 1000 - 500) / 500)

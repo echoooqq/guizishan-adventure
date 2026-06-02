@@ -346,13 +346,23 @@ class GameManager:
     def _setup_guizhong_entities(self):
         from entities.interactive_object import InteractiveObject
 
-        spawn_x, spawn_y = self.tile_map.get_spawn_position()
-
         tree_positions = []
-        for i in range(GuizhongPuzzle.TREE_COUNT):
-            tx = spawn_x - 90 + i * 30
-            ty = spawn_y + 48
-            tree_positions.append((tx, ty))
+        for obj in self.interactive_objects:
+            if hasattr(obj, 'properties'):
+                if obj.properties.get("type") == "osmanthus_tree":
+                    cx = obj.x + obj.width / 2
+                    cy = obj.y
+                    tree_positions.append((cx, cy))
+                    if len(tree_positions) >= GuizhongPuzzle.TREE_COUNT:
+                        break
+
+        if len(tree_positions) < GuizhongPuzzle.TREE_COUNT:
+            road_y_north = 35 * TILE_SIZE
+            road_center_x = 60 * TILE_SIZE
+            for i in range(GuizhongPuzzle.TREE_COUNT - len(tree_positions)):
+                tx = road_center_x - 240 + i * 80
+                ty = road_y_north
+                tree_positions.append((tx, ty))
 
         self.guizhong_puzzle.setup_trees(tree_positions)
 
@@ -884,7 +894,7 @@ class GameManager:
                         {"speaker": "秘境守护者", "text": "集齐六枚徽章碎片后，再来找我吧。"},
                     ]
                 }}
-            return original_guardian_interact()
+            return {"type": "dialog", "dialogue_id": npc_self.dialogue_id, "npc": npc_self}
 
         guardian.on_interact = on_guardian_interact
         self.npcs.append(guardian)
@@ -1567,7 +1577,8 @@ class GameManager:
             self._check_auto_triggers()
 
             if not self._realm_triggered and self.current_map_id == "main_campus":
-                self._check_realm_trigger()
+                if not self.game_clock.is_realm_active():
+                    self._check_realm_trigger()
 
             if self.game_clock.is_realm_active() and not self._realm_first_night_shown:
                 if self.game_clock.is_night():
@@ -1899,7 +1910,7 @@ class GameManager:
         for npc in self.npcs:
             if not npc.visible:
                 continue
-            sx, sy = self.camera.apply(npc.x + npc.width / 2, npc.y)
+            sx, sy = self.camera.apply(npc.x, npc.y - npc.height / 2)
             self.internal_surface.blit(
                 glow_surf,
                 (int(sx) - glow_radius, int(sy) - glow_radius),

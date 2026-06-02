@@ -146,13 +146,20 @@ def _draw_tile(surface, gid, x):
         pygame.draw.line(surface, (80, 130, 210), (x + 4, 12), (x + 8, 12))
     elif gid == GID_TREE_OSMANTHUS:
         surface.fill((76, 153, 0), rect)
-        pygame.draw.rect(surface, (101, 67, 33), (x + 6, 9, 4, 7))
-        pygame.draw.circle(surface, (34, 139, 34), (x + 8, 6), 6)
-        pygame.draw.circle(surface, (0, 100, 0), (x + 5, 4), 3)
-        for fx, fy in [(3, 2), (10, 3), (6, 7), (12, 6), (4, 5), (11, 4)]:
+        pygame.draw.rect(surface, (101, 67, 33), (x + 6, 10, 4, 6))
+        pygame.draw.circle(surface, (34, 139, 34), (x + 8, 6), 7)
+        pygame.draw.circle(surface, (44, 155, 44), (x + 5, 4), 5)
+        pygame.draw.circle(surface, (44, 155, 44), (x + 11, 5), 4)
+        pygame.draw.circle(surface, (0, 100, 0), (x + 3, 3), 3)
+        for fx, fy in [(3, 1), (5, 2), (7, 1), (9, 2), (11, 1), (13, 3),
+                       (4, 4), (6, 5), (8, 4), (10, 5), (12, 4),
+                       (3, 6), (7, 7), (11, 6)]:
             surface.set_at((x + fx, fy), (255, 200, 0))
-        for fx, fy in [(5, 3), (9, 5), (7, 2)]:
+        for fx, fy in [(4, 2), (8, 2), (12, 3), (5, 5), (9, 5), (6, 7), (10, 7), (3, 4)]:
             surface.set_at((x + fx, fy), (255, 230, 100))
+        for fx, fy in [(2, 0), (6, 0), (10, 0), (14, 2),
+                       (1, 3), (13, 5), (2, 7), (12, 7)]:
+            surface.set_at((x + fx, fy), (255, 240, 150))
     elif gid == GID_TREE_GREEN:
         surface.fill((76, 153, 0), rect)
         pygame.draw.rect(surface, (101, 67, 33), (x + 6, 9, 4, 7))
@@ -365,13 +372,9 @@ def _place_school_gate(ground, structures, collision, interactive_objects, trigg
     structures[gy + 1][gx + 5] = GID_GATE_BEAM
     collision[gy + 1][gx + 5] = GID_COLLISION
     structures[gy + 1][gx + 1] = GID_GATE_SIGN
-    collision[gy + 1][gx + 1] = GID_COLLISION
     structures[gy + 1][gx + 2] = GID_GATE_SIGN
-    collision[gy + 1][gx + 2] = GID_COLLISION
     structures[gy + 1][gx + 3] = GID_GATE_SIGN
-    collision[gy + 1][gx + 3] = GID_COLLISION
     structures[gy + 1][gx + 4] = GID_GATE_SIGN
-    collision[gy + 1][gx + 4] = GID_COLLISION
 
     for y in range(gy, gy + 4):
         for x in range(gx + 1, gx + 5):

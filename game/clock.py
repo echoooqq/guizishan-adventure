@@ -60,10 +60,10 @@ def _interpolate_keyframes(game_time):
         t0_adj = t0
         t_adj = game_time
         progress = (t_adj - t0_adj) / (t1_adj - t0_adj)
-        r = int(_lerp(r0, r1, progress))
-        g = int(_lerp(g0, g1, progress))
-        b = int(_lerp(b0, b1, progress))
-        a = int(_lerp(a0, a1, progress))
+        r = max(0, min(255, int(_lerp(r0, r1, progress))))
+        g = max(0, min(255, int(_lerp(g0, g1, progress))))
+        b = max(0, min(255, int(_lerp(b0, b1, progress))))
+        a = max(0, min(255, int(_lerp(a0, a1, progress))))
         return (r, g, b, a)
     else:
         for i in range(n - 1):
@@ -79,10 +79,10 @@ def _interpolate_keyframes(game_time):
     else:
         progress = (game_time - t0) / (t1 - t0)
 
-    r = int(_lerp(r0, r1, progress))
-    g = int(_lerp(g0, g1, progress))
-    b = int(_lerp(b0, b1, progress))
-    a = int(_lerp(a0, a1, progress))
+    r = max(0, min(255, int(_lerp(r0, r1, progress))))
+    g = max(0, min(255, int(_lerp(g0, g1, progress))))
+    b = max(0, min(255, int(_lerp(b0, b1, progress))))
+    a = max(0, min(255, int(_lerp(a0, a1, progress))))
     return (r, g, b, a)
 
 
