@@ -10,16 +10,68 @@ DAY_START = 6.0
 DUSK_START = 18.0
 NIGHT_START = 19.5
 
-DUSK_DURATION = NIGHT_START - DUSK_START
-
-COLOR_DAY_OVERLAY = (0, 0, 0, 0)
-COLOR_DUSK_OVERLAY = (200, 100, 50)
-COLOR_NIGHT_OVERLAY = (20, 20, 80)
 COLOR_SECRET_OVERLAY = (30, 120, 60)
-
-MAX_DUSK_ALPHA = 80
-MAX_NIGHT_ALPHA = 120
 MAX_SECRET_ALPHA = 80
+
+LIGHT_KEYFRAMES = [
+    (3.0,   10, 15, 55, 155),
+    (4.5,   20, 25, 65, 130),
+    (5.5,   80, 60, 80, 70),
+    (6.5,   200, 140, 80, 18),
+    (8.0,   0, 0, 0, 0),
+    (12.0,  0, 0, 0, 0),
+    (16.0,  180, 130, 60, 8),
+    (17.5,  200, 120, 50, 28),
+    (18.5,  200, 100, 50, 60),
+    (19.5,  80, 50, 110, 100),
+    (21.0,  10, 15, 55, 150),
+]
+
+
+def _lerp(a, b, t):
+    return a + (b - a) * t
+
+
+def _interpolate_keyframes(game_time):
+    kf = LIGHT_KEYFRAMES
+    n = len(kf)
+
+    if game_time < kf[0][0]:
+        t0, r0, g0, b0, a0 = kf[-1]
+        t1, r1, g1, b1, a1 = kf[0]
+        t0_adj = t0 - 24.0
+        t_adj = game_time
+    elif game_time >= kf[-1][0]:
+        t0, r0, g0, b0, a0 = kf[-1]
+        t1, r1, g1, b1, a1 = kf[0]
+        t1_adj = t1 + 24.0
+        t0_adj = t0
+        t_adj = game_time
+        progress = (t_adj - t0_adj) / (t1_adj - t0_adj)
+        r = int(_lerp(r0, r1, progress))
+        g = int(_lerp(g0, g1, progress))
+        b = int(_lerp(b0, b1, progress))
+        a = int(_lerp(a0, a1, progress))
+        return (r, g, b, a)
+    else:
+        for i in range(n - 1):
+            if kf[i][0] <= game_time < kf[i + 1][0]:
+                t0, r0, g0, b0, a0 = kf[i]
+                t1, r1, g1, b1, a1 = kf[i + 1]
+                break
+        else:
+            return (0, 0, 0, 0)
+
+    if game_time < kf[0][0]:
+        progress = (game_time - t0_adj) / (t1 - t0_adj)
+    else:
+        progress = (game_time - t0) / (t1 - t0)
+
+    r = int(_lerp(r0, r1, progress))
+    g = int(_lerp(g0, g1, progress))
+    b = int(_lerp(b0, b1, progress))
+    a = int(_lerp(a0, a1, progress))
+    return (r, g, b, a)
 
 
 class GameClock:
@@ -51,24 +103,7 @@ class GameClock:
     def get_overlay_color(self):
         if self._secret_mode:
             return (*COLOR_SECRET_OVERLAY, MAX_SECRET_ALPHA)
-
-        period = self.get_period()
-
-        if period == PERIOD_DAY:
-            return COLOR_DAY_OVERLAY
-
-        elif period == PERIOD_DUSK:
-            progress = (self.game_time - DUSK_START) / DUSK_DURATION
-            alpha = int(MAX_DUSK_ALPHA * progress)
-            return (*COLOR_DUSK_OVERLAY, alpha)
-
-        else:
-            if self.game_time >= NIGHT_START:
-                night_progress = (self.game_time - NIGHT_START) / (24.0 - NIGHT_START)
-            else:
-                night_progress = (self.game_time + 24.0 - NIGHT_START) / (24.0 - NIGHT_START)
-            alpha = min(MAX_NIGHT_ALPHA, int(MAX_NIGHT_ALPHA * min(night_progress * 3, 1.0)))
-            return (*COLOR_NIGHT_OVERLAY, alpha)
+        return _interpolate_keyframes(self.game_time)
 
     def get_time_string(self):
         hours = int(self.game_time)
