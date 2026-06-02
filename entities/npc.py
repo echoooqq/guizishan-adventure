@@ -26,6 +26,7 @@ class NPC(Entity):
         self.npc_id = npc_id
         self.dialogue_id = dialogue_id
         self.properties = properties or {}
+        self.visible = True
         self.interaction_range = self.properties.get("interaction_range", INTERACTION_RANGE)
         self.prompt_text = self.properties.get("prompt_text", "对话")
         self.on_interact = None
@@ -38,6 +39,8 @@ class NPC(Entity):
         self._idle_offset = 0
 
     def is_player_nearby(self, player_x, player_y):
+        if not self.visible:
+            return False
         dx = player_x - (self.x)
         dy = player_y - (self.y - self.height / 2)
         return dx * dx + dy * dy <= self.interaction_range * self.interaction_range
@@ -54,6 +57,8 @@ class NPC(Entity):
             self._idle_offset = 1 if self._idle_offset == 0 else 0
 
     def draw(self, surface, camera):
+        if not self.visible:
+            return
         draw_x, draw_y = camera.apply(
             self.x - self.width / 2,
             self.y - self.height,
@@ -78,6 +83,8 @@ class NPC(Entity):
             pygame.draw.rect(surface, COLOR_BLACK, (ix + 9, iy + 4, 2, 2))
 
     def draw_prompt(self, surface, camera, font):
+        if not self.visible:
+            return
         sx, sy = camera.apply(self.x, self.y - self.height - 4)
         text_surf = font.render(f"按 F {self.prompt_text}", True, (255, 255, 255))
         text_rect = text_surf.get_rect(centerx=int(sx), bottom=int(sy))

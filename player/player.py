@@ -61,6 +61,9 @@ class Player(Entity):
         )
         speed = SPRINT_SPEED * TILE_SIZE if self.is_sprinting else PLAYER_SPEED * TILE_SIZE
 
+        if self.stamina <= 0 and not self.is_sprinting:
+            speed *= 0.7
+
         if self.is_sprinting:
             self.stamina = max(0, self.stamina - SPRINT_STAMINA_COST * dt)
         elif not self.is_moving:

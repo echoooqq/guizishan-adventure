@@ -21,6 +21,7 @@ from config import (
 )
 from game.game_state import GameState
 from game.camera import Camera
+from game.clock import GameClock
 from player.player import Player
 from player.inventory import Inventory, get_item_data
 from world.tilemap import TileMap
@@ -104,7 +105,11 @@ class GameManager:
         self.gym_puzzle = GymPuzzle(self.puzzle_manager, self.player.inventory)
         self.fountain_puzzle = FountainPuzzle(self.puzzle_manager, self.player.inventory)
         self._active_puzzle = None
-        self._is_night = True
+        self.game_clock = GameClock()
+
+        self._overlay_surface = pygame.Surface(
+            (INTERNAL_WIDTH, INTERNAL_HEIGHT), pygame.SRCALPHA
+        )
 
         self._guizhong_tree_obj = None
         self._guizhong_badge_obj = None
@@ -133,6 +138,7 @@ class GameManager:
         self.triggers = list(self.tile_map.triggers)
 
         self._setup_test_entities()
+        self._update_npc_visibility()
 
     def _get_tmx_path(self, map_id):
         filename = MAP_FILES.get(map_id, f"{map_id}.tmx")
@@ -182,6 +188,8 @@ class GameManager:
             self._setup_library_f2_entities()
         elif map_id == "gym":
             self._setup_gym_entities()
+
+        self._update_npc_visibility()
 
     def _start_transition(self, transition_type, target_map, spawn_point):
         bus_label = ""
@@ -368,7 +376,7 @@ class GameManager:
                 return {"type": "dialog", "dialogue_data": {
                     "default": [{"speaker": "", "text": "这棵桂花树已经不再发光了……"}]
                 }}
-            if not gm._is_night:
+            if not gm.game_clock.is_night():
                 return {"type": "dialog", "dialogue_data": {
                     "default": [{"speaker": "", "text": "这棵桂花树看起来很普通，也许夜晚会有不同……"}]
                 }}
@@ -1514,6 +1522,9 @@ class GameManager:
                 self.show_press_enter = not self.show_press_enter
 
         elif self.state == GameState.PLAYING:
+            self.game_clock.update(dt)
+            self._update_npc_visibility()
+
             keys = pygame.key.get_pressed()
             self.player.update(
                 dt, keys,
@@ -1698,7 +1709,7 @@ class GameManager:
 
         if self.current_map_id == "main_campus" and self.guizhong_puzzle.tree_positions:
             self.guizhong_puzzle.draw(
-                self.internal_surface, self.camera, self._is_night
+                self.internal_surface, self.camera, self.game_clock.is_night()
             )
 
         for obj in self.interactive_objects:
@@ -1709,17 +1720,21 @@ class GameManager:
 
         self.player.draw(self.internal_surface, self.camera)
 
+        self._draw_day_night_overlay()
+
         badge_count = self.puzzle_manager.get_badge_count()
         map_label = "室内" if self.current_map_id in INDOOR_MAPS else "室外"
         campus_label = "南湖" if self.current_map_id in NANHU_MAPS else "本部"
-        night_label = "夜晚" if self._is_night else "白天"
+        period_label = self.game_clock.get_period_name()
+        time_str = self.game_clock.get_time_string()
+        day_str = f"第{self.game_clock.day_count}天"
         pos_text = self.info_font.render(
             f"{campus_label}{map_label} "
             f"位置:({int(self.player.x)},{int(self.player.y)}) "
             f"方向:{self.player.direction} "
             f"体力:{int(self.player.stamina)} "
             f"徽章:{badge_count}/7 "
-            f"{night_label} "
+            f"{day_str} {time_str} {period_label} "
             f"背包:Tab",
             True, COLOR_WHITE,
         )
@@ -1794,3 +1809,35 @@ class GameManager:
             centerx=INTERNAL_WIDTH // 2, centery=INTERNAL_HEIGHT // 2 - 50
         )
         self.internal_surface.blit(pause_text, pause_rect)
+
+    def _draw_day_night_overlay(self):
+        overlay_color = self.game_clock.get_overlay_color()
+        if overlay_color[3] == 0:
+            return
+        self._overlay_surface.fill(overlay_color)
+        self.internal_surface.blit(self._overlay_surface, (0, 0))
+
+        if self.game_clock.is_night() and self.current_map_id == "main_campus":
+            self._draw_night_lights()
+
+    def _draw_night_lights(self):
+        light_radius = 24
+        light_surf = pygame.Surface((light_radius * 2, light_radius * 2), pygame.SRCALPHA)
+        for r in range(light_radius, 0, -1):
+            alpha = int(40 * (1 - r / light_radius))
+            pygame.draw.circle(light_surf, (255, 240, 180, alpha), (light_radius, light_radius), r)
+        for obj in self.interactive_objects:
+            if hasattr(obj, 'properties'):
+                itype = obj.properties.get("interactive_type", "")
+                if itype in ("examine", "mechanism"):
+                    sx, sy = self.camera.apply(obj.center_x, obj.center_y)
+                    self.internal_surface.blit(
+                        light_surf,
+                        (int(sx) - light_radius, int(sy) - light_radius),
+                    )
+
+    def _update_npc_visibility(self):
+        for npc in self.npcs:
+            if hasattr(npc, 'npc_id'):
+                should_show = self.game_clock.should_npc_appear(npc.npc_id)
+                npc.visible = should_show
