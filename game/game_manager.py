@@ -122,6 +122,7 @@ class GameManager:
         self._library_bookshelf_obj = None
         self._library_badge_obj = None
         self._pending_library_quiz = False
+        self._pending_gym_shooting = False
         self._last_dialog_key = ""
 
         self.transition_manager = TransitionManager()
@@ -986,24 +987,23 @@ class GameManager:
         def on_pe_teacher_interact(npc_self):
             if gm.puzzle_manager.get_state("gym") == PuzzleState.SOLVED:
                 return {"type": "dialog", "dialogue_id": "pe_teacher", "dialogue_data": None}
-            if not gm.gym_puzzle.shooting_passed:
-                dialogue_data = gm._load_dialogue("pe_teacher")
-                if dialogue_data and "challenge_start" in dialogue_data:
-                    return {
-                        "type": "dialog",
-                        "dialogue_data": dialogue_data,
-                        "start_key": "challenge_start",
-                    }
+            if gm.gym_puzzle.shooting_passed:
+                if not gm.player.inventory.has_item("equipment_key"):
+                    gm.player.inventory.add_item("equipment_key")
+                    return {"type": "dialog", "dialogue_data": {
+                        "default": [
+                            {"speaker": "体育老师", "text": "不错不错！这把器材室钥匙给你。"},
+                            {"speaker": "体育老师", "text": "器材室里那个旧记分牌，你留意一下上面的数字。"},
+                        ]
+                    }}
                 return {"type": "dialog", "dialogue_id": "pe_teacher", "dialogue_data": None}
-            if gm.gym_puzzle.shooting_passed and not gm.player.inventory.has_item("equipment_key"):
-                gm.player.inventory.add_item("equipment_key")
-                return {"type": "dialog", "dialogue_data": {
-                    "default": [
-                        {"speaker": "体育老师", "text": "不错不错！这把器材室钥匙给你。"},
-                        {"speaker": "体育老师", "text": "器材室里那个旧记分牌，你留意一下上面的数字。"},
-                    ]
-                }}
-            return {"type": "dialog", "dialogue_id": "pe_teacher", "dialogue_data": None}
+            gm._pending_gym_shooting = True
+            dialogue_data = gm._load_dialogue("pe_teacher")
+            return {
+                "type": "dialog",
+                "dialogue_data": dialogue_data,
+                "start_key": "default",
+            }
 
         pe_teacher.on_interact = on_pe_teacher_interact
         self.npcs.append(pe_teacher)
@@ -1037,80 +1037,69 @@ class GameManager:
         shooting_station.on_interact = on_shooting_interact
         self.interactive_objects.append(shooting_station)
 
-        if not self.gym_puzzle.shooting_passed:
-            self.puzzle_manager.discover("gym")
-            return
+        cabinet_obj = None
+        scoreboard_obj = None
+        for obj in self.interactive_objects:
+            if hasattr(obj, 'properties'):
+                obj_type = obj.properties.get("display_name", "")
+                if obj_type == "器材柜":
+                    cabinet_obj = obj
+                elif obj_type == "记分牌":
+                    scoreboard_obj = obj
 
-        self._add_gym_post_shooting_entities(spawn_x, spawn_y)
+        if cabinet_obj is not None:
+            gm_ref = self
+
+            def on_cabinet_interact(obj):
+                if gm_ref.player.inventory.has_item("scoreboard_note"):
+                    return {"type": "dialog", "dialogue_data": {
+                        "default": [{"speaker": "", "text": "器材柜已经打开过了。"}]
+                    }}
+                if not gm_ref.player.inventory.has_item("equipment_key"):
+                    return {"type": "dialog", "dialogue_data": {
+                        "default": [{"speaker": "", "text": "器材柜锁着，需要钥匙才能打开。"}]
+                    }}
+                gm_ref.player.inventory.remove_item("equipment_key")
+                gm_ref.player.inventory.add_item("scoreboard_note")
+                return {"type": "dialog", "dialogue_data": {
+                    "default": [
+                        {"speaker": "", "text": "用器材室钥匙打开了柜子！"},
+                        {"speaker": "", "text": "柜子里有一张便条：'将记分牌拨至1-9-0-3'。"},
+                    ]
+                }}
+
+            cabinet_obj.on_interact = on_cabinet_interact
+            cabinet_obj.interactive_type = "mechanism"
+            cabinet_obj.properties["prompt_text"] = "查看器材柜"
+            self._gym_equipment_cabinet_obj = cabinet_obj
+
+        if scoreboard_obj is not None:
+            gm_ref = self
+
+            def on_scoreboard_interact(obj):
+                if gm_ref.puzzle_manager.get_state("gym") == PuzzleState.SOLVED:
+                    return {"type": "dialog", "dialogue_data": {
+                        "default": [{"speaker": "", "text": "记分牌已经拨到正确位置了。"}]
+                    }}
+                if not gm_ref.player.inventory.has_item("scoreboard_note"):
+                    return {"type": "dialog", "dialogue_data": {
+                        "default": [{"speaker": "", "text": "记分牌上显示着一些数字，但看不太清楚……"}]
+                    }}
+                if gm_ref.gym_puzzle.scoreboard_opened:
+                    return {"type": "dialog", "dialogue_data": {
+                        "default": [{"speaker": "", "text": "记分牌已经拨到正确位置了。"}]
+                    }}
+                gm_ref._active_puzzle = gm_ref.gym_puzzle
+                gm_ref.state = GameState.PUZZLE
+                gm_ref.gym_puzzle.start_scoreboard(on_complete=gm_ref._on_puzzle_complete)
+                return None
+
+            scoreboard_obj.on_interact = on_scoreboard_interact
+            scoreboard_obj.interactive_type = "mechanism"
+            scoreboard_obj.properties["prompt_text"] = "拨动记分牌"
+            self._gym_scoreboard_obj = scoreboard_obj
+
         self.puzzle_manager.discover("gym")
-
-    def _add_gym_post_shooting_entities(self, spawn_x, spawn_y):
-        from entities.interactive_object import InteractiveObject
-
-        gm = self
-        puzzle_ref = self.gym_puzzle
-
-        cabinet = InteractiveObject(
-            x=spawn_x - 48, y=spawn_y - 16,
-            width=16, height=16,
-            interactive_type="mechanism",
-            properties={
-                "prompt_text": "器材柜",
-                "color": (100, 100, 100),
-                "mechanism_text": "",
-            },
-        )
-
-        def on_cabinet_interact(obj):
-            if gm.player.inventory.has_item("scoreboard_note"):
-                return {"type": "dialog", "dialogue_data": {
-                    "default": [{"speaker": "", "text": "器材柜已经打开过了。"}]
-                }}
-            if not gm.player.inventory.has_item("equipment_key"):
-                return {"type": "dialog", "dialogue_data": {
-                    "default": [{"speaker": "", "text": "器材柜锁着，需要钥匙才能打开。"}]
-                }}
-            gm.player.inventory.remove_item("equipment_key")
-            gm.player.inventory.add_item("scoreboard_note")
-            return {"type": "dialog", "dialogue_data": {
-                "default": [
-                    {"speaker": "", "text": "用器材室钥匙打开了柜子！"},
-                    {"speaker": "", "text": "柜子里有一张便条：'将记分牌拨至1-9-0-3'。"},
-                ]
-            }}
-
-        cabinet.on_interact = on_cabinet_interact
-        self.interactive_objects.append(cabinet)
-        self._gym_equipment_cabinet_obj = cabinet
-
-        scoreboard = InteractiveObject(
-            x=spawn_x + 48, y=spawn_y - 16,
-            width=16, height=16,
-            interactive_type="mechanism",
-            properties={
-                "prompt_text": "记分牌",
-                "color": (60, 60, 80),
-                "mechanism_text": "",
-            },
-        )
-
-        def on_scoreboard_interact(obj):
-            if gm.puzzle_manager.get_state("gym") == PuzzleState.SOLVED:
-                return {"type": "dialog", "dialogue_data": {
-                    "default": [{"speaker": "", "text": "记分牌已经拨到正确位置了。"}]
-                }}
-            if gm.gym_puzzle.scoreboard_opened:
-                return {"type": "dialog", "dialogue_data": {
-                    "default": [{"speaker": "", "text": "记分牌已经拨到正确位置了。"}]
-                }}
-            gm._active_puzzle = puzzle_ref
-            gm.state = GameState.PUZZLE
-            puzzle_ref.start_scoreboard(on_complete=gm._on_puzzle_complete)
-            return None
-
-        scoreboard.on_interact = on_scoreboard_interact
-        self.interactive_objects.append(scoreboard)
-        self._gym_scoreboard_obj = scoreboard
 
     def _on_puzzle_complete(self):
         puzzle = self._active_puzzle
@@ -1151,26 +1140,26 @@ class GameManager:
                 )
 
         elif puzzle is self.gym_puzzle:
-            if self.gym_puzzle.shooting_passed and not self.player.inventory.has_item("equipment_key"):
+            if self.gym_puzzle.scoreboard_opened and \
+                 self.puzzle_manager.get_state("gym") != PuzzleState.SOLVED:
+                self.puzzle_manager.solve("gym", self.player.inventory)
+                self.state = GameState.DIALOG
+                self.dialog_box.start(
+                    {"default": [
+                        {"speaker": "", "text": "数字正确！暗门缓缓开启……"},
+                        {"speaker": "", "text": "获得了桂花徽章碎片·伍！"},
+                    ]},
+                    start_key="default",
+                    on_complete=self._on_dialog_complete,
+                    game_state=self._get_dialog_game_state(),
+                )
+            elif self.gym_puzzle.shooting_passed and not self.player.inventory.has_item("equipment_key"):
                 self.player.inventory.add_item("equipment_key")
                 self.state = GameState.DIALOG
                 self.dialog_box.start(
                     {"default": [
                         {"speaker": "", "text": "投篮挑战成功！获得了器材室钥匙！"},
                         {"speaker": "", "text": "用钥匙打开器材柜，看看里面有什么……"},
-                    ]},
-                    start_key="default",
-                    on_complete=self._on_dialog_complete,
-                    game_state=self._get_dialog_game_state(),
-                )
-            elif self.gym_puzzle.scoreboard_opened and \
-                 self.puzzle_manager.get_state("gym") != PuzzleState.SOLVED:
-                self.puzzle_manager.solve("gym", self.player.inventory)
-                self.state = GameState.DIALOG
-                self.dialog_box.start(
-                    {"default": [
-                        {"speaker": "", "text": "密码正确！暗门缓缓开启……"},
-                        {"speaker": "", "text": "获得了桂花徽章碎片·伍！"},
                     ]},
                     start_key="default",
                     on_complete=self._on_dialog_complete,
@@ -1475,6 +1464,15 @@ class GameManager:
                 self._active_puzzle = self.library_puzzle
                 self.state = GameState.PUZZLE
                 self.library_puzzle.start(on_complete=self._on_puzzle_complete)
+                return
+            self._last_dialog_key = ""
+        if self._pending_gym_shooting:
+            self._pending_gym_shooting = False
+            if self.dialog_box.current_key == "start_shooting" or self._last_dialog_key == "start_shooting":
+                self._last_dialog_key = ""
+                self._active_puzzle = self.gym_puzzle
+                self.state = GameState.PUZZLE
+                self.gym_puzzle.start_shooting(on_complete=self._on_puzzle_complete)
                 return
             self._last_dialog_key = ""
         self.state = GameState.PLAYING
