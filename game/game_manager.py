@@ -884,8 +884,6 @@ class GameManager:
             },
         )
 
-        original_guardian_interact = guardian.interact
-
         def on_guardian_interact(npc_self):
             if not gm.puzzle_manager.is_fountain_unlocked():
                 return {"type": "dialog", "dialogue_data": {

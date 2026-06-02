@@ -52,7 +52,6 @@ def _interpolate_keyframes(game_time):
         t0, r0, g0, b0, a0 = kf[-1]
         t1, r1, g1, b1, a1 = kf[0]
         t0_adj = t0 - 24.0
-        t_adj = game_time
     elif game_time >= kf[-1][0]:
         t0, r0, g0, b0, a0 = kf[-1]
         t1, r1, g1, b1, a1 = kf[0]
@@ -194,6 +193,7 @@ class GameClock:
             "game_time": self.game_time,
             "day_count": self.day_count,
             "realm_state": self.realm_state,
+            "realm_pulse_timer": self._realm_pulse_timer,
         }
 
     def load_state_dict(self, data):
@@ -201,6 +201,7 @@ class GameClock:
             self.game_time = data.get("game_time", 8.0)
             self.day_count = data.get("day_count", 1)
             self.realm_state = data.get("realm_state", None)
+            self._realm_pulse_timer = data.get("realm_pulse_timer", 0.0)
 
     def should_npc_appear(self, npc_id):
         period = self.get_period()

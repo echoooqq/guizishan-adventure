@@ -117,11 +117,6 @@
     <property name="solid" type="bool" value="true" />
    </properties>
   </tile>
-  <tile id="29">
-   <properties>
-    <property name="solid" type="bool" value="true" />
-   </properties>
-  </tile>
  </tileset>
  <layer id="1" name="ground" width="120" height="80">
   <data encoding="csv">
