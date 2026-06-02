@@ -1866,9 +1866,10 @@ class GameManager:
             self._draw_night_lights()
 
     def _draw_night_lights(self):
+        is_awakened = self.game_clock.is_realm_awakened()
         light_radius = 24
         light_surf = pygame.Surface((light_radius * 2, light_radius * 2), pygame.SRCALPHA)
-        if self.game_clock.is_realm_awakened():
+        if is_awakened:
             light_color = (150, 255, 160)
         else:
             light_color = (255, 240, 180)
@@ -1883,6 +1884,35 @@ class GameManager:
                     self.internal_surface.blit(
                         light_surf,
                         (int(sx) - light_radius, int(sy) - light_radius),
+                    )
+
+        if is_awakened:
+            self._draw_realm_glow_points()
+
+    def _draw_realm_glow_points(self):
+        glow_radius = 16
+        glow_surf = pygame.Surface((glow_radius * 2, glow_radius * 2), pygame.SRCALPHA)
+        for r in range(glow_radius, 0, -1):
+            alpha = int(25 * (1 - r / glow_radius))
+            pygame.draw.circle(glow_surf, (100, 220, 120, alpha), (glow_radius, glow_radius), r)
+
+        for npc in self.npcs:
+            if not npc.visible:
+                continue
+            sx, sy = self.camera.apply(npc.x + npc.width / 2, npc.y)
+            self.internal_surface.blit(
+                glow_surf,
+                (int(sx) - glow_radius, int(sy) - glow_radius),
+            )
+
+        for obj in self.interactive_objects:
+            if hasattr(obj, 'properties'):
+                itype = obj.properties.get("interactive_type", "")
+                if itype in ("dialog", "pickup"):
+                    sx, sy = self.camera.apply(obj.center_x, obj.center_y)
+                    self.internal_surface.blit(
+                        glow_surf,
+                        (int(sx) - glow_radius, int(sy) - glow_radius),
                     )
 
     def _update_npc_visibility(self):
