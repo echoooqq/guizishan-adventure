@@ -23,12 +23,16 @@ from config import (
 from game.game_state import GameState
 from game.camera import Camera
 from game.clock import GameClock
+from game.save_manager import SaveManager
 from player.player import Player
 from player.inventory import Inventory, get_item_data
 from world.tilemap import TileMap
 from world.transition import TransitionManager, TransitionType
 from ui.dialog_box import DialogBox
 from ui.inventory_ui import InventoryUI
+from ui.hud import HUD
+from ui.minimap import Minimap
+from ui.menu import Menu
 from puzzle.puzzle_manager import PuzzleManager, PuzzleState
 from puzzle.guizhong_puzzle import GuizhongPuzzle
 from puzzle.nanhulou_puzzle import NanhulouPuzzle
@@ -85,18 +89,21 @@ class GameManager:
         self.blink_timer = 0.0
         self.show_press_enter = True
 
-        self._pause_continue_btn = None
-        self._pause_title_btn = None
         self._create_title_ui()
 
         self.dialog_box = DialogBox()
         self.inventory_ui = InventoryUI()
+        self.hud = HUD()
+        self.minimap = Minimap()
+        self.menu = Menu()
+        self.save_manager = SaveManager()
         self._dialogues_cache = {}
         self._nearby_interactable = None
         self._nearby_type = None
         self._dialog_flags = {}
         self._visited_nanhu = False
         self._pending_nanhu_intro = False
+        self._explored_areas = {}
 
         self.puzzle_manager = PuzzleManager()
         self.guizhong_puzzle = GuizhongPuzzle(self.puzzle_manager, self.player.inventory)
@@ -218,6 +225,8 @@ class GameManager:
 
     def _on_transition_load(self, target_map, spawn_point):
         self._load_map(target_map, spawn_point)
+        # 进/出室内或跨校区时自动存档
+        self._auto_save()
 
     def _setup_test_entities(self):
         from entities.npc import NPC
@@ -1132,6 +1141,8 @@ class GameManager:
         puzzle = self._active_puzzle
         self._active_puzzle = None
         self.state = GameState.PLAYING
+        # 解谜后自动存档
+        self._auto_save()
 
         if puzzle is self.nanhulou_puzzle:
             if self.nanhulou_puzzle.secret_room_open and \
@@ -1290,20 +1301,26 @@ class GameManager:
             return
 
         if event.type == pygame_gui.UI_BUTTON_PRESSED:
-            if self.state == GameState.PAUSED:
-                if event.ui_element == self._pause_continue_btn:
-                    self.state = GameState.PLAYING
-                    self.ui_manager.clear_and_reset()
-                elif event.ui_element == self._pause_title_btn:
-                    self.state = GameState.TITLE
-                    self.ui_manager.clear_and_reset()
-                    self._create_title_ui()
+            pass  # pygame_gui按钮事件已由Menu模块替代
 
         if self.state == GameState.TITLE:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN or event.key == pygame.K_SPACE:
                     self.state = GameState.PLAYING
                     self.ui_manager.clear_and_reset()
+                elif event.key == pygame.K_l:
+                    # 按L键读档
+                    if self.save_manager.has_any_save():
+                        save_data = self.save_manager.load("auto")
+                        if save_data is None:
+                            for slot in ["slot_1", "slot_2"]:
+                                save_data = self.save_manager.load(slot)
+                                if save_data:
+                                    break
+                        if save_data:
+                            self.save_manager.apply_save_data(save_data, self)
+                            self.state = GameState.PLAYING
+                            self.ui_manager.clear_and_reset()
 
         elif self.state == GameState.PLAYING:
             if event.type == pygame.KEYDOWN:
@@ -1314,16 +1331,46 @@ class GameManager:
                     self._handle_interaction()
                 elif event.key in (pygame.K_TAB, pygame.K_i):
                     self._open_inventory()
+                elif event.key == pygame.K_m:
+                    self.state = GameState.MAP_VIEW
 
         elif self.state == GameState.PAUSED:
+            menu_action = self.menu.handle_event(event)
+            if menu_action == "continue":
+                self.menu.close()
+                self.state = GameState.PLAYING
+            elif menu_action == "inventory":
+                self.menu.close()
+                self._open_inventory()
+            elif menu_action == "map":
+                self.menu.close()
+                self.state = GameState.MAP_VIEW
+            elif menu_action == "open_save":
+                save_infos = self.save_manager.get_all_save_info()
+                self.menu.set_save_infos(save_infos)
+            elif menu_action == "open_settings":
+                pass
+            elif menu_action == "quit_title":
+                self.save_manager.auto_save(self)
+                self.menu.close()
+                self.state = GameState.TITLE
+                self._create_title_ui()
+            elif menu_action in ("auto_save", "slot_1", "slot_2"):
+                # 存档槽位确认
+                slot_map = {"auto_save": "auto", "slot_1": "slot_1", "slot_2": "slot_2"}
+                slot_id = slot_map.get(menu_action)
+                if slot_id:
+                    if self.save_manager.save(slot_id, self):
+                        self.menu.set_save_message("存档成功！")
+                        save_infos = self.save_manager.get_all_save_info()
+                        self.menu.set_save_infos(save_infos)
+                    else:
+                        self.menu.set_save_message("存档失败！")
+
+        elif self.state == GameState.MAP_VIEW:
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
+                if event.key in (pygame.K_m, pygame.K_ESCAPE, pygame.K_TAB):
                     self.state = GameState.PLAYING
-                    self.ui_manager.clear_and_reset()
-                elif event.key == pygame.K_q:
-                    self.state = GameState.TITLE
-                    self.ui_manager.clear_and_reset()
-                    self._create_title_ui()
 
         self.ui_manager.process_events(event)
 
@@ -1428,6 +1475,9 @@ class GameManager:
                     if obj:
                         obj.interacted = True
                     pickup_text = f"拾取了{item_name}！"
+                    # 拾取关键道具时自动存档
+                    if item_data and item_data.get("category") == "key_item":
+                        self._auto_save()
                 else:
                     pickup_text = "背包已满，无法拾取！"
             else:
@@ -1511,19 +1561,9 @@ class GameManager:
         self.state = GameState.PLAYING
 
     def _create_pause_ui(self):
-        self.ui_manager.clear_and_reset()
-        btn_w, btn_h = 160, 36
-        center_x = SCREEN_WIDTH // 2 - btn_w // 2
-        self._pause_continue_btn = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect(center_x, SCREEN_HEIGHT // 2 - 60, btn_w, btn_h),
-            text="Continue (Esc)",
-            manager=self.ui_manager,
-        )
-        self._pause_title_btn = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect(center_x, SCREEN_HEIGHT // 2, btn_w, btn_h),
-            text="Quit to Title (Q)",
-            manager=self.ui_manager,
-        )
+        self.menu.open("pause")
+        save_infos = self.save_manager.get_all_save_info()
+        self.menu.set_save_infos(save_infos)
 
     def update(self):
         dt = self.clock.tick(FPS) / 1000.0
@@ -1535,6 +1575,10 @@ class GameManager:
 
         if self.transition_manager.is_active:
             return
+
+        # 累计游戏时间（存档用）
+        if self.state == GameState.PLAYING:
+            self.save_manager.update_play_time(dt)
 
         if self.state == GameState.TITLE:
             self.blink_timer += dt
@@ -1573,6 +1617,12 @@ class GameManager:
 
             self._check_nearby_interactables()
             self._check_auto_triggers()
+
+            # 更新小地图探索区域
+            player_tile_x = int(self.player.x / TILE_SIZE)
+            player_tile_y = int(self.player.y / TILE_SIZE)
+            self.minimap.mark_explored(self.current_map_id, player_tile_x, player_tile_y)
+            self.minimap.update(dt)
 
             if not self._realm_triggered and self.current_map_id == "main_campus":
                 if not self.game_clock.is_realm_active():
@@ -1632,6 +1682,9 @@ class GameManager:
 
         elif self.state == GameState.INVENTORY:
             self.inventory_ui.update(dt)
+
+        elif self.state == GameState.PAUSED:
+            self.menu.update(dt)
 
         elif self.state == GameState.PUZZLE:
             if self._active_puzzle:
@@ -1706,7 +1759,7 @@ class GameManager:
             self._draw_interaction_prompts()
         elif self.state == GameState.PAUSED:
             self._draw_game()
-            self._draw_pause_overlay()
+            self.menu.draw(self.internal_surface)
         elif self.state == GameState.DIALOG:
             self._draw_game()
             self.dialog_box.draw(self.internal_surface)
@@ -1717,6 +1770,8 @@ class GameManager:
             self._draw_game()
             if self._active_puzzle:
                 self._active_puzzle.draw(self.internal_surface)
+        elif self.state == GameState.MAP_VIEW:
+            self._draw_map_view()
 
         self.transition_manager.draw(self.internal_surface)
 
@@ -1748,9 +1803,17 @@ class GameManager:
         if self.show_press_enter:
             enter_text = self.info_font.render("按 回车键 开始游戏", True, COLOR_WHITE)
             enter_rect = enter_text.get_rect(
-                centerx=INTERNAL_WIDTH // 2, centery=INTERNAL_HEIGHT // 2 + 40
+                centerx=INTERNAL_WIDTH // 2, centery=INTERNAL_HEIGHT // 2 + 30
             )
             self.internal_surface.blit(enter_text, enter_rect)
+
+        # 如果有存档，显示读档提示
+        if self.save_manager.has_any_save():
+            load_text = self.info_font.render("按 L键 继续游戏", True, (180, 180, 220))
+            load_rect = load_text.get_rect(
+                centerx=INTERNAL_WIDTH // 2, centery=INTERNAL_HEIGHT // 2 + 48
+            )
+            self.internal_surface.blit(load_text, load_rect)
 
     def _draw_game(self):
         self.tile_map.draw(self.internal_surface, self.camera)
@@ -1776,27 +1839,17 @@ class GameManager:
         if self._realm_hint_active:
             self._draw_realm_hint()
 
-        badge_count = self.puzzle_manager.get_badge_count()
-        map_label = "室内" if self.current_map_id in INDOOR_MAPS else "室外"
-        campus_label = "南湖" if self.current_map_id in NANHU_MAPS else "本部"
-        period_label = self.game_clock.get_period_name()
-        time_str = self.game_clock.get_time_string()
-        day_str = f"第{self.game_clock.day_count}天"
-        pos_text = self.info_font.render(
-            f"{campus_label}{map_label} "
-            f"位置:({int(self.player.x)},{int(self.player.y)}) "
-            f"方向:{self.player.direction} "
-            f"体力:{int(self.player.stamina)} "
-            f"徽章:{badge_count}/7 "
-            f"{day_str} {time_str} {period_label} "
-            f"背包:Tab",
-            True, COLOR_WHITE,
+        # 使用独立HUD模块绘制
+        self.hud.draw(
+            self.internal_surface, self.player,
+            self.puzzle_manager, self.game_clock,
         )
-        bg_rect = pos_text.get_rect(topleft=(4, 4))
-        bg_surf = pygame.Surface((bg_rect.width + 4, bg_rect.height + 2), pygame.SRCALPHA)
-        bg_surf.fill((0, 0, 0, 128))
-        self.internal_surface.blit(bg_surf, (2, 3))
-        self.internal_surface.blit(pos_text, (4, 4))
+
+        # 绘制小地图
+        self.minimap.draw(
+            self.internal_surface, self.tile_map,
+            self.current_map_id, self.player, self.camera,
+        )
 
     def _draw_interaction_prompts(self):
         if self._nearby_interactable is not None:
@@ -1852,17 +1905,6 @@ class GameManager:
         bg_surf.fill((0, 0, 0, 160))
         self.internal_surface.blit(bg_surf, bg_rect.topleft)
         self.internal_surface.blit(text_surf, text_rect)
-
-    def _draw_pause_overlay(self):
-        overlay = pygame.Surface((INTERNAL_WIDTH, INTERNAL_HEIGHT), pygame.SRCALPHA)
-        overlay.fill((0, 0, 0, 128))
-        self.internal_surface.blit(overlay, (0, 0))
-
-        pause_text = self.title_font.render("暂停", True, COLOR_WHITE)
-        pause_rect = pause_text.get_rect(
-            centerx=INTERNAL_WIDTH // 2, centery=INTERNAL_HEIGHT // 2 - 50
-        )
-        self.internal_surface.blit(pause_text, pause_rect)
 
     def _draw_day_night_overlay(self):
         overlay_color = self.game_clock.get_overlay_color()
@@ -2034,3 +2076,42 @@ class GameManager:
         hint_surf.blit(hint_text, (0, 0))
         hint_surf.set_alpha(alpha)
         self.internal_surface.blit(hint_surf, text_rect)
+
+    def _draw_map_view(self):
+        """绘制全局地图视图"""
+        self.internal_surface.fill((20, 20, 30))
+
+        # 标题
+        title = self.title_font.render("校园地图", True, COLOR_TITLE_TEXT)
+        title_rect = title.get_rect(
+            centerx=INTERNAL_WIDTH // 2, centery=15,
+        )
+        self.internal_surface.blit(title, title_rect)
+
+        # 绘制本部校区小地图
+        if "main_campus" in self._map_cache:
+            main_map = self._map_cache["main_campus"]
+            self.minimap.draw(
+                self.internal_surface, main_map,
+                "main_campus", self.player, self.camera,
+            )
+
+        # 绘制南湖校区小地图（如果有缓存）
+        if "nanhu_campus" in self._map_cache:
+            nanhu_map = self._map_cache["nanhu_campus"]
+            # 在左下角绘制南湖校区缩略图
+            if "nanhu_campus" not in self.minimap._cache:
+                self.minimap._cache["nanhu_campus"] = self.minimap._render_minimap(nanhu_map, "nanhu_campus")
+            nanhu_surf = self.minimap._cache["nanhu_campus"]
+            self.internal_surface.blit(nanhu_surf, (10, INTERNAL_HEIGHT - 55))
+
+        # 提示
+        hint = self.info_font.render("按 M 或 Esc 返回游戏", True, (180, 180, 200))
+        hint_rect = hint.get_rect(
+            centerx=INTERNAL_WIDTH // 2, centery=INTERNAL_HEIGHT - 10,
+        )
+        self.internal_surface.blit(hint, hint_rect)
+
+    def _auto_save(self):
+        """触发自动存档"""
+        self.save_manager.auto_save(self)
