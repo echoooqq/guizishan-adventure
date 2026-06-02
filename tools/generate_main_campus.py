@@ -38,8 +38,11 @@ GID_COLLISION = 24
 GID_FLOWER_GARDEN = 25
 GID_TREE_CLUSTER = 26
 GID_LAWN_ROCK = 27
+GID_GATE_PILLAR = 28
+GID_GATE_BEAM = 29
+GID_GATE_SIGN = 30
 
-TILE_COUNT = 27
+TILE_COUNT = 30
 
 SOLID_GIDS = {
     GID_WALL_BRICK, GID_WALL_BRICK_TOP, GID_WALL_GRAY,
@@ -49,6 +52,7 @@ SOLID_GIDS = {
     GID_FOUNTAIN_BASE, GID_FOUNTAIN_WATER, GID_SCULPTURE,
     GID_BUS_STOP, GID_HEDGE, GID_COLLISION,
     GID_FLOWER_GARDEN, GID_TREE_CLUSTER,
+    GID_GATE_PILLAR, GID_GATE_BEAM, GID_GATE_SIGN,
 }
 
 
@@ -255,6 +259,37 @@ def _draw_tile(surface, gid, x):
         pygame.draw.ellipse(surface, (160, 160, 150), (x + 4, 7, 8, 5))
         pygame.draw.ellipse(surface, (120, 120, 110), (x + 5, 8, 4, 3))
         surface.set_at((x + 7, 7), (180, 180, 170))
+    elif gid == GID_GATE_PILLAR:
+        surface.fill((76, 153, 0), rect)
+        pygame.draw.rect(surface, (180, 175, 165), (x + 3, 0, 10, 16))
+        pygame.draw.rect(surface, (200, 195, 185), (x + 4, 0, 4, 16))
+        pygame.draw.rect(surface, (160, 155, 145), (x + 11, 0, 2, 16))
+        pygame.draw.rect(surface, (150, 145, 135), (x + 3, 0, 10, 2))
+        pygame.draw.rect(surface, (150, 145, 135), (x + 3, 14, 10, 2))
+        pygame.draw.rect(surface, (190, 185, 175), (x + 2, 0, 1, 16))
+        pygame.draw.rect(surface, (190, 185, 175), (x + 13, 0, 1, 16))
+        pygame.draw.rect(surface, (140, 135, 125), (x + 2, 0, 12, 1))
+        pygame.draw.rect(surface, (140, 135, 125), (x + 2, 15, 12, 1))
+    elif gid == GID_GATE_BEAM:
+        surface.fill((76, 153, 0), rect)
+        pygame.draw.rect(surface, (140, 30, 25), (x, 4, 16, 8))
+        pygame.draw.rect(surface, (160, 40, 35), (x, 4, 16, 2))
+        pygame.draw.rect(surface, (120, 25, 20), (x, 10, 16, 2))
+        pygame.draw.rect(surface, (100, 20, 15), (x, 4, 16, 1))
+        pygame.draw.rect(surface, (100, 20, 15), (x, 11, 16, 1))
+        pygame.draw.rect(surface, (180, 160, 60), (x + 2, 6, 12, 1))
+        pygame.draw.rect(surface, (180, 160, 60), (x + 2, 9, 12, 1))
+        pygame.draw.rect(surface, (170, 150, 50), (x + 6, 6, 1, 4))
+        pygame.draw.rect(surface, (170, 150, 50), (x + 9, 6, 1, 4))
+    elif gid == GID_GATE_SIGN:
+        surface.fill((76, 153, 0), rect)
+        pygame.draw.rect(surface, (140, 30, 25), (x, 2, 16, 12))
+        pygame.draw.rect(surface, (160, 40, 35), (x, 2, 16, 2))
+        pygame.draw.rect(surface, (120, 25, 20), (x, 12, 16, 2))
+        pygame.draw.rect(surface, (180, 160, 60), (x + 1, 3, 14, 10), 1)
+        pygame.draw.rect(surface, (200, 180, 70), (x + 2, 4, 12, 8))
+        for cx, cy in [(4, 6), (7, 6), (10, 6), (4, 9), (7, 9), (10, 9)]:
+            pygame.draw.rect(surface, (140, 30, 25), (x + cx, cy, 2, 3))
 
 
 def design_map():
@@ -270,6 +305,7 @@ def design_map():
     trigger_objects = []
 
     _place_borders(structures, collision)
+    _place_school_gate(ground, structures, collision, interactive_objects, trigger_objects)
     _place_guizhong_road(ground, structures, decorations, collision, interactive_objects)
     _place_library(ground, structures, collision, interactive_objects, trigger_objects)
     _place_boya_square(ground, structures, decorations, collision, interactive_objects, trigger_objects)
@@ -286,8 +322,12 @@ def design_map():
 
 
 def _place_borders(structures, collision):
+    gate_x_start = 57
+    gate_x_end = 62
     for x in range(MAP_WIDTH):
         for row in [0, 1, MAP_HEIGHT - 2, MAP_HEIGHT - 1]:
+            if row >= MAP_HEIGHT - 4 and gate_x_start <= x <= gate_x_end:
+                continue
             structures[row][x] = GID_TREE_GREEN
             collision[row][x] = GID_COLLISION
     for y in range(MAP_HEIGHT):
@@ -295,15 +335,86 @@ def _place_borders(structures, collision):
             structures[y][col] = GID_TREE_GREEN
             collision[y][col] = GID_COLLISION
     for x in range(2, MAP_WIDTH - 2, 3):
+        if not (gate_x_start <= x <= gate_x_end):
+            structures[MAP_HEIGHT - 3][x] = GID_TREE_GREEN
+            collision[MAP_HEIGHT - 3][x] = GID_COLLISION
         structures[2][x] = GID_TREE_GREEN
         collision[2][x] = GID_COLLISION
-        structures[MAP_HEIGHT - 3][x] = GID_TREE_GREEN
-        collision[MAP_HEIGHT - 3][x] = GID_COLLISION
     for y in range(2, MAP_HEIGHT - 2, 3):
         structures[y][2] = GID_TREE_GREEN
         collision[y][2] = GID_COLLISION
         structures[y][MAP_WIDTH - 3] = GID_TREE_GREEN
         collision[y][MAP_WIDTH - 3] = GID_COLLISION
+
+
+def _place_school_gate(ground, structures, collision, interactive_objects, trigger_objects):
+    gx = 57
+    gy = 76
+
+    structures[gy + 3][gx] = GID_GATE_PILLAR
+    collision[gy + 3][gx] = GID_COLLISION
+    structures[gy + 3][gx + 5] = GID_GATE_PILLAR
+    collision[gy + 3][gx + 5] = GID_COLLISION
+    structures[gy + 2][gx] = GID_GATE_PILLAR
+    collision[gy + 2][gx] = GID_COLLISION
+    structures[gy + 2][gx + 5] = GID_GATE_PILLAR
+    collision[gy + 2][gx + 5] = GID_COLLISION
+
+    structures[gy + 1][gx] = GID_GATE_BEAM
+    collision[gy + 1][gx] = GID_COLLISION
+    structures[gy + 1][gx + 5] = GID_GATE_BEAM
+    collision[gy + 1][gx + 5] = GID_COLLISION
+    structures[gy + 1][gx + 1] = GID_GATE_SIGN
+    collision[gy + 1][gx + 1] = GID_COLLISION
+    structures[gy + 1][gx + 2] = GID_GATE_SIGN
+    collision[gy + 1][gx + 2] = GID_COLLISION
+    structures[gy + 1][gx + 3] = GID_GATE_SIGN
+    collision[gy + 1][gx + 3] = GID_COLLISION
+    structures[gy + 1][gx + 4] = GID_GATE_SIGN
+    collision[gy + 1][gx + 4] = GID_COLLISION
+
+    for y in range(gy, gy + 4):
+        for x in range(gx + 1, gx + 5):
+            ground[y][x] = GID_PATH_STONE
+
+    for y in range(gy - 1, gy + 4):
+        for x in range(gx - 2, gx):
+            if structures[y][x] == GID_EMPTY and collision[y][x] == GID_EMPTY:
+                structures[y][x] = GID_TREE_GREEN
+                collision[y][x] = GID_COLLISION
+        for x in range(gx + 6, gx + 8):
+            if structures[y][x] == GID_EMPTY and collision[y][x] == GID_EMPTY:
+                structures[y][x] = GID_TREE_GREEN
+                collision[y][x] = GID_COLLISION
+
+    interactive_objects.append({
+        "x": (gx + 1) * TILE_SIZE,
+        "y": (gy + 1) * TILE_SIZE,
+        "width": 4 * TILE_SIZE,
+        "height": TILE_SIZE,
+        "type": "school_gate",
+        "properties": {
+            "interactive_type": "examine",
+            "display_name": "校门牌匾",
+            "desc": "华中师范大学——桂子山校区"
+        }
+    })
+
+    trigger_objects.append({
+        "x": (gx + 1) * TILE_SIZE,
+        "y": (gy - 1) * TILE_SIZE,
+        "width": 4 * TILE_SIZE,
+        "height": 1 * TILE_SIZE,
+        "type": "spawn",
+        "properties": {
+            "spawn_id": "gate",
+        }
+    })
+
+    for y in range(gy - 1, 42, -1):
+        for x in range(gx + 1, gx + 5):
+            if ground[y][x] == GID_GRASS:
+                ground[y][x] = GID_PATH_STONE
 
 
 def _place_guizhong_road(ground, structures, decorations, collision, interactive_objects):
@@ -930,9 +1041,9 @@ def _add_grass_variation(ground):
 def _add_default_spawn(trigger_objects):
     trigger_objects.append({
         "x": 59 * TILE_SIZE,
-        "y": 38 * TILE_SIZE,
+        "y": 75 * TILE_SIZE,
         "width": 2 * TILE_SIZE,
-        "height": 3 * TILE_SIZE,
+        "height": 1 * TILE_SIZE,
         "type": "spawn",
         "properties": {
             "spawn_id": "default",

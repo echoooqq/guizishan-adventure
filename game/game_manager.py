@@ -9,6 +9,7 @@ from config import (
     SCREEN_WIDTH,
     SCREEN_HEIGHT,
     FPS,
+    TILE_SIZE,
     PLAYER_HEIGHT,
     FONT_PATH,
     FONT_TITLE_SIZE,
@@ -77,6 +78,7 @@ class GameManager:
         spawn_x, spawn_y = self.tile_map.get_spawn_position()
         self.player = Player(spawn_x, spawn_y)
         self.camera = Camera(self.tile_map.width, self.tile_map.height)
+        self.camera.update(self.player.x, self.player.y - PLAYER_HEIGHT / 2)
 
         self.title_font = pygame.font.Font(FONT_PATH, FONT_TITLE_SIZE)
         self.info_font = pygame.font.Font(FONT_PATH, FONT_INFO_SIZE)
@@ -128,6 +130,16 @@ class GameManager:
         self._library_badge_obj = None
         self._pending_library_quiz = False
         self._pending_gym_shooting = False
+
+        self._realm_triggered = False
+        self._realm_animating = False
+        self._realm_anim_timer = 0.0
+        self._realm_anim_duration = 3.0
+        self._realm_first_night_shown = False
+        self._realm_hint_timer = 0.0
+        self._realm_hint_duration = 5.0
+        self._realm_hint_active = False
+        self._tutorial_shown = False
 
         self.transition_manager = TransitionManager()
         self._map_cache = {}
@@ -1176,11 +1188,12 @@ class GameManager:
 
         elif puzzle is self.fountain_puzzle:
             if self.fountain_puzzle.solved:
+                self.game_clock.dispel_realm()
                 self.state = GameState.DIALOG
                 self.dialog_box.start(
                     {"default": [
                         {"speaker": "秘境守护者", "text": "七徽归位，封印解除！"},
-                        {"speaker": "秘境守护者", "text": "桂子山秘境的真相，将由你来揭晓……"},
+                        {"speaker": "秘境守护者", "text": "秘境之力消散，桂子山重归现实。"},
                     ]},
                     start_key="default",
                     on_complete=self._on_dialog_complete,
@@ -1525,6 +1538,19 @@ class GameManager:
             self.game_clock.update(dt)
             self._update_npc_visibility()
 
+            if not self._tutorial_shown:
+                self._tutorial_shown = True
+                self._show_tutorial()
+                return
+
+            if self._realm_animating:
+                self._realm_anim_timer += dt
+                if self._realm_anim_timer >= self._realm_anim_duration:
+                    self._realm_animating = False
+                    self._realm_anim_timer = self._realm_anim_duration
+                    self._on_realm_anim_complete()
+                return
+
             keys = pygame.key.get_pressed()
             self.player.update(
                 dt, keys,
@@ -1539,6 +1565,19 @@ class GameManager:
 
             self._check_nearby_interactables()
             self._check_auto_triggers()
+
+            if not self._realm_triggered and self.current_map_id == "main_campus":
+                self._check_realm_trigger()
+
+            if self.game_clock.is_realm_active() and not self._realm_first_night_shown:
+                if self.game_clock.is_night():
+                    self._realm_first_night_shown = True
+                    self._show_first_night_hint()
+
+            if self._realm_hint_active:
+                self._realm_hint_timer += dt
+                if self._realm_hint_timer >= self._realm_hint_duration:
+                    self._realm_hint_active = False
 
             if self._pending_nanhu_intro:
                 self._pending_nanhu_intro = False
@@ -1722,6 +1761,12 @@ class GameManager:
 
         self._draw_day_night_overlay()
 
+        if self._realm_animating:
+            self._draw_realm_animation()
+
+        if self._realm_hint_active:
+            self._draw_realm_hint()
+
         badge_count = self.puzzle_manager.get_badge_count()
         map_label = "室内" if self.current_map_id in INDOOR_MAPS else "室外"
         campus_label = "南湖" if self.current_map_id in NANHU_MAPS else "本部"
@@ -1823,9 +1868,13 @@ class GameManager:
     def _draw_night_lights(self):
         light_radius = 24
         light_surf = pygame.Surface((light_radius * 2, light_radius * 2), pygame.SRCALPHA)
+        if self.game_clock.is_realm_awakened():
+            light_color = (150, 255, 160)
+        else:
+            light_color = (255, 240, 180)
         for r in range(light_radius, 0, -1):
             alpha = int(40 * (1 - r / light_radius))
-            pygame.draw.circle(light_surf, (255, 240, 180, alpha), (light_radius, light_radius), r)
+            pygame.draw.circle(light_surf, (*light_color, alpha), (light_radius, light_radius), r)
         for obj in self.interactive_objects:
             if hasattr(obj, 'properties'):
                 itype = obj.properties.get("interactive_type", "")
@@ -1841,3 +1890,108 @@ class GameManager:
             if hasattr(npc, 'npc_id'):
                 should_show = self.game_clock.should_npc_appear(npc.npc_id)
                 npc.visible = should_show
+
+    def _check_realm_trigger(self):
+        px = self.player.x / TILE_SIZE
+        py = self.player.y / TILE_SIZE
+        if 55 <= px <= 65 and 37 <= py <= 42:
+            self._trigger_realm_descent()
+
+    def _trigger_realm_descent(self):
+        self._realm_triggered = True
+        self._realm_animating = True
+        self._realm_anim_timer = 0.0
+
+    def _on_realm_anim_complete(self):
+        self.game_clock.activate_realm()
+        self.state = GameState.DIALOG
+        self.dialog_box.start(
+            {"default": [
+                {"speaker": "秘境守护者", "text": "你感受到了吗？桂子山的秘境已经苏醒。"},
+                {"speaker": "秘境守护者", "text": "七处校园地标被秘境力量笼罩，每处都隐藏着一枚桂花徽章碎片。"},
+                {"speaker": "秘境守护者", "text": "唯有集齐全部七枚碎片，才能解开秘境封印，回到现实。"},
+                {"speaker": "秘境守护者", "text": "去探索吧……白日里秘境蛰伏，入夜后力量觉醒，隐藏的线索才会显现。"},
+            ]},
+            start_key="default",
+            on_complete=self._on_realm_dialog_complete,
+            game_state=self._get_dialog_game_state(),
+        )
+
+    def _on_realm_dialog_complete(self):
+        if self.state != GameState.DIALOG:
+            return
+        self.state = GameState.PLAYING
+        self._realm_hint_active = True
+        self._realm_hint_timer = 0.0
+
+    def _show_tutorial(self):
+        self.state = GameState.DIALOG
+        tutorial_data = {
+            "default": [
+                {"speaker": "", "text": "欢迎来到桂子山！这里有一些基本操作提示："},
+                {"speaker": "", "text": "WASD 或 方向键：移动角色"},
+                {"speaker": "", "text": "按住 Shift：冲刺（消耗体力）"},
+                {"speaker": "", "text": "靠近物体或NPC时，按 F 键互动"},
+                {"speaker": "", "text": "按 Esc 键暂停游戏"},
+                {"speaker": "", "text": "探索校园，解开谜题，收集七枚徽章碎片吧！"},
+            ]
+        }
+        self.dialog_box.start(
+            tutorial_data,
+            start_key="default",
+            on_complete=self._on_dialog_complete,
+            game_state=self._get_dialog_game_state(),
+        )
+
+    def _show_first_night_hint(self):
+        self.state = GameState.DIALOG
+        self.dialog_box.start(
+            {"default": [
+                {"speaker": "秘境守护者", "text": "夜幕降临，秘境觉醒……去桂中路看看吧。"},
+            ]},
+            start_key="default",
+            on_complete=self._on_dialog_complete,
+            game_state=self._get_dialog_game_state(),
+        )
+
+    def _draw_realm_animation(self):
+        progress = self._realm_anim_timer / self._realm_anim_duration
+        anim_surf = pygame.Surface((INTERNAL_WIDTH, INTERNAL_HEIGHT), pygame.SRCALPHA)
+
+        if progress < 0.33:
+            green_alpha = int(180 * (progress / 0.33))
+            anim_surf.fill((60, 180, 80, green_alpha))
+        elif progress < 0.5:
+            white_alpha = int(255 * ((progress - 0.33) / 0.17))
+            anim_surf.fill((255, 255, 255, white_alpha))
+        elif progress < 0.75:
+            white_alpha = int(255 * (1 - (progress - 0.5) / 0.25))
+            anim_surf.fill((255, 255, 255, white_alpha))
+        else:
+            pass
+
+        self.internal_surface.blit(anim_surf, (0, 0))
+
+    def _draw_realm_hint(self):
+        if self._realm_hint_timer >= self._realm_hint_duration:
+            return
+        fade_in = min(1.0, self._realm_hint_timer / 0.5)
+        fade_out_start = self._realm_hint_duration - 1.0
+        fade_out = 1.0
+        if self._realm_hint_timer > fade_out_start:
+            fade_out = max(0.0, 1.0 - (self._realm_hint_timer - fade_out_start) / 1.0)
+        alpha = int(220 * fade_in * fade_out)
+
+        hint_text = self.info_font.render("探索校园，寻找七个被秘境笼罩的地点", True, COLOR_WHITE)
+        text_rect = hint_text.get_rect(
+            centerx=INTERNAL_WIDTH // 2, centery=INTERNAL_HEIGHT // 2 + 40
+        )
+        bg_rect = text_rect.inflate(12, 8)
+        bg_surf = pygame.Surface((bg_rect.width, bg_rect.height), pygame.SRCALPHA)
+        bg_surf.fill((0, 0, 0, min(180, alpha)))
+        self.internal_surface.blit(bg_surf, bg_rect.topleft)
+
+        hint_surf = pygame.Surface(hint_text.get_size(), pygame.SRCALPHA)
+        hint_surf.blit(hint_text, (0, 0))
+        hint_surf.set_alpha(alpha)
+        self.internal_surface.blit(hint_surf, text_rect)

@@ -1,3 +1,4 @@
+import math
 import pygame
 from config import DAY_DURATION
 
@@ -10,8 +11,19 @@ DAY_START = 6.0
 DUSK_START = 18.0
 NIGHT_START = 19.5
 
-COLOR_SECRET_OVERLAY = (30, 120, 60)
-MAX_SECRET_ALPHA = 80
+REALM_DORMANT = "dormant"
+REALM_AWAKENED = "awakened"
+REALM_DISPELLED = "dispelled"
+
+REALM_DORMANT_COLOR = (60, 160, 80)
+REALM_DORMANT_ALPHA_DAY = 10
+REALM_DORMANT_ALPHA_DUSK = 14
+REALM_DORMANT_ALPHA_NIGHT = 18
+
+REALM_AWAKENED_COLOR = (40, 140, 70)
+REALM_AWAKENED_ALPHA_MIN = 20
+REALM_AWAKENED_ALPHA_MAX = 50
+REALM_AWAKENED_PULSE_SPEED = 1.5
 
 LIGHT_KEYFRAMES = [
     (3.0,   10, 15, 55, 155),
@@ -80,10 +92,10 @@ class GameClock:
         self.day_count = 1
         self.time_speed = 24.0 / DAY_DURATION
         self._secret_mode = False
+        self.realm_state = None
+        self._realm_pulse_timer = 0.0
 
     def get_period(self):
-        if self._secret_mode:
-            return PERIOD_NIGHT
         if DAY_START <= self.game_time < DUSK_START:
             return PERIOD_DAY
         elif DUSK_START <= self.game_time < NIGHT_START:
@@ -100,10 +112,48 @@ class GameClock:
     def is_dusk(self):
         return self.get_period() == PERIOD_DUSK
 
+    def is_realm_active(self):
+        return self.realm_state in (REALM_DORMANT, REALM_AWAKENED)
+
+    def is_realm_awakened(self):
+        return self.realm_state == REALM_AWAKENED
+
+    def activate_realm(self):
+        self.realm_state = REALM_DORMANT
+
+    def dispel_realm(self):
+        self.realm_state = REALM_DISPELLED
+
     def get_overlay_color(self):
-        if self._secret_mode:
-            return (*COLOR_SECRET_OVERLAY, MAX_SECRET_ALPHA)
-        return _interpolate_keyframes(self.game_time)
+        base = _interpolate_keyframes(self.game_time)
+
+        if self.realm_state == REALM_DISPELLED or self.realm_state is None:
+            return base
+
+        if self.realm_state == REALM_DORMANT:
+            period = self.get_period()
+            if period == PERIOD_DAY:
+                realm_alpha = REALM_DORMANT_ALPHA_DAY
+            elif period == PERIOD_DUSK:
+                realm_alpha = REALM_DORMANT_ALPHA_DUSK
+            else:
+                realm_alpha = REALM_DORMANT_ALPHA_NIGHT
+            r = min(255, base[0] + int(REALM_DORMANT_COLOR[0] * realm_alpha / 255))
+            g = min(255, base[1] + int(REALM_DORMANT_COLOR[1] * realm_alpha / 255))
+            b = min(255, base[2] + int(REALM_DORMANT_COLOR[2] * realm_alpha / 255))
+            a = min(255, base[3] + realm_alpha)
+            return (r, g, b, a)
+
+        if self.realm_state == REALM_AWAKENED:
+            pulse = 0.5 + 0.5 * math.sin(self._realm_pulse_timer * REALM_AWAKENED_PULSE_SPEED * 2 * math.pi)
+            realm_alpha = int(REALM_AWAKENED_ALPHA_MIN + (REALM_AWAKENED_ALPHA_MAX - REALM_AWAKENED_ALPHA_MIN) * pulse)
+            r = min(255, base[0] + int(REALM_AWAKENED_COLOR[0] * realm_alpha / 255))
+            g = min(255, base[1] + int(REALM_AWAKENED_COLOR[1] * realm_alpha / 255))
+            b = min(255, base[2] + int(REALM_AWAKENED_COLOR[2] * realm_alpha / 255))
+            a = min(255, base[3] + realm_alpha)
+            return (r, g, b, a)
+
+        return base
 
     def get_time_string(self):
         hours = int(self.game_time)
@@ -125,6 +175,17 @@ class GameClock:
             self.game_time -= 24.0
             self.day_count += 1
 
+        if self.realm_state == REALM_AWAKENED:
+            self._realm_pulse_timer += dt
+        else:
+            self._realm_pulse_timer = 0.0
+
+        if self.is_realm_active():
+            if self.is_night():
+                self.realm_state = REALM_AWAKENED
+            else:
+                self.realm_state = REALM_DORMANT
+
     def set_secret_mode(self, enabled):
         self._secret_mode = enabled
 
@@ -132,12 +193,14 @@ class GameClock:
         return {
             "game_time": self.game_time,
             "day_count": self.day_count,
+            "realm_state": self.realm_state,
         }
 
     def load_state_dict(self, data):
         if data:
             self.game_time = data.get("game_time", 8.0)
             self.day_count = data.get("day_count", 1)
+            self.realm_state = data.get("realm_state", None)
 
     def should_npc_appear(self, npc_id):
         period = self.get_period()
