@@ -103,7 +103,6 @@ class GameManager:
         self._dialog_flags = {}
         self._visited_nanhu = False
         self._pending_nanhu_intro = False
-        self._explored_areas = {}
 
         self.puzzle_manager = PuzzleManager()
         self.guizhong_puzzle = GuizhongPuzzle(self.puzzle_manager, self.player.inventory)
@@ -1343,9 +1342,8 @@ class GameManager:
                     self.ui_manager.clear_and_reset()
 
             elif menu_action == "continue":
-                # 标题画面读档菜单取消时返回TITLE，游戏中暂停菜单返回PLAYING
-                if self.menu.current_menu == "title_load" or \
-                   (not self.menu.active and self.state == GameState.TITLE):
+                # 从标题画面进入的读档菜单，Esc返回标题
+                if self.menu.current_menu == "title_load":
                     self.menu.close()
                     self.state = GameState.TITLE
                 else:

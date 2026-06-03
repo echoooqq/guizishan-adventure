@@ -89,32 +89,32 @@ class HUD:
         time_str = game_clock.get_time_string()
         period_name = game_clock.get_period_name()
 
-        # 计算HUD总宽度
-        elements = []
-        elements.append(("stamina", stamina))
-        elements.append(("badges", badge_count))
-        elements.append(("time", day_count, time_str, period_name))
-
-        # 绘制各元素
         x = HUD_MARGIN + HUD_PADDING
         y = HUD_MARGIN + HUD_PADDING
 
-        # --- 体力条 ---
+        # 先绘制各元素到临时Surface以测量总宽度
+        temp_surf = pygame.Surface((INTERNAL_WIDTH, 30), pygame.SRCALPHA)
+        end_x = self._draw_all(temp_surf, x, y, stamina, badge_count, day_count, time_str, period_name)
+
+        # 绘制半透明背景遮罩（问题7修复）
+        bg_width = end_x - x + HUD_PADDING * 2
+        bg_height = 14 + HUD_PADDING * 2
+        bg_rect = pygame.Rect(HUD_MARGIN, HUD_MARGIN, bg_width, bg_height)
+        bg_surf = pygame.Surface((bg_width, bg_height), pygame.SRCALPHA)
+        bg_surf.fill((0, 0, 0, 100))
+        surface.blit(bg_surf, bg_rect.topleft)
+
+        # 在游戏画面上绘制HUD元素
+        self._draw_all(surface, x, y, stamina, badge_count, day_count, time_str, period_name)
+
+    def _draw_all(self, surface, x, y, stamina, badge_count, day_count, time_str, period_name):
+        """绘制所有HUD元素，返回结束x坐标"""
         x = self._draw_stamina(surface, x, y, stamina)
-
-        # 间距
         x += 8
-
-        # --- 徽章进度 ---
         x = self._draw_badges(surface, x, y, badge_count)
-
-        # 间距
         x += 8
-
-        # --- 游戏时间 ---
         x = self._draw_time(surface, x, y, day_count, time_str, period_name)
-
-        return  # HUD绘制完成
+        return x
 
     def _draw_stamina(self, surface, x, y, stamina):
         """绘制体力条"""

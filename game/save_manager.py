@@ -285,7 +285,6 @@ class SaveManager:
         # 恢复已探索区域到小地图模块
         game_manager.minimap.load_explored_data(save_data.explored_areas)
         game_manager.minimap.invalidate_cache()
-        game_manager._explored_areas = dict(save_data.explored_areas)
 
         # 更新摄像机
         from config import PLAYER_HEIGHT

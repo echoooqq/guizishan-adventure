@@ -87,6 +87,9 @@ class Minimap:
         self._explored_chunks = {}  # map_id -> set of (chunk_x, chunk_y)
         self._fog_dirty = set()  # 需要重新渲染迷雾的map_id集合
         self._fullscreen_fog_cache = {}  # (map_id, render_w, render_h) -> fog Surface
+        # 雷达迷雾缓存（问题2修复：避免每帧重算）
+        self._radar_fog_cache_key = None  # (map_id, player_chunk_x, player_chunk_y)
+        self._radar_fog_cache_surf = None
         self._minimap_frame = None
         self._font = None
         self._load_frame()
@@ -128,12 +131,13 @@ class Minimap:
         # 如果有新chunk被探索，标记迷雾需要重绘
         if len(chunks) > old_count:
             self._fog_dirty.add(map_id)
-            # 清除全屏迷雾缓存
+            # 清除迷雾缓存
             keys_to_remove = [k for k in self._fullscreen_fog_cache if k[0] == map_id]
             for k in keys_to_remove:
                 del self._fullscreen_fog_cache[k]
-            # 清除其他校区缩略图缓存
             self._fullmap_cache.pop(map_id, None)
+            # 清除雷达迷雾缓存
+            self._radar_fog_cache_key = None
 
     def is_explored(self, map_id, tile_x, tile_y):
         """检查指定位置是否已探索"""
@@ -143,10 +147,7 @@ class Minimap:
         return (cx, cy) in chunks
 
     def _get_chunk_distance(self, map_id, chunk_x, chunk_y):
-        """计算指定chunk到最近已探索chunk的距离（chunk单位）
-
-        返回0表示已探索，返回FEATHER_RADIUS_CHUNKS+1表示完全在羽化范围外
-        """
+        """计算指定chunk到最近已探索chunk的距离（chunk单位）"""
         chunks = self._explored_chunks.get(map_id, set())
         if not chunks:
             return FEATHER_RADIUS_CHUNKS + 1
@@ -154,31 +155,22 @@ class Minimap:
         if (chunk_x, chunk_y) in chunks:
             return 0
 
-        # 在羽化半径内搜索最近的已探索chunk
         min_dist = FEATHER_RADIUS_CHUNKS + 1
         search_r = FEATHER_RADIUS_CHUNKS
         for dx in range(-search_r, search_r + 1):
             for dy in range(-search_r, search_r + 1):
                 if (chunk_x + dx, chunk_y + dy) in chunks:
-                    # 欧几里得距离
                     dist = math.sqrt(dx * dx + dy * dy)
                     if dist < min_dist:
                         min_dist = dist
         return min_dist
 
     def _get_fog_alpha(self, chunk_dist, max_alpha):
-        """根据chunk距离计算迷雾alpha值（羽化渐变）
-
-        chunk_dist=0 → alpha=0（已探索，无迷雾）
-        chunk_dist=1 → alpha约为max_alpha的1/3（羽化边缘）
-        chunk_dist=2 → alpha约为max_alpha的2/3
-        chunk_dist>=FEATHER_RADIUS_CHUNKS → alpha=max_alpha（完全未探索）
-        """
+        """根据chunk距离计算迷雾alpha值（羽化渐变）"""
         if chunk_dist <= 0:
             return 0
         if chunk_dist >= FEATHER_RADIUS_CHUNKS:
             return max_alpha
-        # 线性插值
         ratio = chunk_dist / FEATHER_RADIUS_CHUNKS
         return int(max_alpha * ratio)
 
@@ -196,10 +188,10 @@ class Minimap:
             self._explored_chunks[map_id] = set(
                 tuple(c) for c in chunk_list
             )
-        # 全部标记为需要重绘
         self._fog_dirty = set(self._explored_chunks.keys())
         self._fullscreen_fog_cache.clear()
         self._fullmap_cache.clear()
+        self._radar_fog_cache_key = None
 
     # ─── 从Tiled地图渲染真实外观 ───
 
@@ -267,7 +259,8 @@ class Minimap:
         minimap_surf = pygame.Surface((MINIMAP_WIDTH, MINIMAP_HEIGHT), pygame.SRCALPHA)
         minimap_surf.fill((20, 22, 35, 200))
 
-        # 从全图中裁剪雷达范围并缩放到小地图尺寸
+        # 【问题1修复】正确处理边缘裁剪偏移
+        # 计算裁剪区域与全图的交集
         src_x = max(0, int(crop_x))
         src_y = max(0, int(crop_y))
         src_right = min(fullmap.get_width(), int(crop_x + radar_px_w))
@@ -277,11 +270,23 @@ class Minimap:
 
         if src_w > 0 and src_h > 0:
             cropped = fullmap.subsurface(pygame.Rect(src_x, src_y, src_w, src_h))
-            scaled = pygame.transform.smoothscale(cropped, (MINIMAP_WIDTH, MINIMAP_HEIGHT))
-            minimap_surf.blit(scaled, (0, 0))
+            # 计算裁剪区域在小地图上的偏移位置（保持居中）
+            # crop偏移量 = 实际裁剪起点 - 期望裁剪起点
+            offset_x_in_crop = src_x - crop_x  # crop_x可能为负，src_x=0，偏移为正
+            offset_y_in_crop = src_y - crop_y
+            # 缩放比例
+            scale_x = MINIMAP_WIDTH / radar_px_w
+            scale_y = MINIMAP_HEIGHT / radar_px_h
+            # 裁剪区域缩放后的尺寸和位置
+            scaled_w = max(1, int(src_w * scale_x))
+            scaled_h = max(1, int(src_h * scale_y))
+            dest_x = int(offset_x_in_crop * scale_x)
+            dest_y = int(offset_y_in_crop * scale_y)
+            scaled = pygame.transform.smoothscale(cropped, (scaled_w, scaled_h))
+            minimap_surf.blit(scaled, (dest_x, dest_y))
 
-        # 未探索区域叠加羽化迷雾
-        fog = self._render_fog_radar(map_id, tile_map, player_px, player_py)
+        # 未探索区域叠加羽化迷雾（带缓存）
+        fog = self._render_fog_radar_cached(map_id, tile_map, player_px, player_py)
         minimap_surf.blit(fog, (0, 0))
 
         # 绘制地标（仅已探索区域）
@@ -316,6 +321,27 @@ class Minimap:
         surface.blit(border_surf, border_rect.topleft)
         surface.blit(minimap_surf, (dest_x, dest_y))
 
+    def _render_fog_radar_cached(self, map_id, tile_map, player_px, player_py):
+        """渲染雷达式小地图的迷雾层（带缓存，问题2修复）
+
+        当玩家所在chunk不变且无新探索时，复用上一帧的迷雾Surface
+        """
+        player_tx = int(player_px / TILE_SIZE)
+        player_ty = int(player_py / TILE_SIZE)
+        player_cx = player_tx // 4
+        player_cy = player_ty // 4
+
+        cache_key = (map_id, player_cx, player_cy)
+
+        if self._radar_fog_cache_key == cache_key and self._radar_fog_cache_surf is not None:
+            return self._radar_fog_cache_surf
+
+        # 需要重新渲染
+        fog = self._render_fog_radar(map_id, tile_map, player_px, player_py)
+        self._radar_fog_cache_key = cache_key
+        self._radar_fog_cache_surf = fog
+        return fog
+
     def _render_fog_radar(self, map_id, tile_map, player_px, player_py):
         """渲染雷达式小地图的迷雾层（含羽化渐变）"""
         fog = pygame.Surface((MINIMAP_WIDTH, MINIMAP_HEIGHT), pygame.SRCALPHA)
@@ -329,8 +355,7 @@ class Minimap:
         player_tx = player_px / TILE_SIZE
         player_ty = player_py / TILE_SIZE
 
-        # 预计算本帧可见范围内的chunk距离（避免逐像素重复计算）
-        # 收集可见范围内的所有chunk坐标
+        # 预计算chunk距离缓存
         chunk_dist_cache = {}
 
         for py in range(MINIMAP_HEIGHT):
@@ -341,11 +366,9 @@ class Minimap:
                 if tile_x < 0 or tile_x >= map_w or tile_y < 0 or tile_y >= map_h:
                     continue
 
-                # 获取chunk坐标
                 cx = tile_x // 4
                 cy = tile_y // 4
 
-                # 缓存chunk距离
                 if (cx, cy) not in chunk_dist_cache:
                     chunk_dist_cache[(cx, cy)] = self._get_chunk_distance(map_id, cx, cy)
 
@@ -420,7 +443,8 @@ class Minimap:
         # 绘制迷雾层（含羽化渐变，带缓存）
         cache_key = (map_id, render_w, render_h)
         if cache_key not in self._fullscreen_fog_cache:
-            fog_surf = self._render_fog_fullscreen(map_id, tile_map, render_w, render_h, scale)
+            # 【问题3修复】使用chunk级别渲染代替逐像素渲染
+            fog_surf = self._render_fog_fullscreen_chunk(map_id, tile_map, render_w, render_h, scale)
             self._fullscreen_fog_cache[cache_key] = fog_surf
             self._fog_dirty.discard(map_id)
         surface.blit(self._fullscreen_fog_cache[cache_key], (offset_x, offset_y))
@@ -454,7 +478,7 @@ class Minimap:
                     small_h = 38
                     small_surf = pygame.transform.smoothscale(other_fullmap, (small_w, small_h))
                     small_scale = min(small_w / other_map.width, small_h / other_map.height)
-                    small_fog = self._render_fog_fullscreen(other_id, other_map, small_w, small_h, small_scale)
+                    small_fog = self._render_fog_fullscreen_chunk(other_id, other_map, small_w, small_h, small_scale)
                     small_surf.blit(small_fog, (0, 0))
                     self._fullmap_cache[other_id] = small_surf
 
@@ -467,40 +491,35 @@ class Minimap:
                 surface.blit(name_surf, (other_x, other_y - 10))
                 other_x += 60
 
-    def _render_fog_fullscreen(self, map_id, tile_map, render_w, render_h, scale):
-        """渲染全屏地图的迷雾层（含羽化渐变）"""
-        fog = pygame.Surface((render_w, render_h), pygame.SRCALPHA)
+    def _render_fog_fullscreen_chunk(self, map_id, tile_map, render_w, render_h, scale):
+        """渲染全屏地图的迷雾层（chunk级别，问题3修复）
 
+        按chunk（4x4 tile）为单位渲染迷雾，而非逐像素，
+        大幅减少计算量（约1/16），然后用smoothscale平滑过渡
+        """
         map_w = tile_map.width
         map_h = tile_map.height
         if map_w <= 0 or map_h <= 0:
+            fog = pygame.Surface((render_w, render_h), pygame.SRCALPHA)
             fog.fill((FOG_RGB[0], FOG_RGB[1], FOG_RGB[2], FOG_ALPHA_FULLSCREEN))
             return fog
 
-        # 预计算chunk距离缓存
-        chunk_dist_cache = {}
+        # 计算chunk网格尺寸
+        chunks_x = (map_w + 3) // 4
+        chunks_y = (map_h + 3) // 4
 
-        for py in range(render_h):
-            for px in range(render_w):
-                tile_x = int(px / scale)
-                tile_y = int(py / scale)
+        # 在chunk分辨率上渲染迷雾
+        chunk_surf = pygame.Surface((chunks_x, chunks_y), pygame.SRCALPHA)
 
-                if tile_x < 0 or tile_x >= map_w or tile_y < 0 or tile_y >= map_h:
-                    fog.set_at((px, py), (FOG_RGB[0], FOG_RGB[1], FOG_RGB[2], FOG_ALPHA_FULLSCREEN))
-                    continue
-
-                cx = tile_x // 4
-                cy = tile_y // 4
-
-                if (cx, cy) not in chunk_dist_cache:
-                    chunk_dist_cache[(cx, cy)] = self._get_chunk_distance(map_id, cx, cy)
-
-                dist = chunk_dist_cache[(cx, cy)]
+        for cy in range(chunks_y):
+            for cx in range(chunks_x):
+                dist = self._get_chunk_distance(map_id, cx, cy)
                 alpha = self._get_fog_alpha(dist, FOG_ALPHA_FULLSCREEN)
-
                 if alpha > 0:
-                    fog.set_at((px, py), (FOG_RGB[0], FOG_RGB[1], FOG_RGB[2], alpha))
+                    chunk_surf.set_at((cx, cy), (FOG_RGB[0], FOG_RGB[1], FOG_RGB[2], alpha))
 
+        # 缩放到目标尺寸（smoothscale自动平滑过渡）
+        fog = pygame.transform.smoothscale(chunk_surf, (render_w, render_h))
         return fog
 
     def _draw_landmarks_fullscreen(self, surface, map_id, scale, offset_x, offset_y):
@@ -543,3 +562,4 @@ class Minimap:
             self._fullmap_render_cache.clear()
             self._fullmap_cache.clear()
             self._fullscreen_fog_cache.clear()
+        self._radar_fog_cache_key = None

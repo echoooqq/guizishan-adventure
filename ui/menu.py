@@ -205,6 +205,13 @@ class Menu:
                 return info.get("empty", True)
         return True
 
+    def _get_slot_info(self, slot_id):
+        """获取存档槽位信息"""
+        for info in self._save_infos:
+            if info.get("slot_id") == slot_id:
+                return info
+        return None
+
     def _confirm_selection(self):
         """确认选中项，返回对应动作"""
         items = self._get_current_items()
@@ -394,10 +401,11 @@ class Menu:
             )
             surface.blit(text, text_rect)
 
-            # 存档信息
-            if action != "back" and i < len(self._save_infos):
-                info = self._save_infos[i]
-                if not info.get("empty", True):
+            # 存档信息（通过slot_id查找，而非索引）
+            if action != "back":
+                slot_id = self._action_to_slot_id(action)
+                info = self._get_slot_info(slot_id) if slot_id else None
+                if info and not info.get("empty", True):
                     save_time = info.get("save_time", "")
                     badge_count = info.get("badge_count", 0)
                     info_text = self._small_font.render(
@@ -470,10 +478,11 @@ class Menu:
             )
             surface.blit(text, text_rect)
 
-            # 存档信息
-            if action != "back" and i < len(self._save_infos):
-                info = self._save_infos[i]
-                if not info.get("empty", True):
+            # 存档信息（通过slot_id查找，而非索引）
+            if action != "back":
+                slot_id = self._action_to_slot_id(action)
+                info = self._get_slot_info(slot_id) if slot_id else None
+                if info and not info.get("empty", True):
                     save_time = info.get("save_time", "")
                     badge_count = info.get("badge_count", 0)
                     info_text = self._small_font.render(
