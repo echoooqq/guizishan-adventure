@@ -1306,21 +1306,16 @@ class GameManager:
         if self.state == GameState.TITLE:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN or event.key == pygame.K_SPACE:
+                    # 新游戏
                     self.state = GameState.PLAYING
                     self.ui_manager.clear_and_reset()
                 elif event.key == pygame.K_l:
-                    # 按L键读档
+                    # 按L键打开存档选择菜单
                     if self.save_manager.has_any_save():
-                        save_data = self.save_manager.load("auto")
-                        if save_data is None:
-                            for slot in ["slot_1", "slot_2"]:
-                                save_data = self.save_manager.load(slot)
-                                if save_data:
-                                    break
-                        if save_data:
-                            self.save_manager.apply_save_data(save_data, self)
-                            self.state = GameState.PLAYING
-                            self.ui_manager.clear_and_reset()
+                        self.menu.open("title_load")
+                        save_infos = self.save_manager.get_all_save_info()
+                        self.menu.set_save_infos(save_infos)
+                        self.state = GameState.PAUSED  # 复用PAUSED状态显示菜单
 
         elif self.state == GameState.PLAYING:
             if event.type == pygame.KEYDOWN:
@@ -1336,25 +1331,56 @@ class GameManager:
 
         elif self.state == GameState.PAUSED:
             menu_action = self.menu.handle_event(event)
-            if menu_action == "continue":
+
+            # 读档确认（返回tuple）
+            if isinstance(menu_action, tuple) and menu_action[0] == "load_confirm":
+                slot_id = menu_action[1]
+                save_data = self.save_manager.load(slot_id)
+                if save_data:
+                    self.save_manager.apply_save_data(save_data, self)
+                    self.menu.close()
+                    self.state = GameState.PLAYING
+                    self.ui_manager.clear_and_reset()
+
+            elif menu_action == "continue":
+                # 标题画面读档菜单取消时返回TITLE，游戏中暂停菜单返回PLAYING
+                if self.menu.current_menu == "title_load" or \
+                   (not self.menu.active and self.state == GameState.TITLE):
+                    self.menu.close()
+                    self.state = GameState.TITLE
+                else:
+                    self.menu.close()
+                    self.state = GameState.PLAYING
+
+            elif menu_action == "cancel_title_load":
                 self.menu.close()
-                self.state = GameState.PLAYING
+                self.state = GameState.TITLE
+
             elif menu_action == "inventory":
                 self.menu.close()
                 self._open_inventory()
+
             elif menu_action == "map":
                 self.menu.close()
                 self.state = GameState.MAP_VIEW
+
             elif menu_action == "open_save":
                 save_infos = self.save_manager.get_all_save_info()
                 self.menu.set_save_infos(save_infos)
+
+            elif menu_action == "open_load":
+                save_infos = self.save_manager.get_all_save_info()
+                self.menu.set_save_infos(save_infos)
+
             elif menu_action == "open_settings":
                 pass
+
             elif menu_action == "quit_title":
                 self.save_manager.auto_save(self)
                 self.menu.close()
                 self.state = GameState.TITLE
                 self._create_title_ui()
+
             elif menu_action in ("auto_save", "slot_1", "slot_2"):
                 # 存档槽位确认
                 slot_map = {"auto_save": "auto", "slot_1": "slot_1", "slot_2": "slot_2"}
@@ -1758,7 +1784,11 @@ class GameManager:
             self._draw_game()
             self._draw_interaction_prompts()
         elif self.state == GameState.PAUSED:
-            self._draw_game()
+            if self.menu.current_menu == "title_load":
+                # 标题画面的读档菜单：显示标题背景+菜单
+                self._draw_title()
+            else:
+                self._draw_game()
             self.menu.draw(self.internal_surface)
         elif self.state == GameState.DIALOG:
             self._draw_game()

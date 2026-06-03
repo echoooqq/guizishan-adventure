@@ -1,22 +1,22 @@
 {
   "version": 1,
-  "save_time": "2026-06-03 11:35:33",
-  "play_time": 4.015999999999991,
+  "save_time": "2026-06-03 10:48:55",
+  "play_time": 22.340999999999507,
   "player": {
-    "x": 943.4100431999999,
-    "y": 1182.3805135999992,
-    "direction": "right",
-    "stamina": 99.75499999999977
+    "x": 971.428797600001,
+    "y": 1160.6903976000024,
+    "direction": "up",
+    "stamina": 100
   },
   "current_map": "main_campus",
   "spawn_point": "default",
   "inventory": [
     {
-      "id": "osmanthus_branch",
+      "id": "osmanthus_bookmark",
       "count": 1
     },
     {
-      "id": "old_bookmark",
+      "id": "water_bottle",
       "count": 1
     }
   ],
@@ -30,7 +30,7 @@
     "fountain": "undiscovered"
   },
   "clock": {
-    "game_time": 8.160639999999955,
+    "game_time": 8.893639999999712,
     "day_count": 1,
     "realm_state": null,
     "realm_pulse_timer": 0.0
@@ -95,6 +95,14 @@
         18
       ],
       [
+        14,
+        15
+      ],
+      [
+        17,
+        17
+      ],
+      [
         13,
         16
       ],
@@ -127,6 +135,10 @@
         20
       ],
       [
+        17,
+        19
+      ],
+      [
         13,
         18
       ],
@@ -137,6 +149,10 @@
       [
         16,
         17
+      ],
+      [
+        15,
+        15
       ]
     ]
   }
