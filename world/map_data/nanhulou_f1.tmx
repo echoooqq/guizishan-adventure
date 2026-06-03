@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <map version="1.5" orientation="orthogonal" renderorder="right-down" width="20" height="15" tilewidth="16" tileheight="16" infinite="0" nextobjectid="12" nextlayerid="7">
- <tileset firstgid="1" name="indoor_tileset" tilewidth="16" tileheight="16" tilecount="24" columns="24">
-  <image source="../../assets/tilesets/indoor_tileset.png" width="384" height="16" />
+ <tileset firstgid="1" name="indoor_tileset" tilewidth="16" tileheight="16" tilecount="43" columns="43">
+  <image source="../../assets/tilesets/indoor_tileset.png" width="688" height="16" />
   <tile id="4">
    <properties>
     <property name="solid" type="bool" value="true" />
@@ -72,15 +72,95 @@
     <property name="solid" type="bool" value="true" />
    </properties>
   </tile>
+  <tile id="24">
+   <properties>
+    <property name="solid" type="bool" value="true" />
+   </properties>
+  </tile>
+  <tile id="25">
+   <properties>
+    <property name="solid" type="bool" value="true" />
+   </properties>
+  </tile>
+  <tile id="27">
+   <properties>
+    <property name="solid" type="bool" value="true" />
+   </properties>
+  </tile>
+  <tile id="28">
+   <properties>
+    <property name="solid" type="bool" value="true" />
+   </properties>
+  </tile>
+  <tile id="29">
+   <properties>
+    <property name="solid" type="bool" value="true" />
+   </properties>
+  </tile>
+  <tile id="30">
+   <properties>
+    <property name="solid" type="bool" value="true" />
+   </properties>
+  </tile>
+  <tile id="31">
+   <properties>
+    <property name="solid" type="bool" value="true" />
+   </properties>
+  </tile>
+  <tile id="32">
+   <properties>
+    <property name="solid" type="bool" value="true" />
+   </properties>
+  </tile>
+  <tile id="33">
+   <properties>
+    <property name="solid" type="bool" value="true" />
+   </properties>
+  </tile>
+  <tile id="34">
+   <properties>
+    <property name="solid" type="bool" value="true" />
+   </properties>
+  </tile>
+  <tile id="35">
+   <properties>
+    <property name="solid" type="bool" value="true" />
+   </properties>
+  </tile>
+  <tile id="37">
+   <properties>
+    <property name="solid" type="bool" value="true" />
+   </properties>
+  </tile>
+  <tile id="38">
+   <properties>
+    <property name="solid" type="bool" value="true" />
+   </properties>
+  </tile>
+  <tile id="39">
+   <properties>
+    <property name="solid" type="bool" value="true" />
+   </properties>
+  </tile>
+  <tile id="41">
+   <properties>
+    <property name="solid" type="bool" value="true" />
+   </properties>
+  </tile>
+  <tile id="42">
+   <properties>
+    <property name="solid" type="bool" value="true" />
+   </properties>
+  </tile>
  </tileset>
  <layer id="1" name="ground" width="20" height="15">
   <data encoding="csv">
-3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,4,4,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,4,4,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3
+37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,4,4,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,4,4,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37
 </data>
  </layer>
  <layer id="2" name="structures" width="20" height="15">
   <data encoding="csv">
-6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,0,8,8,8,8,8,0,0,0,0,0,0,8,8,8,0,14,0,6,5,0,7,7,7,7,7,0,0,0,0,0,0,7,7,7,0,0,0,5,5,0,0,0,0,0,0,0,0,24,0,0,0,0,0,0,0,0,0,5,5,0,0,0,10,10,0,0,0,0,0,0,0,0,10,10,0,0,0,5,5,0,0,0,9,9,0,0,0,0,0,0,0,0,9,9,0,0,0,5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,5,0,0,0,0,0,0,0,0,11,11,0,0,0,0,0,0,0,0,5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,5,0,23,0,0,0,0,0,0,0,0,0,0,0,0,0,0,18,0,5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,5,0,0,0,0,0,0,0,0,19,19,0,0,0,0,0,0,0,0,5,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6
+36,36,36,36,36,36,36,36,36,36,36,36,36,36,36,36,36,36,36,36,36,0,38,8,8,8,8,0,0,0,0,0,0,8,8,8,0,14,0,36,35,0,7,7,7,7,7,0,0,0,0,0,0,7,7,7,0,0,0,35,35,0,0,0,0,0,0,0,0,24,0,0,0,0,0,0,0,0,0,35,35,0,0,0,10,10,0,0,0,0,0,0,0,0,10,10,0,0,0,35,35,0,0,0,9,9,0,0,0,0,0,0,0,0,9,9,0,0,0,35,35,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,35,35,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,35,35,0,0,0,0,0,0,0,0,11,11,0,0,0,0,0,0,0,0,35,35,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,35,35,0,23,0,0,0,0,0,0,0,0,0,0,0,0,0,0,18,0,35,35,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,35,35,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,35,35,0,0,0,0,0,0,0,0,19,19,0,0,0,0,0,0,0,0,35,36,36,36,36,36,36,36,36,36,36,36,36,36,36,36,36,36,36,36,36
 </data>
  </layer>
  <objectgroup id="3" name="objects">

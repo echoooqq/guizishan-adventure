@@ -244,7 +244,7 @@ Pygame窗口框架 → Tile地图渲染 → 玩家移动+碰撞 → 摄像机跟
 
 | 序号 | 任务 | 产出 | 预计耗时 |
 |------|------|------|----------|
-| 1 | 编写 `game/clock.py`：游戏时钟（1天=10分钟现实时间） | clock.py | 1.5h |
+| 1 | 编写 `game/clock.py`：游戏时钟（1天=6分钟现实时间） | clock.py | 1.5h |
 | 2 | 实现昼夜光照效果（关键帧插值法，11个关键帧） | 光照系统 | 2h |
 | 3 | 实现时段NPC出现/消失（广场舞阿姨仅夜晚等） | 时段NPC | 1h |
 | 4 | 实现桂中路谜题的夜晚限定（发光桂花树） | 夜晚谜题 | 0.5h |
@@ -420,7 +420,7 @@ SPRINT_SPEED = 3.5          # 冲刺速度
 SPRINT_STAMINA_COST = 1     # 冲刺体力消耗/秒
 STAMINA_REGEN = 0.5         # 站立体力恢复/秒
 MAX_STAMINA = 100           # 最大体力
-DAY_DURATION = 600          # 游戏内1天=现实秒数（10分钟）
+DAY_DURATION = 360          # 游戏内1天=现实秒数（6分钟）
 ```
 
 ### 4.2 `game/game_manager.py` — 游戏状态机
@@ -545,7 +545,7 @@ class PuzzleState(Enum):
 class GameClock:
     game_time: float       # 游戏内时间（0.0-24.0）
     day_count: int         # 天数
-    time_speed: float      # 时间流速（1天=600秒现实时间）
+    time_speed: float      # 时间流速（1天=360秒现实时间）
     realm_state: str       # 秘境状态：None / "dormant" / "awakened" / "dispelled"
 
     def get_period(self) -> str:

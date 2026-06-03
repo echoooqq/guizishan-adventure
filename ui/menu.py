@@ -321,6 +321,12 @@ class Menu:
         elif self.current_menu == "confirm_load":
             self._draw_confirm_load(surface)
 
+    def _draw_indicator(self, surface, x, y, color):
+        """绘制选中指示器（右指三角形），替代不兼容的▶字符"""
+        # 绘制5x7像素的右指三角形
+        points = [(x, y), (x, y + 7), (x + 5, y + 3)]
+        pygame.draw.polygon(surface, color, points)
+
     def _draw_pause_menu(self, surface):
         """绘制暂停主菜单"""
         title = self.title_font.render("暂停", True, MENU_TITLE_COLOR)
@@ -352,8 +358,7 @@ class Menu:
 
             color = MENU_ITEM_HOVER_COLOR if is_selected else MENU_ITEM_COLOR
             if is_selected:
-                indicator = self.font.render("▶", True, MENU_TITLE_COLOR)
-                surface.blit(indicator, (INTERNAL_WIDTH // 2 - 56, y))
+                self._draw_indicator(surface, INTERNAL_WIDTH // 2 - 56, y, MENU_TITLE_COLOR)
 
             text = self.font.render(label, True, color)
             text_rect = text.get_rect(
@@ -392,8 +397,7 @@ class Menu:
 
             color = MENU_ITEM_HOVER_COLOR if is_selected else MENU_ITEM_COLOR
             if is_selected:
-                indicator = self.font.render("▶", True, MENU_TITLE_COLOR)
-                surface.blit(indicator, (INTERNAL_WIDTH // 2 - 76, y))
+                self._draw_indicator(surface, INTERNAL_WIDTH // 2 - 76, y, MENU_TITLE_COLOR)
 
             text = self.font.render(label, True, color)
             text_rect = text.get_rect(
@@ -469,8 +473,7 @@ class Menu:
                 color = MENU_ITEM_COLOR
 
             if is_selected and not is_empty:
-                indicator = self.font.render("▶", True, MENU_TITLE_COLOR)
-                surface.blit(indicator, (INTERNAL_WIDTH // 2 - 76, y))
+                self._draw_indicator(surface, INTERNAL_WIDTH // 2 - 76, y, MENU_TITLE_COLOR)
 
             text = self.font.render(label, True, color)
             text_rect = text.get_rect(
@@ -531,11 +534,9 @@ class Menu:
 
         # 选中指示器
         if self._confirm_choice == 0:
-            indicator = self.font.render("▶", True, MENU_TITLE_COLOR)
-            surface.blit(indicator, (INTERNAL_WIDTH // 2 - 40, btn_y))
+            self._draw_indicator(surface, INTERNAL_WIDTH // 2 - 40, btn_y, MENU_TITLE_COLOR)
         else:
-            indicator = self.font.render("▶", True, MENU_TITLE_COLOR)
-            surface.blit(indicator, (INTERNAL_WIDTH // 2 + 2, btn_y))
+            self._draw_indicator(surface, INTERNAL_WIDTH // 2 + 2, btn_y, MENU_TITLE_COLOR)
 
     def _draw_settings_menu(self, surface):
         """绘制设置菜单"""
@@ -569,8 +570,7 @@ class Menu:
             color = MENU_ITEM_HOVER_COLOR if is_selected else MENU_ITEM_COLOR
 
             if is_selected:
-                indicator = self.font.render("▶", True, MENU_TITLE_COLOR)
-                surface.blit(indicator, (INTERNAL_WIDTH // 2 - 56, y))
+                self._draw_indicator(surface, INTERNAL_WIDTH // 2 - 56, y, MENU_TITLE_COLOR)
 
             text = self.font.render(label, True, color)
             text_rect = text.get_rect(

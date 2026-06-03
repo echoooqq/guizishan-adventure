@@ -111,8 +111,11 @@ class DialogBox:
     BOX_HEIGHT = 80
     PORTRAIT_SIZE = 28
     PORTRAIT_MARGIN = 6
-    TEXT_LEFT_MARGIN = 6
+    TEXT_LEFT_MARGIN = 8
+    TEXT_TOP_PADDING = 10
+    TEXT_RIGHT_PADDING = 10
     CHOICE_INDENT = 12
+    CHOICE_SPACING = 4
 
     def __init__(self):
         self.active = False
@@ -143,8 +146,8 @@ class DialogBox:
         self._portrait_x = self._box_x + self.PORTRAIT_MARGIN
         self._portrait_y = self._box_y + self.PORTRAIT_MARGIN
         self._text_x = self._portrait_x + self.PORTRAIT_SIZE + self.TEXT_LEFT_MARGIN
-        self._text_y = self._box_y + 6
-        self._text_max_width = self._box_x + self._box_w - self._text_x - self.PORTRAIT_MARGIN
+        self._text_y = self._box_y + self.TEXT_TOP_PADDING
+        self._text_max_width = self._box_x + self._box_w - self._text_x - self.TEXT_RIGHT_PADDING
 
     def start(self, dialogue_data, start_key="default", on_complete=None, speaker_color=None, portrait_color=None, game_state=None):
         self.active = True
@@ -352,12 +355,20 @@ class DialogBox:
         if self.choices is not None:
             choice_y = text_y
             if self.displayed_text:
-                choice_y += self.font.get_linesize() + 2
+                choice_y += self.font.get_linesize() + self.CHOICE_SPACING
             for i, choice in enumerate(self.choices):
                 if choice_y + self.font.get_linesize() > max_y:
                     break
-                prefix = "> " if i == self.selected_choice else "  "
-                choice_text = f"{prefix}{choice.get('text', '')}"
+                # 选中指示器用三角形绘制（避免Zpix不支持▶）
+                if i == self.selected_choice:
+                    ind_x = self._text_x + self.CHOICE_INDENT - 6
+                    ind_y = choice_y + self.font.get_linesize() // 2
+                    pygame.draw.polygon(surface, COLOR_CHOICE_HIGHLIGHT, [
+                        (ind_x, ind_y - 3),
+                        (ind_x + 4, ind_y),
+                        (ind_x, ind_y + 3),
+                    ])
+                choice_text = choice.get('text', '')
                 color = COLOR_CHOICE_HIGHLIGHT if i == self.selected_choice else COLOR_DIALOG_TEXT
                 choice_surf = self.font.render(choice_text, True, color)
                 surface.blit(choice_surf, (self._text_x + self.CHOICE_INDENT, choice_y))

@@ -169,6 +169,9 @@ class GameManager:
         self._realm_hint_duration = 5.0
         self._realm_hint_active = False
         self._tutorial_shown = False
+        self._all_badges_collected = False
+        self._guardian_npc = None
+        self._pending_fountain_hint = False
 
         self.transition_manager = TransitionManager()
         self._map_cache = {}
@@ -784,10 +787,9 @@ class GameManager:
         from entities.interactive_object import InteractiveObject
         from entities.npc import NPC
 
-        spawn_x, spawn_y = self.tile_map.get_spawn_position()
-
-        sculpture_x = spawn_x + 96
-        sculpture_y = spawn_y + 64
+        # 博雅广场位于地图坐标(85, 25)，像素坐标(1360, 400)
+        sculpture_x = 85 * TILE_SIZE
+        sculpture_y = 25 * TILE_SIZE
 
         sculpture = InteractiveObject(
             x=sculpture_x, y=sculpture_y,
@@ -914,6 +916,9 @@ class GameManager:
                 "hair_color": (180, 180, 200),
             },
         )
+        # 守护者初始不可见，集齐6枚徽章后才出现
+        guardian.visible = False
+        self._guardian_npc = guardian
 
         def on_guardian_interact(npc_self):
             if not gm.puzzle_manager.is_fountain_unlocked():
@@ -1236,6 +1241,38 @@ class GameManager:
                 self._outro_phase = 0
                 self._outro_timer = 0.0
                 self._outro_fade_alpha = 0
+
+        # 检测是否集齐6枚徽章碎片，触发引导前往喷泉广场
+        self._check_all_badges_collected()
+
+    def _check_all_badges_collected(self):
+        """检测是否集齐6枚徽章碎片，若已集齐则触发守护者引导对话"""
+        if self._all_badges_collected:
+            return
+        if not self.puzzle_manager.is_fountain_unlocked():
+            return
+        self._all_badges_collected = True
+        # 守护者出现
+        if self._guardian_npc:
+            self._guardian_npc.visible = True
+        # 如果当前可以弹出对话，立即触发；否则标记待处理
+        if self.state == GameState.PLAYING:
+            self._show_fountain_hint()
+        else:
+            self._pending_fountain_hint = True
+
+    def _show_fountain_hint(self):
+        """显示守护者引导对话，引导玩家前往喷泉广场"""
+        self.state = GameState.DIALOG
+        self.dialog_box.start(
+            {"default": [
+                {"speaker": "秘境守护者", "text": "……六枚徽章碎片已经集齐。"},
+                {"speaker": "秘境守护者", "text": "来喷泉广场吧，将它们按正确顺序嵌入基座，第七枚碎片将自行显现。"},
+            ]},
+            start_key="default",
+            on_complete=self._on_dialog_complete,
+            game_state=self._get_dialog_game_state(),
+        )
 
     def _start_bookshelf_animation(self):
         if self._nanhulou_bookshelf_obj is None:
@@ -1627,6 +1664,12 @@ class GameManager:
                     self.state = GameState.PUZZLE
                 return
         self.state = GameState.PLAYING
+        # 对话结束后检测是否集齐6枚徽章
+        self._check_all_badges_collected()
+        # 如果有待处理的守护者引导对话，现在触发
+        if self._pending_fountain_hint and self.state == GameState.PLAYING:
+            self._pending_fountain_hint = False
+            self._show_fountain_hint()
 
     def _create_pause_ui(self):
         self.menu.open("pause")
@@ -1656,7 +1699,7 @@ class GameManager:
             # Logo滑入动画
             self._title_anim_timer += dt
             if not self._title_logo_settled:
-                self._title_logo_y = min(INTERNAL_HEIGHT // 2 - 40, self._title_logo_y + 60 * dt)
+                self._title_logo_y = min(INTERNAL_HEIGHT // 2 - 40, self._title_logo_y + 90 * dt)
                 if self._title_logo_y >= INTERNAL_HEIGHT // 2 - 40:
                     self._title_logo_y = INTERNAL_HEIGHT // 2 - 40
                     self._title_logo_settled = True
@@ -1893,7 +1936,7 @@ class GameManager:
             "校园秘境探险", True, COLOR_WHITE
         )
         sub_rect = sub_text.get_rect(
-            centerx=INTERNAL_WIDTH // 2, centery=logo_y + 20
+            centerx=INTERNAL_WIDTH // 2, centery=logo_y + 28
         )
         self.internal_surface.blit(sub_text, sub_rect)
 
@@ -2096,6 +2139,11 @@ class GameManager:
     def _update_npc_visibility(self):
         for npc in self.npcs:
             if hasattr(npc, 'npc_id'):
+                # 守护者由徽章数量控制可见性，不受时段影响
+                if npc.npc_id == "guardian":
+                    if self._all_badges_collected:
+                        npc.visible = True
+                    continue
                 should_show = self.game_clock.should_npc_appear(npc.npc_id)
                 npc.visible = should_show
 
@@ -2792,6 +2840,9 @@ class GameManager:
         self._realm_animating = False
         self._realm_first_night_shown = False
         self._tutorial_shown = False
+        self._all_badges_collected = False
+        self._guardian_npc = None
+        self._pending_fountain_hint = False
         self._visited_nanhu = False
         self._pending_nanhu_intro = False
         self._active_puzzle = None

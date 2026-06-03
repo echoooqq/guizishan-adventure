@@ -106,11 +106,18 @@ class Minimap:
             except pygame.error:
                 pass
 
-    def _get_font(self):
-        """获取字体（延迟加载）"""
-        if self._font is None:
-            self._font = pygame.font.Font(FONT_PATH, 8)
-        return self._font
+    def _get_font(self, size=8):
+        """获取字体（延迟加载），默认小字号用于雷达，可指定更大字号用于全屏"""
+        if size == 8:
+            if self._font is None:
+                self._font = pygame.font.Font(FONT_PATH, 8)
+            return self._font
+        else:
+            if not hasattr(self, '_font_cache'):
+                self._font_cache = {}
+            if size not in self._font_cache:
+                self._font_cache[size] = pygame.font.Font(FONT_PATH, size)
+            return self._font_cache[size]
 
     def update(self, dt):
         """更新小地图状态"""
@@ -528,7 +535,7 @@ class Minimap:
         if not landmarks:
             return
 
-        font = self._get_font()
+        font = self._get_font(12)
 
         for landmark_type, tile_x, tile_y in landmarks:
             if not self.is_explored(map_id, tile_x, tile_y):
@@ -547,8 +554,14 @@ class Minimap:
 
             name = LANDMARK_NAMES.get(landmark_type, "")
             if name:
-                name_surf = font.render(name, True, color)
-                surface.blit(name_surf, (px + 4, py - 4))
+                name_surf = font.render(name, True, (255, 255, 255))
+                name_rect = name_surf.get_rect(left=px + 5, centery=py)
+                # 描边文字：4方向深色描边，更自然美观
+                outline_color = (60, 55, 45)
+                for ox, oy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+                    outline_surf = font.render(name, True, outline_color)
+                    surface.blit(outline_surf, (name_rect.x + ox, name_rect.y + oy))
+                surface.blit(name_surf, name_rect)
 
     def invalidate_cache(self, map_id=None):
         """使缓存失效（地图变化时调用）"""

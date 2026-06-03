@@ -26,6 +26,7 @@ NPC_SPRITE_MAP = {
     "pe_teacher": "pe_teacher_sheet.png",
     "cafeteria_auntie": "cafeteria_auntie_sheet.png",
     "guardian": "guardian_sheet.png",
+    "passing_student": "passing_student_sheet.png",
 }
 
 # 精灵表缓存

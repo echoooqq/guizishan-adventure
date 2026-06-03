@@ -41,8 +41,44 @@ GID_LAWN_ROCK = 27
 GID_GATE_PILLAR = 28
 GID_GATE_BEAM = 29
 GID_GATE_SIGN = 30
+# 图书馆专属 tile
+GID_LIB_WALL = 31
+GID_LIB_WINDOW = 32
+GID_LIB_ROOF = 33
+GID_LIB_DOOR = 34
+GID_LIB_PILLAR = 35
+GID_LIB_AWNING = 36
+GID_LIB_SIGN = 37
+GID_LIB_SIGN_SIDE = 38
+# 体育馆专属 tile
+GID_GYM_WALL = 39
+GID_GYM_WINDOW = 40
+GID_GYM_ROOF_CENTER = 41
+GID_GYM_ROOF_SIDE = 42
+GID_GYM_DOOR_MAIN = 43
+GID_GYM_DOOR_SIDE = 44
+GID_GYM_VENT = 45
+GID_GYM_SIGN = 46
+# 食堂专属 tile
+GID_DINING_WALL = 47
+GID_DINING_WINDOW = 48
+GID_DINING_ROOF = 49
+GID_DINING_DOOR = 50
+GID_DINING_AWNING = 51
+GID_DINING_CHIMNEY = 52
+GID_DINING_SIGN = 53
+GID_DINING_MENU = 54
+# 南湖综合楼专属 tile
+GID_NANHU_WALL = 55
+GID_NANHU_GLASS = 56
+GID_NANHU_ROOF = 57
+GID_NANHU_ROOF_RAIL = 58
+GID_NANHU_DOOR = 59
+GID_NANHU_SIGN = 60
+GID_NANHU_AC = 61
+GID_NANHU_LOBBY_LIGHT = 62
 
-TILE_COUNT = 30
+TILE_COUNT = 62
 
 SOLID_GIDS = {
     GID_WALL_BRICK, GID_WALL_BRICK_TOP, GID_WALL_GRAY,
@@ -53,6 +89,10 @@ SOLID_GIDS = {
     GID_BUS_STOP, GID_HEDGE, GID_COLLISION,
     GID_FLOWER_GARDEN, GID_TREE_CLUSTER,
     GID_GATE_PILLAR, GID_GATE_BEAM, GID_GATE_SIGN,
+    GID_LIB_WALL, GID_LIB_WINDOW, GID_LIB_ROOF, GID_LIB_PILLAR, GID_LIB_AWNING, GID_LIB_SIGN, GID_LIB_SIGN_SIDE,
+    GID_GYM_WALL, GID_GYM_WINDOW, GID_GYM_ROOF_CENTER, GID_GYM_ROOF_SIDE, GID_GYM_VENT, GID_GYM_SIGN,
+    GID_DINING_WALL, GID_DINING_WINDOW, GID_DINING_ROOF, GID_DINING_AWNING, GID_DINING_CHIMNEY, GID_DINING_SIGN, GID_DINING_MENU,
+    GID_NANHU_WALL, GID_NANHU_GLASS, GID_NANHU_ROOF, GID_NANHU_ROOF_RAIL, GID_NANHU_AC, GID_NANHU_SIGN,
 }
 
 
@@ -297,6 +337,215 @@ def _draw_tile(surface, gid, x):
         pygame.draw.rect(surface, (200, 180, 70), (x + 2, 4, 12, 8))
         for cx, cy in [(4, 6), (7, 6), (10, 6), (4, 9), (7, 9), (10, 9)]:
             pygame.draw.rect(surface, (140, 30, 25), (x + cx, cy, 2, 3))
+    # ---- 图书馆专属 tile ----
+    elif gid == GID_LIB_WALL:
+        surface.fill((210, 195, 150), rect)
+        for yy in range(0, TILE_SIZE, 4):
+            pygame.draw.line(surface, (180, 165, 120), (x, yy), (x + TILE_SIZE, yy))
+        pygame.draw.line(surface, (190, 175, 130), (x + 8, 0), (x + 8, TILE_SIZE))
+    elif gid == GID_LIB_WINDOW:
+        surface.fill((210, 195, 150), rect)
+        for yy in range(0, TILE_SIZE, 4):
+            pygame.draw.line(surface, (180, 165, 120), (x, yy), (x + TILE_SIZE, yy))
+        pygame.draw.rect(surface, (100, 140, 180), (x + 2, 1, 12, 7))
+        pygame.draw.rect(surface, (80, 60, 30), (x + 2, 1, 12, 7), 1)
+        pygame.draw.line(surface, (80, 60, 30), (x + 8, 1), (x + 8, 8))
+        pygame.draw.line(surface, (80, 60, 30), (x + 2, 4), (x + 14, 4))
+    elif gid == GID_LIB_ROOF:
+        surface.fill((70, 80, 95), rect)
+        for yy in range(0, TILE_SIZE, 4):
+            pygame.draw.line(surface, (60, 70, 85), (x, yy), (x + TILE_SIZE, yy))
+        pygame.draw.line(surface, (90, 90, 90), (x + 12, 0), (x + 12, 4))
+    elif gid == GID_LIB_DOOR:
+        surface.fill((210, 195, 150), rect)
+        pygame.draw.rect(surface, (160, 190, 210), (x + 3, 1, 10, 14))
+        pygame.draw.rect(surface, (120, 120, 130), (x + 3, 1, 10, 14), 1)
+        pygame.draw.line(surface, (120, 120, 130), (x + 8, 1), (x + 8, 15))
+        surface.set_at((x + 11, 8), (180, 180, 190))
+    elif gid == GID_LIB_PILLAR:
+        surface.fill((210, 195, 150), rect)
+        pygame.draw.rect(surface, (200, 185, 140), (x + 5, 0, 6, 16))
+        pygame.draw.rect(surface, (180, 165, 120), (x + 4, 0, 8, 2))
+        pygame.draw.rect(surface, (180, 165, 120), (x + 4, 14, 8, 2))
+        pygame.draw.line(surface, (190, 175, 130), (x + 8, 0), (x + 8, 16))
+    elif gid == GID_LIB_AWNING:
+        surface.fill((210, 195, 150), rect)
+        for yy in range(0, 6, 4):
+            pygame.draw.line(surface, (180, 165, 120), (x, yy), (x + TILE_SIZE, yy))
+        pygame.draw.rect(surface, (120, 80, 40), (x + 1, 6, 14, 4))
+        pygame.draw.line(surface, (100, 65, 30), (x + 1, 10), (x + 15, 10))
+        pygame.draw.line(surface, (120, 80, 40), (x + 4, 10), (x + 4, 12))
+        pygame.draw.line(surface, (120, 80, 40), (x + 11, 10), (x + 11, 12))
+    elif gid == GID_LIB_SIGN:
+        surface.fill((210, 195, 150), rect)
+        pygame.draw.rect(surface, (140, 30, 25), (x + 1, 2, 14, 8))
+        pygame.draw.rect(surface, (200, 180, 60), (x + 1, 2, 14, 8), 1)
+        pygame.draw.rect(surface, (220, 200, 80), (x + 2, 3, 12, 6))
+        for sx, sy in [(4, 5), (7, 5), (10, 5), (4, 7), (7, 7)]:
+            surface.set_at((x + sx, sy), (140, 30, 25))
+    elif gid == GID_LIB_SIGN_SIDE:
+        surface.fill((210, 195, 150), rect)
+        pygame.draw.rect(surface, (140, 30, 25), (x + 1, 2, 14, 8))
+        pygame.draw.rect(surface, (200, 180, 60), (x + 1, 2, 14, 8), 1)
+        pygame.draw.rect(surface, (180, 160, 60), (x + 2, 3, 12, 6))
+    # ---- 体育馆专属 tile ----
+    elif gid == GID_GYM_WALL:
+        surface.fill((160, 170, 185), rect)
+        for bx in [4, 8, 12]:
+            pygame.draw.line(surface, (140, 150, 165), (x + bx, 0), (x + bx, TILE_SIZE))
+        pygame.draw.line(surface, (145, 155, 170), (x, 8), (x + TILE_SIZE, 8))
+    elif gid == GID_GYM_WINDOW:
+        surface.fill((160, 170, 185), rect)
+        for bx in [4, 8, 12]:
+            pygame.draw.line(surface, (140, 150, 165), (x + bx, 0), (x + bx, TILE_SIZE))
+        pygame.draw.rect(surface, (180, 210, 230), (x + 1, 2, 14, 4))
+        pygame.draw.rect(surface, (240, 240, 240), (x + 1, 2, 14, 4), 1)
+    elif gid == GID_GYM_ROOF_CENTER:
+        surface.fill((150, 155, 165), rect)
+        pygame.draw.rect(surface, (150, 155, 165), (x, 0, TILE_SIZE, 4))
+        pygame.draw.rect(surface, (140, 145, 155), (x, 4, TILE_SIZE, 4))
+        pygame.draw.rect(surface, (160, 170, 185), (x, 8, TILE_SIZE, 8))
+    elif gid == GID_GYM_ROOF_SIDE:
+        surface.fill((150, 155, 165), rect)
+        pygame.draw.rect(surface, (140, 145, 155), (x, 0, 8, 8))
+        pygame.draw.rect(surface, (160, 170, 185), (x, 8, TILE_SIZE, 8))
+    elif gid == GID_GYM_DOOR_MAIN:
+        surface.fill((160, 170, 185), rect)
+        pygame.draw.rect(surface, (180, 185, 195), (x + 1, 1, 14, 14))
+        for yy in [4, 7, 10, 13]:
+            pygame.draw.line(surface, (220, 140, 40), (x + 1, yy), (x + 15, yy))
+        pygame.draw.rect(surface, (120, 125, 135), (x + 1, 1, 14, 14), 1)
+    elif gid == GID_GYM_DOOR_SIDE:
+        surface.fill((160, 170, 185), rect)
+        pygame.draw.rect(surface, (160, 165, 175), (x + 4, 1, 8, 14))
+        pygame.draw.rect(surface, (130, 135, 145), (x + 4, 1, 8, 14), 1)
+        surface.set_at((x + 10, 8), (200, 200, 210))
+    elif gid == GID_GYM_VENT:
+        surface.fill((160, 170, 185), rect)
+        pygame.draw.rect(surface, (130, 135, 145), (x + 3, 3, 10, 10))
+        for yy in [5, 7, 9, 11]:
+            pygame.draw.line(surface, (110, 115, 125), (x + 3, yy), (x + 13, yy))
+        pygame.draw.rect(surface, (100, 105, 115), (x + 3, 3, 10, 10), 1)
+    elif gid == GID_GYM_SIGN:
+        surface.fill((160, 170, 185), rect)
+        pygame.draw.rect(surface, (0, 80, 160), (x + 1, 2, 14, 8))
+        pygame.draw.rect(surface, (255, 255, 255), (x + 1, 2, 14, 8), 1)
+        pygame.draw.rect(surface, (20, 100, 180), (x + 2, 3, 12, 6))
+        for sx, sy in [(4, 5), (7, 5), (10, 5), (4, 7), (7, 7)]:
+            surface.set_at((x + sx, sy), (255, 255, 255))
+    # ---- 食堂专属 tile ----
+    elif gid == GID_DINING_WALL:
+        surface.fill((200, 130, 80), rect)
+        for yy in [4, 8, 12]:
+            pygame.draw.line(surface, (180, 110, 60), (x, yy), (x + TILE_SIZE, yy))
+        for bx in [4, 8, 12]:
+            pygame.draw.line(surface, (180, 110, 60), (x + bx, 0), (x + bx, TILE_SIZE))
+        for dx, dy in [(2, 2), (6, 6), (10, 10)]:
+            surface.set_at((x + dx, dy), (215, 145, 95))
+    elif gid == GID_DINING_WINDOW:
+        surface.fill((200, 130, 80), rect)
+        for yy in [4, 8, 12]:
+            pygame.draw.line(surface, (180, 110, 60), (x, yy), (x + TILE_SIZE, yy))
+        for bx in [4, 8, 12]:
+            pygame.draw.line(surface, (180, 110, 60), (x + bx, 0), (x + bx, TILE_SIZE))
+        pygame.draw.rect(surface, (240, 220, 150), (x + 2, 2, 12, 7))
+        pygame.draw.rect(surface, (250, 250, 250), (x + 2, 2, 12, 7), 1)
+        pygame.draw.line(surface, (250, 250, 250), (x + 8, 2), (x + 8, 9))
+        pygame.draw.line(surface, (250, 250, 250), (x + 2, 5), (x + 14, 5))
+    elif gid == GID_DINING_ROOF:
+        surface.fill((130, 40, 25), rect)
+        for yy in range(0, TILE_SIZE, 4):
+            pygame.draw.line(surface, (110, 30, 18), (x, yy), (x + TILE_SIZE, yy))
+        for bx in range(0, TILE_SIZE, 8):
+            pygame.draw.line(surface, (110, 30, 18), (x + bx, 0), (x + bx, TILE_SIZE))
+    elif gid == GID_DINING_DOOR:
+        surface.fill((200, 130, 80), rect)
+        pygame.draw.rect(surface, (140, 90, 40), (x + 2, 1, 6, 14))
+        pygame.draw.rect(surface, (200, 220, 200), (x + 8, 1, 6, 14))
+        pygame.draw.rect(surface, (100, 65, 25), (x + 2, 1, 12, 14), 1)
+        surface.set_at((x + 7, 8), (200, 180, 50))
+        surface.set_at((x + 8, 8), (200, 180, 50))
+    elif gid == GID_DINING_AWNING:
+        surface.fill((200, 130, 80), rect)
+        for yy in [4, 8, 12]:
+            pygame.draw.line(surface, (180, 110, 60), (x, yy), (x + TILE_SIZE, yy))
+        for col in range(0, TILE_SIZE, 4):
+            color = (50, 150, 50) if (col // 4) % 2 == 0 else (70, 170, 70)
+            pygame.draw.rect(surface, color, (x + col, 6, 4, 5))
+        pygame.draw.line(surface, (40, 130, 40), (x, 11), (x + TILE_SIZE, 11))
+    elif gid == GID_DINING_CHIMNEY:
+        surface.fill((130, 40, 25), rect)
+        for yy in range(0, TILE_SIZE, 4):
+            pygame.draw.line(surface, (110, 30, 18), (x, yy), (x + TILE_SIZE, yy))
+        pygame.draw.rect(surface, (100, 80, 70), (x + 6, 0, 4, 10))
+        pygame.draw.rect(surface, (80, 60, 50), (x + 5, 0, 6, 2))
+        pygame.draw.circle(surface, (180, 180, 180), (x + 7, 0), 2)
+        pygame.draw.circle(surface, (180, 180, 180), (x + 9, 0), 2)
+    elif gid == GID_DINING_SIGN:
+        surface.fill((200, 130, 80), rect)
+        pygame.draw.rect(surface, (200, 100, 30), (x + 1, 2, 14, 8))
+        pygame.draw.rect(surface, (255, 255, 255), (x + 1, 2, 14, 8), 1)
+        pygame.draw.rect(surface, (230, 130, 50), (x + 2, 3, 12, 6))
+        for sx, sy in [(4, 5), (7, 5), (10, 5), (4, 7)]:
+            surface.set_at((x + sx, sy), (255, 255, 255))
+    elif gid == GID_DINING_MENU:
+        surface.fill((200, 130, 80), rect)
+        pygame.draw.rect(surface, (240, 230, 200), (x + 3, 3, 10, 10))
+        pygame.draw.rect(surface, (139, 90, 43), (x + 3, 3, 10, 10), 1)
+        for yy in [5, 7, 9]:
+            pygame.draw.line(surface, (80, 60, 30), (x + 5, yy), (x + 11, yy))
+    # ---- 南湖综合楼专属 tile ----
+    elif gid == GID_NANHU_WALL:
+        surface.fill((230, 230, 235), rect)
+        pygame.draw.line(surface, (210, 210, 215), (x, 5), (x + TILE_SIZE, 5))
+        pygame.draw.line(surface, (210, 210, 215), (x, 10), (x + TILE_SIZE, 10))
+        pygame.draw.line(surface, (220, 220, 225), (x + 8, 0), (x + 8, TILE_SIZE))
+    elif gid == GID_NANHU_GLASS:
+        surface.fill((140, 170, 210), rect)
+        for bx in [4, 8, 12]:
+            pygame.draw.line(surface, (40, 40, 50), (x + bx, 0), (x + bx, TILE_SIZE))
+        for yy in [4, 8, 12]:
+            pygame.draw.line(surface, (40, 40, 50), (x, yy), (x + TILE_SIZE, yy))
+        for dx, dy in [(2, 2), (6, 6), (10, 10)]:
+            surface.set_at((x + dx, dy), (170, 200, 240))
+    elif gid == GID_NANHU_ROOF:
+        surface.fill((80, 85, 90), rect)
+        for yy in [4, 8, 12]:
+            pygame.draw.line(surface, (70, 75, 80), (x, yy), (x + TILE_SIZE, yy))
+        pygame.draw.rect(surface, (90, 95, 100), (x + 10, 2, 4, 4))
+    elif gid == GID_NANHU_ROOF_RAIL:
+        surface.fill((80, 85, 90), rect)
+        for yy in [4, 8, 12]:
+            pygame.draw.line(surface, (70, 75, 80), (x, yy), (x + TILE_SIZE, yy))
+        pygame.draw.line(surface, (100, 105, 110), (x, 2), (x + TILE_SIZE, 2))
+        pygame.draw.line(surface, (100, 105, 110), (x, 14), (x + TILE_SIZE, 14))
+        for bx in [2, 6, 10, 14]:
+            pygame.draw.line(surface, (90, 95, 100), (x + bx, 2), (x + bx, 14))
+    elif gid == GID_NANHU_DOOR:
+        surface.fill((230, 230, 235), rect)
+        pygame.draw.rect(surface, (170, 200, 230), (x + 2, 1, 12, 14))
+        pygame.draw.rect(surface, (150, 155, 165), (x + 2, 1, 12, 14), 1)
+        pygame.draw.rect(surface, (0, 200, 0), (x + 7, 2, 2, 1))
+        pygame.draw.rect(surface, (180, 180, 190), (x + 5, 14, 6, 1))
+    elif gid == GID_NANHU_SIGN:
+        surface.fill((230, 230, 235), rect)
+        pygame.draw.rect(surface, (30, 60, 120), (x + 1, 2, 14, 8))
+        pygame.draw.rect(surface, (255, 255, 255), (x + 1, 2, 14, 8), 1)
+        pygame.draw.rect(surface, (50, 80, 140), (x + 2, 3, 12, 6))
+        for sx, sy in [(4, 5), (7, 5), (10, 5), (4, 7), (7, 7)]:
+            surface.set_at((x + sx, sy), (255, 255, 255))
+    elif gid == GID_NANHU_AC:
+        surface.fill((230, 230, 235), rect)
+        pygame.draw.rect(surface, (190, 195, 200), (x + 10, 4, 5, 8))
+        for yy in [6, 8, 10]:
+            pygame.draw.line(surface, (170, 175, 180), (x + 10, yy), (x + 15, yy))
+        pygame.draw.rect(surface, (150, 155, 160), (x + 10, 3, 5, 1))
+    elif gid == GID_NANHU_LOBBY_LIGHT:
+        surface.fill((230, 230, 235), rect)
+        overlay = pygame.Surface((TILE_SIZE, TILE_SIZE), pygame.SRCALPHA)
+        pygame.draw.ellipse(overlay, (255, 240, 180, 80), (4, 4, 8, 8))
+        surface.blit(overlay, (x, 0))
+        pygame.draw.circle(surface, (255, 250, 200), (x + 7, 7), 2)
 
 
 def design_map():
@@ -584,18 +833,85 @@ def _place_building(ground, structures, collision, bx, by, bw, bh,
 
 def _place_library(ground, structures, collision, interactive_objects, trigger_objects):
     bx, by, bw, bh = 13, 7, 14, 10
-    _place_building(ground, structures, collision, bx, by, bw, bh,
-                    "south", 6, 2, interactive_objects, trigger_objects,
-                    "图书馆", "library_f1", "library_entrance")
 
+    # 填充图书馆墙壁
+    for y in range(by, by + bh):
+        for x in range(bx, bx + bw):
+            structures[y][x] = GID_LIB_WALL
+            collision[y][x] = GID_COLLISION
+
+    # 平顶屋顶（2行）
+    for x in range(bx, bx + bw):
+        structures[by][x] = GID_LIB_ROOF
+        if by + 1 < by + bh:
+            structures[by + 1][x] = GID_LIB_ROOF
+
+    # 大落地窗布局：从第3行开始，每2行一组窗户，每3列一个窗
+    for y in range(by + 2, by + bh - 1):
+        for x in range(bx + 1, bx + bw - 1):
+            if (y - by) % 2 == 0 and (x - bx) % 3 == 1:
+                structures[y][x] = GID_LIB_WINDOW
+            else:
+                structures[y][x] = GID_LIB_WALL
+
+    # 入口立柱（门两侧）
+    door_x = bx + 6
+    door_y = by + bh - 1
+    structures[door_y][door_x - 1] = GID_LIB_PILLAR
+    structures[door_y][door_x + 2] = GID_LIB_PILLAR
+
+    # 雨棚（门上方1行）
+    if door_y - 1 > by + 1:
+        structures[door_y - 1][door_x] = GID_LIB_AWNING
+        structures[door_y - 1][door_x + 1] = GID_LIB_AWNING
+
+    # 牌匾（屋顶下方第3行，居中3格）
+    sign_y = by + 2
+    sign_center = bx + bw // 2
+    structures[sign_y][sign_center - 1] = GID_LIB_SIGN_SIDE
+    structures[sign_y][sign_center] = GID_LIB_SIGN
+    structures[sign_y][sign_center + 1] = GID_LIB_SIGN_SIDE
+
+    # 玻璃门
+    structures[door_y][door_x] = GID_LIB_DOOR
+    collision[door_y][door_x] = GID_EMPTY
+    structures[door_y][door_x + 1] = GID_LIB_DOOR
+    collision[door_y][door_x + 1] = GID_EMPTY
+
+    # 门前石板路
     for y in range(by + bh, 36):
         for x in range(bx + 6, bx + 8):
             ground[y][x] = GID_PATH_STONE
-
     for x in range(bx - 1, bx + bw + 1):
         ground[by + bh][x] = GID_PATH_STONE
         ground[by + bh + 1][x] = GID_PATH_STONE
 
+    # 互动对象和触发区
+    interactive_objects.append({
+        "x": door_x * TILE_SIZE,
+        "y": door_y * TILE_SIZE,
+        "width": 2 * TILE_SIZE,
+        "height": TILE_SIZE,
+        "type": "building_entrance",
+        "properties": {
+            "interactive_type": "enter",
+            "display_name": "图书馆入口",
+            "target_map": "library_f1",
+            "spawn_point": "library_entrance",
+            "transition_type": "indoor_enter",
+        }
+    })
+    trigger_objects.append({
+        "x": door_x * TILE_SIZE,
+        "y": door_y * TILE_SIZE,
+        "width": 2 * TILE_SIZE,
+        "height": TILE_SIZE,
+        "type": "door_trigger",
+        "properties": {
+            "target_map": "library_f1",
+            "spawn_point": "library_entrance",
+        }
+    })
     _add_exit_spawn(trigger_objects, "library_exit", bx + 6, by + bh + 1)
 
 
@@ -643,35 +959,176 @@ def _place_boya_square(ground, structures, decorations, collision, interactive_o
 
 def _place_gym(ground, structures, collision, interactive_objects, trigger_objects):
     bx, by, bw, bh = 11, 49, 16, 12
-    _place_building(ground, structures, collision, bx, by, bw, bh,
-                    "south", 7, 2, interactive_objects, trigger_objects,
-                    "佑铭体育馆", "gym", "gym_entrance")
 
+    # 填充体育馆墙壁
+    for y in range(by, by + bh):
+        for x in range(bx, bx + bw):
+            structures[y][x] = GID_GYM_WALL
+            collision[y][x] = GID_COLLISION
+
+    # 弧形屋顶：中间2行高，两侧1行
+    for x in range(bx, bx + bw):
+        structures[by][x] = GID_GYM_ROOF_SIDE
+    # 中间部分用中心屋顶
+    for x in range(bx + 2, bx + bw - 2):
+        if by + 1 < by + bh:
+            structures[by + 1][x] = GID_GYM_ROOF_CENTER
+    # 两侧保持侧面屋顶
+    structures[by + 1][bx] = GID_GYM_ROOF_SIDE
+    structures[by + 1][bx + 1] = GID_GYM_ROOF_SIDE
+    structures[by + 1][bx + bw - 2] = GID_GYM_ROOF_SIDE
+    structures[by + 1][bx + bw - 1] = GID_GYM_ROOF_SIDE
+
+    # 窄长横窗：墙面上部每隔2列
+    for y in range(by + 2, by + 4):
+        for x in range(bx + 1, bx + bw - 1):
+            if (x - bx) % 2 == 1:
+                structures[y][x] = GID_GYM_WINDOW
+            else:
+                structures[y][x] = GID_GYM_WALL
+
+    # 通风口（屋顶下方两侧）
+    structures[by + 2][bx + 1] = GID_GYM_VENT
+    structures[by + 2][bx + bw - 2] = GID_GYM_VENT
+
+    # 牌匾
+    sign_y = by + 4
+    sign_center = bx + bw // 2
+    structures[sign_y][sign_center - 1] = GID_GYM_SIGN
+    structures[sign_y][sign_center] = GID_GYM_SIGN
+    structures[sign_y][sign_center + 1] = GID_GYM_SIGN
+
+    # 主入口（3格宽）
+    door_y = by + bh - 1
+    door_center = bx + bw // 2
+    structures[door_y][door_center - 1] = GID_GYM_DOOR_SIDE
+    structures[door_y][door_center] = GID_GYM_DOOR_MAIN
+    structures[door_y][door_center + 1] = GID_GYM_DOOR_SIDE
+    collision[door_y][door_center - 1] = GID_EMPTY
+    collision[door_y][door_center] = GID_EMPTY
+    collision[door_y][door_center + 1] = GID_EMPTY
+
+    # 门前路
     for y in range(42, by):
         for x in range(bx + 7, bx + 9):
             ground[y][x] = GID_PATH_STONE
-
     for x in range(bx - 1, bx + bw + 1):
         ground[by - 1][x] = GID_PATH_STONE
         ground[by - 2][x] = GID_PATH_STONE
 
+    # 互动对象和触发区
+    interactive_objects.append({
+        "x": (door_center - 1) * TILE_SIZE,
+        "y": door_y * TILE_SIZE,
+        "width": 3 * TILE_SIZE,
+        "height": TILE_SIZE,
+        "type": "building_entrance",
+        "properties": {
+            "interactive_type": "enter",
+            "display_name": "佑铭体育馆入口",
+            "target_map": "gym",
+            "spawn_point": "gym_entrance",
+            "transition_type": "indoor_enter",
+        }
+    })
+    trigger_objects.append({
+        "x": (door_center - 1) * TILE_SIZE,
+        "y": door_y * TILE_SIZE,
+        "width": 3 * TILE_SIZE,
+        "height": TILE_SIZE,
+        "type": "door_trigger",
+        "properties": {
+            "target_map": "gym",
+            "spawn_point": "gym_entrance",
+        }
+    })
     _add_exit_spawn(trigger_objects, "gym_exit", bx + 7, by + bh + 1)
 
 
 def _place_dining_hall(ground, structures, collision, interactive_objects, trigger_objects):
     bx, by, bw, bh = 89, 49, 12, 10
-    _place_building(ground, structures, collision, bx, by, bw, bh,
-                    "south", 5, 2, interactive_objects, trigger_objects,
-                    "学子食堂", "dining_hall_f1", "dining_entrance")
 
+    # 填充食堂墙壁
+    for y in range(by, by + bh):
+        for x in range(bx, bx + bw):
+            structures[y][x] = GID_DINING_WALL
+            collision[y][x] = GID_COLLISION
+
+    # 深红色坡屋顶（2行）
+    for x in range(bx, bx + bw):
+        structures[by][x] = GID_DINING_ROOF
+        if by + 1 < by + bh:
+            structures[by + 1][x] = GID_DINING_ROOF
+
+    # 烟囱（屋顶右侧）
+    structures[by][bx + bw - 3] = GID_DINING_CHIMNEY
+
+    # 方形大窗（暖黄光）
+    for y in range(by + 2, by + bh - 1):
+        for x in range(bx + 1, bx + bw - 1):
+            if (y - by) % 3 == 0 and (x - bx) % 3 == 1:
+                structures[y][x] = GID_DINING_WINDOW
+            else:
+                structures[y][x] = GID_DINING_WALL
+
+    # 牌匾
+    sign_y = by + 2
+    sign_center = bx + bw // 2
+    structures[sign_y][sign_center - 1] = GID_DINING_SIGN
+    structures[sign_y][sign_center] = GID_DINING_SIGN
+    structures[sign_y][sign_center + 1] = GID_DINING_SIGN
+
+    # 菜单牌（门旁）
+    door_x = bx + 5
+    door_y = by + bh - 1
+    structures[door_y][door_x + 2] = GID_DINING_MENU
+
+    # 遮阳棚（门上方）
+    if door_y - 1 > by + 1:
+        for dx in range(4):
+            if door_x + dx < bx + bw:
+                structures[door_y - 1][door_x + dx] = GID_DINING_AWNING
+
+    # 双开门
+    structures[door_y][door_x] = GID_DINING_DOOR
+    collision[door_y][door_x] = GID_EMPTY
+    structures[door_y][door_x + 1] = GID_DINING_DOOR
+    collision[door_y][door_x + 1] = GID_EMPTY
+
+    # 门前路
     for y in range(42, by):
         for x in range(bx + 5, bx + 7):
             ground[y][x] = GID_PATH_STONE
-
     for x in range(bx - 1, bx + bw + 1):
         ground[by - 1][x] = GID_PATH_STONE
         ground[by - 2][x] = GID_PATH_STONE
 
+    # 互动对象和触发区
+    interactive_objects.append({
+        "x": door_x * TILE_SIZE,
+        "y": door_y * TILE_SIZE,
+        "width": 2 * TILE_SIZE,
+        "height": TILE_SIZE,
+        "type": "building_entrance",
+        "properties": {
+            "interactive_type": "enter",
+            "display_name": "学子食堂入口",
+            "target_map": "dining_hall_f1",
+            "spawn_point": "dining_entrance",
+            "transition_type": "indoor_enter",
+        }
+    })
+    trigger_objects.append({
+        "x": door_x * TILE_SIZE,
+        "y": door_y * TILE_SIZE,
+        "width": 2 * TILE_SIZE,
+        "height": TILE_SIZE,
+        "type": "door_trigger",
+        "properties": {
+            "target_map": "dining_hall_f1",
+            "spawn_point": "dining_entrance",
+        }
+    })
     _add_exit_spawn(trigger_objects, "dining_exit", bx + 5, by + bh + 1)
 
 

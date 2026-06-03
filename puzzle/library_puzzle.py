@@ -163,7 +163,7 @@ class LibraryPuzzle:
         self._draw_quiz(surface)
 
     def _draw_quiz(self, surface):
-        panel_w, panel_h = 300, 200
+        panel_w, panel_h = 300, 220
         panel_x = (INTERNAL_WIDTH - panel_w) // 2
         panel_y = (INTERNAL_HEIGHT - panel_h) // 2
 
@@ -186,30 +186,38 @@ class LibraryPuzzle:
         if self._current_index < len(self._questions):
             question = self._questions[self._current_index]
             question_text = question.get("question", "")
-            lines = self._wrap_text(question_text, panel_w - 20)
+            lines = self._wrap_text(question_text, panel_w - 24)
             line_height = self.font.get_linesize()
             text_y = panel_y + 38
             for line in lines:
                 line_surf = self.font.render(line, True, COLOR_WHITE)
-                line_rect = line_surf.get_rect(centerx=panel_x + panel_w // 2, top=text_y)
+                line_rect = line_surf.get_rect(left=panel_x + 12, top=text_y)
                 surface.blit(line_surf, line_rect)
                 text_y += line_height
 
             options = question.get("options", [])
-            option_y = text_y + 4
+            option_y = text_y + 6
             for i, option in enumerate(options):
-                prefix = "▶ " if i == self._selected_option else "  "
+                # 选中指示器用三角形绘制
+                if i == self._selected_option:
+                    ind_x = panel_x + 14
+                    ind_y = option_y + line_height // 2
+                    pygame.draw.polygon(surface, COLOR_CHOICE_HIGHLIGHT, [
+                        (ind_x, ind_y - 3),
+                        (ind_x + 4, ind_y),
+                        (ind_x, ind_y + 3),
+                    ])
                 color = COLOR_CHOICE_HIGHLIGHT if i == self._selected_option else COLOR_WHITE
-                option_surf = self.font.render(f"{prefix}{option}", True, color)
-                surface.blit(option_surf, (panel_x + 16, option_y))
-                option_y += line_height
+                option_surf = self.font.render(option, True, color)
+                surface.blit(option_surf, (panel_x + 22, option_y))
+                option_y += line_height + 2
 
         hint = self.font.render("↑↓选择 | F确认 | Esc退出", True, (150, 150, 150))
         hint_rect = hint.get_rect(centerx=panel_x + panel_w // 2, top=panel_y + panel_h - 16)
         surface.blit(hint, hint_rect)
 
     def _draw_feedback(self, surface):
-        panel_w, panel_h = 300, 200
+        panel_w, panel_h = 300, 220
         panel_x = (INTERNAL_WIDTH - panel_w) // 2
         panel_y = (INTERNAL_HEIGHT - panel_h) // 2
 
@@ -225,29 +233,37 @@ class LibraryPuzzle:
         if self._current_index < len(self._questions):
             question = self._questions[self._current_index]
             question_text = question.get("question", "")
-            lines = self._wrap_text(question_text, panel_w - 20)
+            lines = self._wrap_text(question_text, panel_w - 24)
             line_height = self.font.get_linesize()
             text_y = panel_y + 38
             for line in lines:
                 line_surf = self.font.render(line, True, COLOR_WHITE)
-                line_rect = line_surf.get_rect(centerx=panel_x + panel_w // 2, top=text_y)
+                line_rect = line_surf.get_rect(left=panel_x + 12, top=text_y)
                 surface.blit(line_surf, line_rect)
                 text_y += line_height
 
             options = question.get("options", [])
             correct_answer = question.get("answer", 0)
-            option_y = text_y + 4
+            option_y = text_y + 6
             for i, option in enumerate(options):
-                prefix = "▶ " if i == self._selected_option else "  "
+                # 选中指示器用三角形绘制
+                if i == self._selected_option:
+                    ind_x = panel_x + 14
+                    ind_y = option_y + line_height // 2
+                    pygame.draw.polygon(surface, COLOR_CHOICE_HIGHLIGHT, [
+                        (ind_x, ind_y - 3),
+                        (ind_x + 4, ind_y),
+                        (ind_x, ind_y + 3),
+                    ])
                 if i == correct_answer:
                     color = (100, 255, 100)
                 elif i == self._selected_option and i != correct_answer:
                     color = (255, 100, 100)
                 else:
                     color = COLOR_WHITE
-                option_surf = self.font.render(f"{prefix}{option}", True, color)
-                surface.blit(option_surf, (panel_x + 16, option_y))
-                option_y += line_height
+                option_surf = self.font.render(option, True, color)
+                surface.blit(option_surf, (panel_x + 22, option_y))
+                option_y += line_height + 2
 
         if self._feedback_correct:
             fb_text = "正确！"

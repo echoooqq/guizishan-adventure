@@ -51,6 +51,10 @@ COLOR_GUARDIAN_CLOAK = (40, 80, 60)
 COLOR_GUARDIAN_CLOAK_DARK = (25, 55, 40)
 COLOR_GUARDIAN_EYE_GLOW = (100, 255, 100)
 
+COLOR_PASSING_STUDENT_BODY = (120, 100, 160)
+COLOR_PASSING_STUDENT_BODY_DARK = (90, 75, 130)
+COLOR_PASSING_STUDENT_HAIR = (50, 30, 20)
+
 # 通用
 COLOR_SKIN = (240, 210, 180)
 COLOR_SKIN_SHADE = (220, 190, 160)
@@ -882,6 +886,8 @@ if __name__ == "__main__":
                                    "hair_style": "curly"}),
         ("guardian_sheet.png", COLOR_GUARDIAN_CLOAK, COLOR_GUARDIAN_CLOAK_DARK,
          (0, 0, 0), {"has_hood": True, "hood_color": COLOR_GUARDIAN_CLOAK, "eye_glow": True}),
+        ("passing_student_sheet.png", COLOR_PASSING_STUDENT_BODY, COLOR_PASSING_STUDENT_BODY_DARK,
+         COLOR_PASSING_STUDENT_HAIR, {"hair_style": "short"}),
     ]
 
     for filename, body, body_dark, hair, kwargs in npc_configs:

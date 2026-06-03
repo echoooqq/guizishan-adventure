@@ -38,6 +38,45 @@ GID_COLLISION = 24
 GID_FLOWER_GARDEN = 25
 GID_TREE_CLUSTER = 26
 GID_LAWN_ROCK = 27
+GID_GATE_PILLAR = 28
+GID_GATE_BEAM = 29
+GID_GATE_SIGN = 30
+# 图书馆专属 tile
+GID_LIB_WALL = 31
+GID_LIB_WINDOW = 32
+GID_LIB_ROOF = 33
+GID_LIB_DOOR = 34
+GID_LIB_PILLAR = 35
+GID_LIB_AWNING = 36
+GID_LIB_SIGN = 37
+GID_LIB_SIGN_SIDE = 38
+# 体育馆专属 tile
+GID_GYM_WALL = 39
+GID_GYM_WINDOW = 40
+GID_GYM_ROOF_CENTER = 41
+GID_GYM_ROOF_SIDE = 42
+GID_GYM_DOOR_MAIN = 43
+GID_GYM_DOOR_SIDE = 44
+GID_GYM_VENT = 45
+GID_GYM_SIGN = 46
+# 食堂专属 tile
+GID_DINING_WALL = 47
+GID_DINING_WINDOW = 48
+GID_DINING_ROOF = 49
+GID_DINING_DOOR = 50
+GID_DINING_AWNING = 51
+GID_DINING_CHIMNEY = 52
+GID_DINING_SIGN = 53
+GID_DINING_MENU = 54
+# 南湖综合楼专属 tile
+GID_NANHU_WALL = 55
+GID_NANHU_GLASS = 56
+GID_NANHU_ROOF = 57
+GID_NANHU_ROOF_RAIL = 58
+GID_NANHU_DOOR = 59
+GID_NANHU_SIGN = 60
+GID_NANHU_AC = 61
+GID_NANHU_LOBBY_LIGHT = 62
 
 SOLID_GIDS = {
     GID_WALL_BRICK, GID_WALL_BRICK_TOP, GID_WALL_GRAY,
@@ -47,6 +86,11 @@ SOLID_GIDS = {
     GID_FOUNTAIN_BASE, GID_FOUNTAIN_WATER, GID_SCULPTURE,
     GID_BUS_STOP, GID_HEDGE, GID_COLLISION,
     GID_FLOWER_GARDEN, GID_TREE_CLUSTER,
+    GID_GATE_PILLAR, GID_GATE_BEAM, GID_GATE_SIGN,
+    GID_LIB_WALL, GID_LIB_WINDOW, GID_LIB_ROOF, GID_LIB_PILLAR, GID_LIB_AWNING, GID_LIB_SIGN, GID_LIB_SIGN_SIDE,
+    GID_GYM_WALL, GID_GYM_WINDOW, GID_GYM_ROOF_CENTER, GID_GYM_ROOF_SIDE, GID_GYM_VENT, GID_GYM_SIGN,
+    GID_DINING_WALL, GID_DINING_WINDOW, GID_DINING_ROOF, GID_DINING_AWNING, GID_DINING_CHIMNEY, GID_DINING_SIGN, GID_DINING_MENU,
+    GID_NANHU_WALL, GID_NANHU_GLASS, GID_NANHU_ROOF, GID_NANHU_ROOF_RAIL, GID_NANHU_AC, GID_NANHU_SIGN,
 }
 
 
@@ -210,30 +254,56 @@ def _place_nanhu_road(ground, structures, decorations, collision, interactive_ob
 def _place_nanhulou(ground, structures, collision, interactive_objects, trigger_objects):
     bx, by, bw, bh = 14, 4, 14, 8
 
+    # 填充综合楼白色墙壁
     for y in range(by, by + bh):
         for x in range(bx, bx + bw):
-            structures[y][x] = GID_WALL_GRAY
+            structures[y][x] = GID_NANHU_WALL
             collision[y][x] = GID_COLLISION
 
+    # 深灰平顶 + 栏杆
     for x in range(bx, bx + bw):
-        structures[by][x] = GID_BUILDING_ROOF
+        structures[by][x] = GID_NANHU_ROOF
         if by + 1 < by + bh:
-            structures[by + 1][x] = GID_BUILDING_ROOF
+            structures[by + 1][x] = GID_NANHU_ROOF_RAIL
 
-    for y in range(by + 2, by + bh):
+    # 玻璃幕墙：从第3行开始，大面积蓝色反光窗
+    for y in range(by + 2, by + bh - 1):
         for x in range(bx + 1, bx + bw - 1):
-            if (y - by) % 3 == 0 and (x - bx) % 3 == 1:
-                structures[y][x] = GID_WALL_GRAY_WINDOW
-            else:
-                structures[y][x] = GID_WALL_GRAY
+            structures[y][x] = GID_NANHU_GLASS
 
+    # 牌匾（门上方）
+    sign_y = by + 2
+    sign_center = bx + bw // 2
+    structures[sign_y][sign_center - 1] = GID_NANHU_SIGN
+    structures[sign_y][sign_center] = GID_NANHU_SIGN
+    structures[sign_y][sign_center + 1] = GID_NANHU_SIGN
+
+    # 空调外机（侧面）
+    structures[by + 4][bx + bw - 1] = GID_NANHU_AC
+    structures[by + 6][bx + bw - 1] = GID_NANHU_AC
+
+    # 门厅灯光（门两侧地面）
     door_x = bx + 6
     door_y = by + bh - 1
-    structures[door_y][door_x] = GID_BUILDING_DOOR
+    structures[door_y - 1][door_x] = GID_NANHU_LOBBY_LIGHT
+    structures[door_y - 1][door_x + 1] = GID_NANHU_LOBBY_LIGHT
+
+    # 自动门
+    structures[door_y][door_x] = GID_NANHU_DOOR
     collision[door_y][door_x] = GID_EMPTY
-    structures[door_y][door_x + 1] = GID_BUILDING_DOOR
+    structures[door_y][door_x + 1] = GID_NANHU_DOOR
     collision[door_y][door_x + 1] = GID_EMPTY
 
+    # 门前路
+    for x in range(bx - 1, bx + bw + 1):
+        ground[by + bh][x] = GID_PATH_STONE
+        ground[by + bh + 1][x] = GID_PATH_STONE
+    for y in range(by + bh + 1, 13):
+        for x in range(door_x, door_x + 2):
+            if ground[y][x] == GID_GRASS:
+                ground[y][x] = GID_PATH_STONE
+
+    # 互动对象和触发区
     interactive_objects.append({
         "x": door_x * TILE_SIZE,
         "y": door_y * TILE_SIZE,
@@ -248,7 +318,6 @@ def _place_nanhulou(ground, structures, collision, interactive_objects, trigger_
             "transition_type": "indoor_enter",
         }
     })
-
     trigger_objects.append({
         "x": door_x * TILE_SIZE,
         "y": door_y * TILE_SIZE,
@@ -260,16 +329,6 @@ def _place_nanhulou(ground, structures, collision, interactive_objects, trigger_
             "spawn_point": "nanhulou_entrance",
         }
     })
-
-    for x in range(bx - 1, bx + bw + 1):
-        ground[by + bh][x] = GID_PATH_STONE
-        ground[by + bh + 1][x] = GID_PATH_STONE
-
-    for y in range(by + bh + 1, 13):
-        for x in range(door_x, door_x + 2):
-            if ground[y][x] == GID_GRASS:
-                ground[y][x] = GID_PATH_STONE
-
     _add_exit_spawn(trigger_objects, "nanhulou_exit", door_x, by + bh + 1)
 
 
@@ -537,30 +596,59 @@ GID_KITCHEN_FLOOR = 21
 GID_RUG = 22
 GID_BLACKBOARD = 23
 GID_PLANT_INDOOR = 24
+# 图书馆室内专属 tile
+GID_LIB_WALL = 25        # 图书馆墙壁（暖黄+木纹护墙板）
+GID_LIB_WALL_TOP = 26    # 图书馆墙壁顶部
+GID_LIB_FLOOR = 27       # 图书馆深色木地板
+GID_LIB_READING_LAMP = 28 # 图书馆阅读灯
+# 体育馆室内专属 tile
+GID_GYM_WALL = 29        # 体育馆墙壁（白色+蓝色条纹）
+GID_GYM_WALL_TOP = 30    # 体育馆墙壁顶部
+GID_GYM_LOCKER = 31      # 体育馆更衣柜
+# 食堂室内专属 tile
+GID_DINING_WALL = 32     # 食堂墙壁（白色+橙色腰线）
+GID_DINING_WALL_TOP = 33 # 食堂墙壁顶部
+GID_DINING_SERVING = 34  # 食堂取餐窗口
+# 综合楼室内专属 tile
+GID_NANHU_WALL = 35      # 综合楼墙壁（纯白+灰色踢脚线）
+GID_NANHU_WALL_TOP = 36  # 综合楼墙壁顶部
+GID_NANHU_FLOOR = 37     # 综合楼灰色大理石地面
+GID_NANHU_ELEVATOR = 38  # 综合楼电梯门
+# 密室专属 tile
+GID_SECRET_WALL = 39     # 密室深色石墙
+GID_SECRET_WALL_TOP = 40 # 密室墙壁顶部
+GID_SECRET_FLOOR = 41    # 密室碎石地面
+GID_SECRET_RUNE = 42     # 密室符文墙
+GID_SECRET_TORCH = 43    # 密室火把
 
-TILE_COUNT_I = 24
+TILE_COUNT_I = 43
 
 SOLID_GIDS_I = {
     GID_INDOOR_WALL, GID_INDOOR_WALL_TOP, GID_BOOKSHELF, GID_BOOKSHELF_TOP,
     GID_TABLE, GID_CHAIR, GID_COUNTER, GID_FRIDGE,
     GID_HOOP, GID_SCOREBOARD, GID_COMPUTER,
     GID_BLACKBOARD, GID_PLANT_INDOOR, GID_COLLISION_I,
+    GID_LIB_WALL, GID_LIB_WALL_TOP, GID_LIB_READING_LAMP,
+    GID_GYM_WALL, GID_GYM_WALL_TOP, GID_GYM_LOCKER,
+    GID_DINING_WALL, GID_DINING_WALL_TOP, GID_DINING_SERVING,
+    GID_NANHU_WALL, GID_NANHU_WALL_TOP, GID_NANHU_ELEVATOR,
+    GID_SECRET_WALL, GID_SECRET_WALL_TOP, GID_SECRET_RUNE, GID_SECRET_TORCH,
 }
 
 
 def design_nanhulou_f1():
     W, H = 20, 15
-    ground = _fill_layer(None, W, H, GID_TILE_FLOOR)
+    ground = _fill_layer(None, W, H, GID_NANHU_FLOOR)
     structures = _fill_layer(None, W, H, GID_EMPTY_I)
     decorations = _fill_layer(None, W, H, GID_EMPTY_I)
     collision = _fill_layer(None, W, H, GID_EMPTY_I)
     interactive_objects = []
     trigger_objects = []
 
-    _fill_border(structures, W, H, GID_INDOOR_WALL_TOP)
+    _fill_border(structures, W, H, GID_NANHU_WALL_TOP)
     for y in range(2, H - 1):
-        structures[y][0] = GID_INDOOR_WALL
-        structures[y][W - 1] = GID_INDOOR_WALL
+        structures[y][0] = GID_NANHU_WALL
+        structures[y][W - 1] = GID_NANHU_WALL
 
     for x in range(2, 7):
         structures[1][x] = GID_BOOKSHELF_TOP
@@ -605,6 +693,10 @@ def design_nanhulou_f1():
 
     structures[3][9] = GID_PLANT_INDOOR
     collision[3][9] = GID_COLLISION_I
+
+    # 电梯
+    structures[1][2] = GID_NANHU_ELEVATOR
+    collision[1][2] = GID_COLLISION_I
 
     ground[7][9] = GID_CARPET_RED
     ground[7][10] = GID_CARPET_RED
@@ -682,17 +774,17 @@ def design_nanhulou_f1():
 
 def design_nanhulou_f2():
     W, H = 20, 15
-    ground = _fill_layer(None, W, H, GID_WOOD_FLOOR)
+    ground = _fill_layer(None, W, H, GID_NANHU_FLOOR)
     structures = _fill_layer(None, W, H, GID_EMPTY_I)
     decorations = _fill_layer(None, W, H, GID_EMPTY_I)
     collision = _fill_layer(None, W, H, GID_EMPTY_I)
     interactive_objects = []
     trigger_objects = []
 
-    _fill_border(structures, W, H, GID_INDOOR_WALL_TOP)
+    _fill_border(structures, W, H, GID_NANHU_WALL_TOP)
     for y in range(2, H - 1):
-        structures[y][0] = GID_INDOOR_WALL
-        structures[y][W - 1] = GID_INDOOR_WALL
+        structures[y][0] = GID_NANHU_WALL
+        structures[y][W - 1] = GID_NANHU_WALL
 
     for x in range(2, 6):
         structures[1][x] = GID_BOOKSHELF_TOP
@@ -828,7 +920,7 @@ def design_nanhulou_secret():
     W = 16
     H = 12
 
-    ground = [[GID_TILE_FLOOR] * W for _ in range(H)]
+    ground = [[GID_SECRET_FLOOR] * W for _ in range(H)]
     structures = [[GID_EMPTY_I] * W for _ in range(H)]
     decorations = [[GID_EMPTY_I] * W for _ in range(H)]
     collision = [[GID_EMPTY_I] * W for _ in range(H)]
@@ -836,22 +928,35 @@ def design_nanhulou_secret():
     trigger_objects = []
 
     for x in range(W):
-        structures[0][x] = GID_INDOOR_WALL_TOP
-        structures[H - 1][x] = GID_INDOOR_WALL_TOP
+        structures[0][x] = GID_SECRET_WALL_TOP
+        structures[H - 1][x] = GID_SECRET_WALL_TOP
         collision[0][x] = GID_COLLISION_I
         collision[H - 1][x] = GID_COLLISION_I
     for y in range(1, H - 1):
-        structures[y][0] = GID_INDOOR_WALL
-        structures[y][W - 1] = GID_INDOOR_WALL
+        structures[y][0] = GID_SECRET_WALL
+        structures[y][W - 1] = GID_SECRET_WALL
         collision[y][0] = GID_COLLISION_I
         collision[y][W - 1] = GID_COLLISION_I
 
     for y in range(1, H - 1):
         for x in range(1, W - 1):
-            ground[y][x] = GID_TILE_FLOOR
+            ground[y][x] = GID_SECRET_FLOOR
 
-    structures[3][7] = GID_FOUNTAIN_BASE
-    structures[3][8] = GID_FOUNTAIN_BASE
+    # 符文墙
+    structures[2][3] = GID_SECRET_RUNE
+    collision[2][3] = GID_COLLISION_I
+    structures[2][12] = GID_SECRET_RUNE
+    collision[2][12] = GID_COLLISION_I
+
+    # 火把
+    structures[3][0] = GID_SECRET_TORCH
+    collision[3][0] = GID_COLLISION_I
+    structures[3][15] = GID_SECRET_TORCH
+    collision[3][15] = GID_COLLISION_I
+
+    # 基座（用符文墙代替）
+    structures[3][7] = GID_SECRET_RUNE
+    structures[3][8] = GID_SECRET_RUNE
     collision[3][7] = GID_COLLISION_I
     collision[3][8] = GID_COLLISION_I
 
@@ -1063,7 +1168,7 @@ if __name__ == "__main__":
     ground, terrain, structures, decorations, collision, objs, triggers = design_nanhu_campus()
     create_tmx(MAP_WIDTH, MAP_HEIGHT, ground, terrain, structures, decorations, collision,
                objs, triggers,
-               "main_campus_tileset", outdoor_tileset_rel, 27, SOLID_GIDS,
+               "main_campus_tileset", outdoor_tileset_rel, 62, SOLID_GIDS,
                os.path.join(map_dir, "nanhu_campus.tmx"), has_terrain=True)
 
     print("\n--- Nanhu Building F1 ---")

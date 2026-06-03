@@ -281,6 +281,8 @@ class SaveManager:
         game_manager._realm_triggered = save_data.realm_triggered
         game_manager._realm_first_night_shown = save_data.realm_first_night_shown
         game_manager._tutorial_shown = save_data.tutorial_shown
+        # 从谜题状态推导徽章收集进度
+        game_manager._all_badges_collected = game_manager.puzzle_manager.is_fountain_unlocked()
 
         # 恢复已探索区域到小地图模块
         game_manager.minimap.load_explored_data(save_data.explored_areas)
