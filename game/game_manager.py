@@ -2266,23 +2266,34 @@ class GameManager:
 
         if self._intro_phase == 0:
             # 阶段0：黑屏 + 开场文字淡入
-            self._intro_text_alpha = min(255, int(self._intro_timer * 100))
-            if self._intro_timer > 3.0:
+            self._intro_text_alpha = min(255, int(self._intro_timer * 120))
+            if self._intro_timer > 3.5:
                 self._intro_phase = 1
                 self._intro_timer = 0.0
                 self._intro_fade_alpha = 255
+                self._intro_player_y = INTERNAL_HEIGHT + 20  # 从画面下方开始
 
         elif self._intro_phase == 1:
-            # 阶段1：校门场景 + 玩家走进
-            self._intro_fade_alpha = max(0, int(255 - self._intro_timer * 200))
-            self._intro_player_y = min(INTERNAL_HEIGHT // 2, self._intro_timer * 40)
-            if self._intro_timer > 4.0:
+            # 阶段1：俯视角校门场景，角色从下往上走进校园
+            self._intro_fade_alpha = max(0, int(255 - self._intro_timer * 180))
+            # 角色从画面下方走到中间偏上位置
+            target_y = INTERNAL_HEIGHT // 2 - 20
+            speed = 50  # 像素/秒
+            self._intro_player_y = max(target_y, self._intro_player_y - speed * dt)
+            if self._intro_timer > 4.5:
                 self._intro_phase = 2
                 self._intro_timer = 0.0
 
         elif self._intro_phase == 2:
-            # 阶段2：秘境降临效果
+            # 阶段2：微弱绿光暗示 + 旁白
             if self._intro_timer > 3.0:
+                self._intro_phase = 3
+                self._intro_timer = 0.0
+
+        elif self._intro_phase == 3:
+            # 阶段3：淡出过渡到游戏
+            self._intro_fade_alpha = min(255, int(self._intro_timer * 200))
+            if self._intro_timer > 1.5:
                 self._finish_intro()
 
     def _intro_skip_current_phase(self):
@@ -2291,40 +2302,28 @@ class GameManager:
             self._intro_phase = 1
             self._intro_timer = 0.0
             self._intro_fade_alpha = 255
+            self._intro_player_y = INTERNAL_HEIGHT + 20
         elif self._intro_phase == 1:
             self._intro_phase = 2
             self._intro_timer = 0.0
         elif self._intro_phase == 2:
+            self._intro_phase = 3
+            self._intro_timer = 0.0
+        elif self._intro_phase == 3:
             self._finish_intro()
 
     def _finish_intro(self):
-        """开场动画结束，进入游戏"""
+        """开场动画结束，进入游戏（秘境由玩家走到桂中路时自然触发）"""
         self.state = GameState.PLAYING
-        self.game_clock.activate_realm()
-        self._realm_triggered = True  # 跳过游戏中的秘境触发
 
     def _draw_intro(self):
         """绘制开场动画"""
         self.internal_surface.fill(COLOR_BLACK)
 
         if self._intro_phase == 0:
-            # 黑屏 + 开场文字
-            texts = [
-                "九月，桂花飘香的季节……",
-                "你作为一名新生，踏入了桂子山的校园。",
-            ]
-            y_offset = INTERNAL_HEIGHT // 2 - 15
-            for i, text in enumerate(texts):
-                alpha = max(0, min(255, self._intro_text_alpha - i * 40))
-                text_surf = self.info_font.render(text, True, COLOR_WHITE)
-                text_surf.set_alpha(alpha)
-                text_rect = text_surf.get_rect(
-                    centerx=INTERNAL_WIDTH // 2, centery=y_offset + i * 20
-                )
-                self.internal_surface.blit(text_surf, text_rect)
+            self._draw_intro_text_phase()
 
         elif self._intro_phase == 1:
-            # 校门场景
             self._draw_intro_campus_scene()
             # 淡入效果
             if self._intro_fade_alpha > 0:
@@ -2333,84 +2332,217 @@ class GameManager:
                 self.internal_surface.blit(fade_surf, (0, 0))
 
         elif self._intro_phase == 2:
-            # 秘境降临效果
             self._draw_intro_campus_scene()
-            progress = self._intro_timer / 3.0
-            # 绿色闪光
-            if progress < 0.33:
-                green_alpha = int(180 * (progress / 0.33))
-                flash_surf = pygame.Surface((INTERNAL_WIDTH, INTERNAL_HEIGHT), pygame.SRCALPHA)
-                flash_surf.fill((60, 180, 80, green_alpha))
-                self.internal_surface.blit(flash_surf, (0, 0))
-            elif progress < 0.5:
-                white_alpha = int(255 * ((progress - 0.33) / 0.17))
-                flash_surf = pygame.Surface((INTERNAL_WIDTH, INTERNAL_HEIGHT), pygame.SRCALPHA)
-                flash_surf.fill((255, 255, 255, white_alpha))
-                self.internal_surface.blit(flash_surf, (0, 0))
-            elif progress < 0.75:
-                white_alpha = int(255 * (1 - (progress - 0.5) / 0.25))
-                flash_surf = pygame.Surface((INTERNAL_WIDTH, INTERNAL_HEIGHT), pygame.SRCALPHA)
-                flash_surf.fill((255, 255, 255, white_alpha))
-                self.internal_surface.blit(flash_surf, (0, 0))
-            # 提示文字
-            if progress > 0.8:
-                hint_alpha = min(255, int((progress - 0.8) / 0.2 * 255))
-                hint_text = self.info_font.render("秘境……降临了……", True, (200, 255, 200))
-                hint_text.set_alpha(hint_alpha)
-                hint_rect = hint_text.get_rect(
-                    centerx=INTERNAL_WIDTH // 2, centery=INTERNAL_HEIGHT // 2 + 40
-                )
-                self.internal_surface.blit(hint_text, hint_rect)
+            self._draw_intro_hint_effect()
+
+        elif self._intro_phase == 3:
+            self._draw_intro_campus_scene()
+            # 淡出到黑屏
+            if self._intro_fade_alpha > 0:
+                fade_surf = pygame.Surface((INTERNAL_WIDTH, INTERNAL_HEIGHT), pygame.SRCALPHA)
+                fade_surf.fill((0, 0, 0, self._intro_fade_alpha))
+                self.internal_surface.blit(fade_surf, (0, 0))
+
+    def _draw_intro_text_phase(self):
+        """绘制开场文字阶段"""
+        texts = [
+            "九月，桂花飘香的季节……",
+            "你作为一名新生，第一次踏入桂子山校园。",
+        ]
+        y_offset = INTERNAL_HEIGHT // 2 - 15
+        for i, text in enumerate(texts):
+            alpha = max(0, min(255, self._intro_text_alpha - i * 50))
+            text_surf = self.info_font.render(text, True, COLOR_WHITE)
+            text_surf.set_alpha(alpha)
+            text_rect = text_surf.get_rect(
+                centerx=INTERNAL_WIDTH // 2, centery=y_offset + i * 20
+            )
+            self.internal_surface.blit(text_surf, text_rect)
 
     def _draw_intro_campus_scene(self):
-        """绘制开场动画中的校门场景"""
-        # 简化的校门场景
-        # 天空渐变
-        for y in range(INTERNAL_HEIGHT // 2):
-            ratio = y / (INTERNAL_HEIGHT // 2)
-            r = int(40 + 60 * ratio)
-            g = int(60 + 80 * ratio)
-            b = int(120 + 40 * ratio)
-            pygame.draw.line(self.internal_surface, (r, g, b), (0, y), (INTERNAL_WIDTH, y))
+        """绘制开场动画中的俯视角校门场景"""
+        surf = self.internal_surface
+        cx = INTERNAL_WIDTH // 2
 
-        # 地面
-        pygame.draw.rect(self.internal_surface, (80, 120, 60),
-                         (0, INTERNAL_HEIGHT // 2, INTERNAL_WIDTH, INTERNAL_HEIGHT // 2))
-        # 道路
-        pygame.draw.rect(self.internal_surface, (160, 150, 130),
-                         (INTERNAL_WIDTH // 2 - 20, INTERNAL_HEIGHT // 2, 40, INTERNAL_HEIGHT // 2))
+        # === 地面：草地 ===
+        surf.fill((72, 112, 56))
 
-        # 校门柱子
-        pygame.draw.rect(self.internal_surface, (180, 170, 150),
-                         (INTERNAL_WIDTH // 2 - 30, INTERNAL_HEIGHT // 2 - 40, 8, 40))
-        pygame.draw.rect(self.internal_surface, (180, 170, 150),
-                         (INTERNAL_WIDTH // 2 + 22, INTERNAL_HEIGHT // 2 - 40, 8, 40))
+        # 草地纹理变化
+        for y in range(0, INTERNAL_HEIGHT, 4):
+            for x in range(0, INTERNAL_WIDTH, 8):
+                seed = (x * 7 + y * 13) % 37
+                if seed < 8:
+                    shade = (68 + seed, 108 + seed, 52 + seed)
+                    pygame.draw.rect(surf, shade, (x, y, 8, 4))
+
+        # === 道路（从画面下方延伸到上方，角色沿此路走进） ===
+        road_w = 36
+        road_color = (170, 155, 130)
+        road_edge = (140, 125, 100)
+        # 主道路
+        pygame.draw.rect(surf, road_color, (cx - road_w // 2, 0, road_w, INTERNAL_HEIGHT))
+        # 道路边线
+        pygame.draw.line(surf, road_edge, (cx - road_w // 2, 0), (cx - road_w // 2, INTERNAL_HEIGHT), 1)
+        pygame.draw.line(surf, road_edge, (cx + road_w // 2, 0), (cx + road_w // 2, INTERNAL_HEIGHT), 1)
+        # 道路中线（虚线）
+        for y in range(0, INTERNAL_HEIGHT, 12):
+            pygame.draw.rect(surf, (190, 175, 150), (cx - 1, y, 2, 6))
+
+        # === 校门牌坊（画面上方） ===
+        gate_y = 40
+        # 左柱
+        pygame.draw.rect(surf, (170, 160, 140), (cx - 28, gate_y, 8, 30))
+        pygame.draw.rect(surf, (150, 140, 120), (cx - 28, gate_y, 8, 30), 1)
+        # 右柱
+        pygame.draw.rect(surf, (170, 160, 140), (cx + 20, gate_y, 8, 30))
+        pygame.draw.rect(surf, (150, 140, 120), (cx + 20, gate_y, 8, 30), 1)
         # 横梁
-        pygame.draw.rect(self.internal_surface, (160, 140, 110),
-                         (INTERNAL_WIDTH // 2 - 30, INTERNAL_HEIGHT // 2 - 44, 60, 6))
+        pygame.draw.rect(surf, (155, 140, 115), (cx - 30, gate_y - 4, 60, 6))
+        pygame.draw.rect(surf, (135, 120, 95), (cx - 30, gate_y - 4, 60, 6), 1)
+        # 顶部装饰
+        pygame.draw.rect(surf, (145, 130, 105), (cx - 32, gate_y - 8, 64, 5))
+        # 校名（简化为文字）
+        name_surf = self.info_font.render("桂子山", True, (200, 180, 140))
+        name_rect = name_surf.get_rect(centerx=cx, centery=gate_y + 12)
+        surf.blit(name_surf, name_rect)
 
-        # 玩家（小像素人走进）
-        player_y = int(INTERNAL_HEIGHT // 2 + self._intro_player_y)
-        player_x = INTERNAL_WIDTH // 2
-        # 简单的像素人
-        pygame.draw.rect(self.internal_surface, (80, 120, 200),
-                         (player_x - 4, player_y - 12, 8, 8))  # 身体
-        pygame.draw.rect(self.internal_surface, (240, 210, 180),
-                         (player_x - 3, player_y - 18, 6, 6))  # 头
-        pygame.draw.rect(self.internal_surface, (60, 40, 20),
-                         (player_x - 3, player_y - 20, 6, 2))  # 头发
+        # === 桂花树（使用精灵或手绘） ===
+        tree_positions = [
+            (cx - 60, 80), (cx + 60, 80),   # 校门两侧
+            (cx - 80, 160), (cx + 80, 160),  # 道路两侧远处
+            (cx - 55, 200), (cx + 55, 200),  # 道路两侧近处
+        ]
+        # 尝试加载桂花树精灵
+        tree_sprite = self._load_intro_sprite("osmanthus_tree.png")
+        tree_glow_sprite = self._load_intro_sprite("osmanthus_tree_glow.png")
 
-        # 桂花树
-        for tx in [INTERNAL_WIDTH // 4, 3 * INTERNAL_WIDTH // 4]:
-            pygame.draw.rect(self.internal_surface, (100, 70, 30),
-                             (tx - 2, INTERNAL_HEIGHT // 2 - 20, 4, 20))
-            pygame.draw.circle(self.internal_surface, (60, 140, 50),
-                               (tx, INTERNAL_HEIGHT // 2 - 25), 12)
-            # 桂花点
-            for j in range(5):
-                fx = tx + ((j * 7 + 3) % 17 - 8)
-                fy = INTERNAL_HEIGHT // 2 - 25 + ((j * 11 + 5) % 17 - 8)
-                pygame.draw.circle(self.internal_surface, (255, 220, 80), (fx, fy), 1)
+        for i, (tx, ty) in enumerate(tree_positions):
+            if tree_sprite is not None:
+                # 使用精灵
+                sprite_w = tree_sprite.get_width()
+                sprite_h = tree_sprite.get_height()
+                # 底部对齐到树根位置
+                surf.blit(tree_sprite, (tx - sprite_w // 2, ty - sprite_h))
+            else:
+                # 降级：手绘桂花树
+                # 树干
+                pygame.draw.rect(surf, (100, 70, 30), (tx - 2, ty - 20, 4, 20))
+                # 树冠
+                pygame.draw.circle(surf, (55, 130, 45), (tx, ty - 25), 11)
+                pygame.draw.circle(surf, (65, 145, 55), (tx - 3, ty - 22), 8)
+                pygame.draw.circle(surf, (65, 145, 55), (tx + 3, ty - 22), 8)
+                # 桂花点
+                for j in range(6):
+                    fx = tx + ((j * 7 + 3 + i * 5) % 19 - 9)
+                    fy = ty - 25 + ((j * 11 + 5 + i * 3) % 19 - 9)
+                    pygame.draw.circle(surf, (255, 220, 80), (fx, fy), 1)
+
+        # === 桂花飘落粒子 ===
+        self._draw_intro_petals()
+
+        # === 玩家（使用精灵表，从下往上走） ===
+        player_x = cx
+        player_y = int(self._intro_player_y)
+        self._draw_intro_player(surf, player_x, player_y)
+
+    def _load_intro_sprite(self, filename):
+        """加载开场动画用的精灵（带缓存）"""
+        if not hasattr(self, '_intro_sprite_cache'):
+            self._intro_sprite_cache = {}
+        if filename in self._intro_sprite_cache:
+            return self._intro_sprite_cache[filename]
+        path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                            "assets", "sprites", filename)
+        if os.path.exists(path):
+            sprite = pygame.image.load(path).convert_alpha()
+            self._intro_sprite_cache[filename] = sprite
+            return sprite
+        self._intro_sprite_cache[filename] = None
+        return None
+
+    def _draw_intro_player(self, surf, px, py):
+        """绘制开场动画中的玩家（使用精灵表）"""
+        # 尝试加载玩家精灵表
+        from player.player import Player
+        Player._load_sprites()
+        sprite_sheet = Player._sprite_sheet
+
+        if sprite_sheet is not None:
+            # 使用精灵表：朝上方向（row=3），根据时间选择动画帧
+            row = 3  # up direction
+            frame = int(self._intro_timer * 4) % 4  # 行走动画
+            src_rect = pygame.Rect(
+                frame * 16, row * 24,
+                16, 24,
+            )
+            # 精灵底部对齐到角色脚底位置
+            surf.blit(sprite_sheet, (px - 8, py - 24), src_rect)
+        else:
+            # 降级：手绘像素角色（朝上）
+            # 身体
+            pygame.draw.rect(surf, (80, 120, 200), (px - 4, py - 18, 8, 10))
+            # 头
+            pygame.draw.rect(surf, (240, 210, 180), (px - 3, py - 24, 6, 6))
+            # 头发
+            pygame.draw.rect(surf, (60, 40, 20), (px - 3, py - 25, 6, 3))
+            # 腿（行走动画）
+            frame = int(self._intro_timer * 4) % 4
+            if frame in (1, 3):
+                offset = 1 if frame == 1 else -1
+                pygame.draw.rect(surf, (60, 80, 160), (px - 3, py - 8 + offset, 2, 4))
+                pygame.draw.rect(surf, (60, 80, 160), (px + 1, py - 8 - offset, 2, 4))
+            else:
+                pygame.draw.rect(surf, (60, 80, 160), (px - 3, py - 8, 2, 4))
+                pygame.draw.rect(surf, (60, 80, 160), (px + 1, py - 8, 2, 4))
+
+    def _draw_intro_petals(self):
+        """绘制开场动画中的桂花飘落粒子"""
+        t = self._intro_timer + getattr(self, '_intro_total_time', 0)
+        for i in range(12):
+            seed_x = (i * 67 + 23) % INTERNAL_WIDTH
+            speed = 12 + (i * 7) % 8
+            drift = 8 * math.sin(t * 1.5 + i * 0.7)
+            x = (seed_x + drift + t * speed * 0.3) % INTERNAL_WIDTH
+            y = (t * speed + i * 30) % INTERNAL_HEIGHT
+            # 桂花小点
+            alpha = 160 + int(40 * math.sin(t * 2 + i))
+            color = (255, 220, 80, min(255, alpha))
+            petal_surf = pygame.Surface((3, 3), pygame.SRCALPHA)
+            pygame.draw.circle(petal_surf, color, (1, 1), 1)
+            self.internal_surface.blit(petal_surf, (int(x), int(y)))
+
+    def _draw_intro_hint_effect(self):
+        """绘制开场动画阶段2：微弱绿光暗示效果"""
+        progress = self._intro_timer / 3.0
+
+        # 极淡的绿色脉冲（秘境暗示）
+        if progress < 0.6:
+            # 绿光在远处桂花树上微微闪烁
+            pulse = 0.5 + 0.5 * math.sin(self._intro_timer * 3)
+            green_alpha = int(25 * pulse)  # 非常淡
+            hint_surf = pygame.Surface((INTERNAL_WIDTH, INTERNAL_HEIGHT), pygame.SRCALPHA)
+            # 只在树的位置附近添加绿光
+            cx = INTERNAL_WIDTH // 2
+            for tx in [cx - 60, cx + 60]:
+                glow_surf = pygame.Surface((30, 30), pygame.SRCALPHA)
+                pygame.draw.circle(glow_surf, (80, 200, 80, green_alpha), (15, 15), 15)
+                hint_surf.blit(glow_surf, (tx - 15, 65))
+            self.internal_surface.blit(hint_surf, (0, 0))
+
+        # 旁白文字
+        if progress > 0.3:
+            text_alpha = min(255, int((progress - 0.3) * 300))
+            hint_text = self.info_font.render("不知为何，你感到一阵莫名的悸动……", True, (200, 230, 200))
+            hint_text.set_alpha(text_alpha)
+            hint_rect = hint_text.get_rect(
+                centerx=INTERNAL_WIDTH // 2, centery=INTERNAL_HEIGHT - 25
+            )
+            # 文字背景
+            bg_rect = hint_rect.inflate(10, 6)
+            bg_surf = pygame.Surface((bg_rect.width, bg_rect.height), pygame.SRCALPHA)
+            bg_surf.fill((0, 0, 0, min(180, text_alpha)))
+            self.internal_surface.blit(bg_surf, bg_rect.topleft)
+            self.internal_surface.blit(hint_text, hint_rect)
 
     def _determine_ending_type(self):
         """根据游戏表现决定结局类型"""

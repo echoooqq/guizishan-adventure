@@ -15,7 +15,7 @@
 | 场景 | 正确示例 | 错误示例 |
 |------|---------|---------|
 | 窗口标题 | `"桂子山秘境探险"` | `"GuiZiShan Adventure"` |
-| 标题画面 | `"按 回车键 开始游戏"` | `"Press ENTER to Start"` |
+| 标题画面 | `"按任意键开始"` / `"开始游戏"` / `"继续游戏"` / `"设置"` | `"Press ENTER to Start"` |
 | 暂停菜单 | `"继续游戏"` / `"返回标题"` | `"Continue"` / `"Back to Title"` |
 | HUD 文字 | `"体力"` / `"徽章"` / `"第1天"` | `"Stamina"` / `"Badge"` / `"Day 1"` |
 | 对话框 | 说话者名称、对话文本均为中文 | 任何英文文本 |
@@ -44,11 +44,12 @@
 ### 1.3 字体规范
 
 - **正式字体**：必须使用 Zpix（中文像素风字体），确保中文渲染清晰
-- **临时字体（阶段1）**：Zpix 在阶段2（Day 12-13）才正式配置，阶段1使用系统黑体（SimHei）作为临时方案，通过 `pygame.font.Font(FONT_PATH, size)` 加载（`FONT_PATH` 定义在 `config.py`），仅保证中文可显示，不保证美观
+- **字体加载**：`config.py` 中 `FONT_PATH` 优先加载 Zpix（`assets/fonts/zpix.ttf`），若不存在则降级使用系统黑体（SimHei）
 - **字体大小**：必须是像素网格的整数倍（推荐 12px、16px），避免亚像素渲染导致中文模糊
 - **英文补充字体**：按键提示中的英文按键名可用 Press Start 2P
 - **禁止使用** `pygame.font.Font(None, size)` 渲染中文文本，该默认字体不支持中文
-- **阶段2切换**：配置 Zpix 后，删除 `config.py` 中的 `FONT_PATH` 常量，所有字体加载统一使用 Zpix
+- **Zpix字体下载**：运行 `python tools/download_zpix.py` 或手动从 https://github.com/SolidZORO/zpix-pixel-font/releases 下载 `zpix.ttf` 放到 `assets/fonts/`
+- **注意**：Zpix 不含特殊符号（如 ▶），需用 `pygame.draw.polygon` 等绘制替代
 
 ### 1.4 当前代码中需修正的英文文本
 
@@ -59,7 +60,7 @@
 | `main.py` | `"GuiZiShan Adventure - Campus Mystery Exploration"` | `"桂子山秘境探险"` | ✅ 已修正 |
 | `game/game_manager.py` | `"GuiZiShan Adventure"` | `"桂子山秘境探险"` | ✅ 已修正 |
 | `game/game_manager.py` | `"Campus Mystery Exploration"` | `"校园秘境探险"` | ✅ 已修正 |
-| `game/game_manager.py` | `"Press ENTER to Start"` | `"按 回车键 开始游戏"` | ✅ 已修正 |
+| `game/game_manager.py` | `"Press ENTER to Start"` | `"按任意键开始"`（标题菜单导航） | ✅ 已修正 |
 | `game/game_manager.py` | `"Continue (Esc)"` | 暂保留英文（pygame_gui默认字体不支持中文，等Day12配置Zpix后统一中文化） | ⏳ 待Day12 |
 | `game/game_manager.py` | `"Back to Title (Q)"` | 暂保留英文（同上） | ⏳ 待Day12 |
 | `game/game_manager.py` | `"PAUSED"` | `"暂停"` | ✅ 已修正 |
