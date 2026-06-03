@@ -1,4 +1,5 @@
 import json
+import math
 import os
 import random
 import pygame
@@ -88,6 +89,28 @@ class GameManager:
         self.info_font = pygame.font.Font(FONT_PATH, FONT_INFO_SIZE)
         self.blink_timer = 0.0
         self.show_press_enter = True
+
+        # 标题画面菜单
+        self._title_menu_items = ["开始游戏", "继续游戏", "设置"]
+        self._title_menu_index = 0
+        self._title_menu_active = False  # 是否在菜单选择模式
+        self._title_anim_timer = 0.0
+        self._title_logo_y = -30  # Logo初始位置（从上方滑入）
+        self._title_logo_settled = False
+
+        # 开场动画
+        self._intro_phase = 0  # 0=黑屏文字, 1=校门场景, 2=秘境降临
+        self._intro_timer = 0.0
+        self._intro_text_alpha = 0
+        self._intro_player_y = 0.0
+        self._intro_fade_alpha = 255
+
+        # 结局动画
+        self._outro_phase = 0  # 0=光芒, 1=秘境消散, 2=结局文字, 3=制作组
+        self._outro_timer = 0.0
+        self._outro_fade_alpha = 0
+        self._outro_ending_type = "normal"  # normal/good/true
+        self._outro_text_shown = False
 
         self._create_title_ui()
 
@@ -1207,16 +1230,12 @@ class GameManager:
         elif puzzle is self.fountain_puzzle:
             if self.fountain_puzzle.solved:
                 self.game_clock.dispel_realm()
-                self.state = GameState.DIALOG
-                self.dialog_box.start(
-                    {"default": [
-                        {"speaker": "秘境守护者", "text": "七徽归位，封印解除！"},
-                        {"speaker": "秘境守护者", "text": "秘境之力消散，桂子山重归现实。"},
-                    ]},
-                    start_key="default",
-                    on_complete=self._on_dialog_complete,
-                    game_state=self._get_dialog_game_state(),
-                )
+                # 根据收集情况决定结局类型
+                self._determine_ending_type()
+                self.state = GameState.OUTRO
+                self._outro_phase = 0
+                self._outro_timer = 0.0
+                self._outro_fade_alpha = 0
 
     def _start_bookshelf_animation(self):
         if self._nanhulou_bookshelf_obj is None:
@@ -1304,17 +1323,28 @@ class GameManager:
 
         if self.state == GameState.TITLE:
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_RETURN or event.key == pygame.K_SPACE:
-                    # 新游戏
-                    self.state = GameState.PLAYING
-                    self.ui_manager.clear_and_reset()
-                elif event.key == pygame.K_l:
-                    # 按L键打开存档选择菜单
-                    if self.save_manager.has_any_save():
-                        self.menu.open("title_load")
-                        save_infos = self.save_manager.get_all_save_info()
-                        self.menu.set_save_infos(save_infos)
-                        self.state = GameState.PAUSED  # 复用PAUSED状态显示菜单
+                if not self._title_menu_active:
+                    # 任意键进入菜单模式
+                    if event.key in (pygame.K_RETURN, pygame.K_SPACE,
+                                     pygame.K_UP, pygame.K_DOWN,
+                                     pygame.K_w, pygame.K_s):
+                        self._title_menu_active = True
+                        self._title_menu_index = 0
+                        # 如果没有存档，跳过"继续游戏"
+                        if not self.save_manager.has_any_save():
+                            self._title_menu_items = ["开始游戏", "设置"]
+                        else:
+                            self._title_menu_items = ["开始游戏", "继续游戏", "设置"]
+                else:
+                    # 菜单导航
+                    if event.key in (pygame.K_UP, pygame.K_w):
+                        self._title_menu_index = (self._title_menu_index - 1) % len(self._title_menu_items)
+                    elif event.key in (pygame.K_DOWN, pygame.K_s):
+                        self._title_menu_index = (self._title_menu_index + 1) % len(self._title_menu_items)
+                    elif event.key in (pygame.K_RETURN, pygame.K_SPACE, pygame.K_f):
+                        self._title_menu_select()
+                    elif event.key == pygame.K_ESCAPE:
+                        self._title_menu_active = False
 
         elif self.state == GameState.PLAYING:
             if event.type == pygame.KEYDOWN:
@@ -1327,6 +1357,21 @@ class GameManager:
                     self._open_inventory()
                 elif event.key == pygame.K_m:
                     self.state = GameState.MAP_VIEW
+
+        elif self.state == GameState.INTRO:
+            if event.type == pygame.KEYDOWN:
+                if event.key in (pygame.K_RETURN, pygame.K_SPACE, pygame.K_f):
+                    # 跳过当前阶段
+                    self._intro_skip_current_phase()
+
+        elif self.state == GameState.OUTRO:
+            if event.type == pygame.KEYDOWN:
+                if event.key in (pygame.K_RETURN, pygame.K_SPACE, pygame.K_f):
+                    # 跳过当前阶段或加速
+                    self._outro_skip_current_phase()
+                elif event.key == pygame.K_ESCAPE and self._outro_phase >= 2:
+                    # 结局文字后可返回标题
+                    self._return_to_title()
 
         elif self.state == GameState.PAUSED:
             menu_action = self.menu.handle_event(event)
@@ -1376,8 +1421,7 @@ class GameManager:
             elif menu_action == "quit_title":
                 self.save_manager.auto_save(self)
                 self.menu.close()
-                self.state = GameState.TITLE
-                self._create_title_ui()
+                self._return_to_title()
 
             elif menu_action in ("auto_save", "slot_1", "slot_2"):
                 # 存档槽位确认
@@ -1609,6 +1653,19 @@ class GameManager:
             if self.blink_timer >= 0.8:
                 self.blink_timer -= 0.8
                 self.show_press_enter = not self.show_press_enter
+            # Logo滑入动画
+            self._title_anim_timer += dt
+            if not self._title_logo_settled:
+                self._title_logo_y = min(INTERNAL_HEIGHT // 2 - 40, self._title_logo_y + 60 * dt)
+                if self._title_logo_y >= INTERNAL_HEIGHT // 2 - 40:
+                    self._title_logo_y = INTERNAL_HEIGHT // 2 - 40
+                    self._title_logo_settled = True
+
+        elif self.state == GameState.INTRO:
+            self._update_intro(dt)
+
+        elif self.state == GameState.OUTRO:
+            self._update_outro(dt)
 
         elif self.state == GameState.PLAYING:
             self.game_clock.update(dt)
@@ -1778,6 +1835,10 @@ class GameManager:
 
         if self.state == GameState.TITLE:
             self._draw_title()
+        elif self.state == GameState.INTRO:
+            self._draw_intro()
+        elif self.state == GameState.OUTRO:
+            self._draw_outro()
         elif self.state == GameState.PLAYING:
             self._draw_game()
             self._draw_interaction_prompts()
@@ -1814,34 +1875,72 @@ class GameManager:
     def _draw_title(self):
         self.internal_surface.fill(COLOR_TITLE_BG)
 
+        # 装饰性粒子效果（模拟桂花飘落）
+        self._draw_title_particles()
+
+        # Logo滑入动画
+        logo_y = int(self._title_logo_y)
+
+        # 标题
         title_text = self.title_font.render("桂子山秘境探险", True, COLOR_TITLE_TEXT)
         title_rect = title_text.get_rect(
-            centerx=INTERNAL_WIDTH // 2, centery=INTERNAL_HEIGHT // 2 - 30
+            centerx=INTERNAL_WIDTH // 2, centery=logo_y
         )
         self.internal_surface.blit(title_text, title_rect)
 
+        # 副标题
         sub_text = self.info_font.render(
             "校园秘境探险", True, COLOR_WHITE
         )
         sub_rect = sub_text.get_rect(
-            centerx=INTERNAL_WIDTH // 2, centery=INTERNAL_HEIGHT // 2
+            centerx=INTERNAL_WIDTH // 2, centery=logo_y + 20
         )
         self.internal_surface.blit(sub_text, sub_rect)
 
-        if self.show_press_enter:
-            enter_text = self.info_font.render("按 回车键 开始游戏", True, COLOR_WHITE)
-            enter_rect = enter_text.get_rect(
-                centerx=INTERNAL_WIDTH // 2, centery=INTERNAL_HEIGHT // 2 + 30
-            )
-            self.internal_surface.blit(enter_text, enter_rect)
+        if not self._title_menu_active:
+            # 闪烁提示
+            if self.show_press_enter:
+                enter_text = self.info_font.render("按任意键开始", True, COLOR_WHITE)
+                enter_rect = enter_text.get_rect(
+                    centerx=INTERNAL_WIDTH // 2, centery=INTERNAL_HEIGHT // 2 + 50
+                )
+                self.internal_surface.blit(enter_text, enter_rect)
+        else:
+            # 菜单项
+            menu_start_y = INTERNAL_HEIGHT // 2 + 30
+            for i, item in enumerate(self._title_menu_items):
+                is_selected = (i == self._title_menu_index)
+                color = COLOR_TITLE_TEXT if is_selected else (150, 150, 170)
+                text = self.info_font.render(item, True, color)
+                text_rect = text.get_rect(
+                    centerx=INTERNAL_WIDTH // 2, centery=menu_start_y + i * 18
+                )
+                self.internal_surface.blit(text, text_rect)
+                # 选中指示器（用绘制三角形代替字体字符，避免Zpix不支持▶）
+                if is_selected:
+                    ind_x = text_rect.left - 8
+                    ind_y = text_rect.centery
+                    pygame.draw.polygon(self.internal_surface, COLOR_TITLE_TEXT, [
+                        (ind_x, ind_y - 4),
+                        (ind_x + 5, ind_y),
+                        (ind_x, ind_y + 4),
+                    ])
 
-        # 如果有存档，显示读档提示
-        if self.save_manager.has_any_save():
-            load_text = self.info_font.render("按 L键 继续游戏", True, (180, 180, 220))
-            load_rect = load_text.get_rect(
-                centerx=INTERNAL_WIDTH // 2, centery=INTERNAL_HEIGHT // 2 + 48
-            )
-            self.internal_surface.blit(load_text, load_rect)
+    def _draw_title_particles(self):
+        """绘制标题画面的桂花飘落粒子效果"""
+        t = self._title_anim_timer
+        for i in range(8):
+            # 每个粒子有不同的速度和起始位置
+            seed_x = (i * 67 + 23) % INTERNAL_WIDTH
+            speed = 15 + (i * 7) % 10
+            x = (seed_x + t * speed * (0.5 + (i % 3) * 0.3)) % INTERNAL_WIDTH
+            y = (t * speed + i * 40) % INTERNAL_HEIGHT
+            # 小桂花点
+            alpha = 120 + int(40 * ((t * 2 + i) % 1.0))
+            color = (255, 220, 100, min(255, alpha))
+            particle_surf = pygame.Surface((3, 3), pygame.SRCALPHA)
+            pygame.draw.circle(particle_surf, color, (1, 1), 1)
+            self.internal_surface.blit(particle_surf, (int(x), int(y)))
 
     def _draw_game(self):
         self.tile_map.draw(self.internal_surface, self.camera)
@@ -2136,3 +2235,432 @@ class GameManager:
     def _auto_save(self):
         """触发自动存档"""
         self.save_manager.auto_save(self)
+
+    def _title_menu_select(self):
+        """标题画面菜单选择"""
+        selected = self._title_menu_items[self._title_menu_index]
+        if selected == "开始游戏":
+            self._start_intro()
+        elif selected == "继续游戏":
+            if self.save_manager.has_any_save():
+                self.menu.open("title_load")
+                save_infos = self.save_manager.get_all_save_info()
+                self.menu.set_save_infos(save_infos)
+                self.state = GameState.PAUSED
+        elif selected == "设置":
+            self.menu.open("settings")
+            self.state = GameState.PAUSED
+
+    def _start_intro(self):
+        """开始开场动画"""
+        self.state = GameState.INTRO
+        self._intro_phase = 0
+        self._intro_timer = 0.0
+        self._intro_text_alpha = 0
+        self._intro_fade_alpha = 255
+        self.ui_manager.clear_and_reset()
+
+    def _update_intro(self, dt):
+        """更新开场动画"""
+        self._intro_timer += dt
+
+        if self._intro_phase == 0:
+            # 阶段0：黑屏 + 开场文字淡入
+            self._intro_text_alpha = min(255, int(self._intro_timer * 100))
+            if self._intro_timer > 3.0:
+                self._intro_phase = 1
+                self._intro_timer = 0.0
+                self._intro_fade_alpha = 255
+
+        elif self._intro_phase == 1:
+            # 阶段1：校门场景 + 玩家走进
+            self._intro_fade_alpha = max(0, int(255 - self._intro_timer * 200))
+            self._intro_player_y = min(INTERNAL_HEIGHT // 2, self._intro_timer * 40)
+            if self._intro_timer > 4.0:
+                self._intro_phase = 2
+                self._intro_timer = 0.0
+
+        elif self._intro_phase == 2:
+            # 阶段2：秘境降临效果
+            if self._intro_timer > 3.0:
+                self._finish_intro()
+
+    def _intro_skip_current_phase(self):
+        """跳过当前开场动画阶段"""
+        if self._intro_phase == 0:
+            self._intro_phase = 1
+            self._intro_timer = 0.0
+            self._intro_fade_alpha = 255
+        elif self._intro_phase == 1:
+            self._intro_phase = 2
+            self._intro_timer = 0.0
+        elif self._intro_phase == 2:
+            self._finish_intro()
+
+    def _finish_intro(self):
+        """开场动画结束，进入游戏"""
+        self.state = GameState.PLAYING
+        self.game_clock.activate_realm()
+        self._realm_triggered = True  # 跳过游戏中的秘境触发
+
+    def _draw_intro(self):
+        """绘制开场动画"""
+        self.internal_surface.fill(COLOR_BLACK)
+
+        if self._intro_phase == 0:
+            # 黑屏 + 开场文字
+            texts = [
+                "九月，桂花飘香的季节……",
+                "你作为一名新生，踏入了桂子山的校园。",
+            ]
+            y_offset = INTERNAL_HEIGHT // 2 - 15
+            for i, text in enumerate(texts):
+                alpha = max(0, min(255, self._intro_text_alpha - i * 40))
+                text_surf = self.info_font.render(text, True, COLOR_WHITE)
+                text_surf.set_alpha(alpha)
+                text_rect = text_surf.get_rect(
+                    centerx=INTERNAL_WIDTH // 2, centery=y_offset + i * 20
+                )
+                self.internal_surface.blit(text_surf, text_rect)
+
+        elif self._intro_phase == 1:
+            # 校门场景
+            self._draw_intro_campus_scene()
+            # 淡入效果
+            if self._intro_fade_alpha > 0:
+                fade_surf = pygame.Surface((INTERNAL_WIDTH, INTERNAL_HEIGHT), pygame.SRCALPHA)
+                fade_surf.fill((0, 0, 0, self._intro_fade_alpha))
+                self.internal_surface.blit(fade_surf, (0, 0))
+
+        elif self._intro_phase == 2:
+            # 秘境降临效果
+            self._draw_intro_campus_scene()
+            progress = self._intro_timer / 3.0
+            # 绿色闪光
+            if progress < 0.33:
+                green_alpha = int(180 * (progress / 0.33))
+                flash_surf = pygame.Surface((INTERNAL_WIDTH, INTERNAL_HEIGHT), pygame.SRCALPHA)
+                flash_surf.fill((60, 180, 80, green_alpha))
+                self.internal_surface.blit(flash_surf, (0, 0))
+            elif progress < 0.5:
+                white_alpha = int(255 * ((progress - 0.33) / 0.17))
+                flash_surf = pygame.Surface((INTERNAL_WIDTH, INTERNAL_HEIGHT), pygame.SRCALPHA)
+                flash_surf.fill((255, 255, 255, white_alpha))
+                self.internal_surface.blit(flash_surf, (0, 0))
+            elif progress < 0.75:
+                white_alpha = int(255 * (1 - (progress - 0.5) / 0.25))
+                flash_surf = pygame.Surface((INTERNAL_WIDTH, INTERNAL_HEIGHT), pygame.SRCALPHA)
+                flash_surf.fill((255, 255, 255, white_alpha))
+                self.internal_surface.blit(flash_surf, (0, 0))
+            # 提示文字
+            if progress > 0.8:
+                hint_alpha = min(255, int((progress - 0.8) / 0.2 * 255))
+                hint_text = self.info_font.render("秘境……降临了……", True, (200, 255, 200))
+                hint_text.set_alpha(hint_alpha)
+                hint_rect = hint_text.get_rect(
+                    centerx=INTERNAL_WIDTH // 2, centery=INTERNAL_HEIGHT // 2 + 40
+                )
+                self.internal_surface.blit(hint_text, hint_rect)
+
+    def _draw_intro_campus_scene(self):
+        """绘制开场动画中的校门场景"""
+        # 简化的校门场景
+        # 天空渐变
+        for y in range(INTERNAL_HEIGHT // 2):
+            ratio = y / (INTERNAL_HEIGHT // 2)
+            r = int(40 + 60 * ratio)
+            g = int(60 + 80 * ratio)
+            b = int(120 + 40 * ratio)
+            pygame.draw.line(self.internal_surface, (r, g, b), (0, y), (INTERNAL_WIDTH, y))
+
+        # 地面
+        pygame.draw.rect(self.internal_surface, (80, 120, 60),
+                         (0, INTERNAL_HEIGHT // 2, INTERNAL_WIDTH, INTERNAL_HEIGHT // 2))
+        # 道路
+        pygame.draw.rect(self.internal_surface, (160, 150, 130),
+                         (INTERNAL_WIDTH // 2 - 20, INTERNAL_HEIGHT // 2, 40, INTERNAL_HEIGHT // 2))
+
+        # 校门柱子
+        pygame.draw.rect(self.internal_surface, (180, 170, 150),
+                         (INTERNAL_WIDTH // 2 - 30, INTERNAL_HEIGHT // 2 - 40, 8, 40))
+        pygame.draw.rect(self.internal_surface, (180, 170, 150),
+                         (INTERNAL_WIDTH // 2 + 22, INTERNAL_HEIGHT // 2 - 40, 8, 40))
+        # 横梁
+        pygame.draw.rect(self.internal_surface, (160, 140, 110),
+                         (INTERNAL_WIDTH // 2 - 30, INTERNAL_HEIGHT // 2 - 44, 60, 6))
+
+        # 玩家（小像素人走进）
+        player_y = int(INTERNAL_HEIGHT // 2 + self._intro_player_y)
+        player_x = INTERNAL_WIDTH // 2
+        # 简单的像素人
+        pygame.draw.rect(self.internal_surface, (80, 120, 200),
+                         (player_x - 4, player_y - 12, 8, 8))  # 身体
+        pygame.draw.rect(self.internal_surface, (240, 210, 180),
+                         (player_x - 3, player_y - 18, 6, 6))  # 头
+        pygame.draw.rect(self.internal_surface, (60, 40, 20),
+                         (player_x - 3, player_y - 20, 6, 2))  # 头发
+
+        # 桂花树
+        for tx in [INTERNAL_WIDTH // 4, 3 * INTERNAL_WIDTH // 4]:
+            pygame.draw.rect(self.internal_surface, (100, 70, 30),
+                             (tx - 2, INTERNAL_HEIGHT // 2 - 20, 4, 20))
+            pygame.draw.circle(self.internal_surface, (60, 140, 50),
+                               (tx, INTERNAL_HEIGHT // 2 - 25), 12)
+            # 桂花点
+            for j in range(5):
+                fx = tx + ((j * 7 + 3) % 17 - 8)
+                fy = INTERNAL_HEIGHT // 2 - 25 + ((j * 11 + 5) % 17 - 8)
+                pygame.draw.circle(self.internal_surface, (255, 220, 80), (fx, fy), 1)
+
+    def _determine_ending_type(self):
+        """根据游戏表现决定结局类型"""
+        # 普通结局：正常通关
+        # 好结局：在3天内通关
+        # 真结局：在2天内通关且收集了所有道具
+        day = self.game_clock.day_count
+        item_count = len(self.player.inventory.items)
+
+        if day <= 2 and item_count >= 14:
+            self._outro_ending_type = "true"
+        elif day <= 3:
+            self._outro_ending_type = "good"
+        else:
+            self._outro_ending_type = "normal"
+
+    def _update_outro(self, dt):
+        """更新结局动画"""
+        self._outro_timer += dt
+
+        if self._outro_phase == 0:
+            # 阶段0：七徽归位光芒
+            self._outro_fade_alpha = min(255, int(self._outro_timer * 100))
+            if self._outro_timer > 3.0:
+                self._outro_phase = 1
+                self._outro_timer = 0.0
+
+        elif self._outro_phase == 1:
+            # 阶段1：秘境消散
+            self._outro_fade_alpha = max(0, int(255 - self._outro_timer * 80))
+            if self._outro_timer > 4.0:
+                self._outro_phase = 2
+                self._outro_timer = 0.0
+                self._outro_text_shown = False
+
+        elif self._outro_phase == 2:
+            # 阶段2：结局文字
+            self._outro_text_shown = True
+            if self._outro_timer > 5.0:
+                self._outro_phase = 3
+                self._outro_timer = 0.0
+
+        elif self._outro_phase == 3:
+            # 阶段3：制作组
+            if self._outro_timer > 5.0:
+                pass  # 等待玩家按键返回标题
+
+    def _outro_skip_current_phase(self):
+        """跳过当前结局动画阶段"""
+        if self._outro_phase == 0:
+            self._outro_phase = 1
+            self._outro_timer = 0.0
+        elif self._outro_phase == 1:
+            self._outro_phase = 2
+            self._outro_timer = 0.0
+            self._outro_text_shown = True
+        elif self._outro_phase == 2:
+            self._outro_phase = 3
+            self._outro_timer = 0.0
+        elif self._outro_phase == 3:
+            self._return_to_title()
+
+    def _draw_outro(self):
+        """绘制结局动画"""
+        self.internal_surface.fill(COLOR_BLACK)
+
+        if self._outro_phase == 0:
+            # 七徽归位光芒
+            progress = self._outro_timer / 3.0
+            # 中心光芒
+            cx, cy = INTERNAL_WIDTH // 2, INTERNAL_HEIGHT // 2
+            for r in range(60, 0, -5):
+                alpha = int(min(255, progress * 200) * (1 - r / 60))
+                glow_surf = pygame.Surface((r * 2, r * 2), pygame.SRCALPHA)
+                pygame.draw.circle(glow_surf, (255, 220, 100, alpha), (r, r), r)
+                self.internal_surface.blit(glow_surf, (cx - r, cy - r))
+            # 七枚徽章环绕
+            for i in range(7):
+                angle = (i / 7) * 360 + self._outro_timer * 60
+                rad = math.radians(angle)
+                bx = cx + int(40 * math.cos(rad))
+                by = cy + int(40 * math.sin(rad))
+                pygame.draw.circle(self.internal_surface, (255, 200, 50), (bx, by), 4)
+                pygame.draw.circle(self.internal_surface, (255, 240, 150), (bx, by), 2)
+            # 文字
+            if progress > 0.5:
+                text_alpha = min(255, int((progress - 0.5) * 2 * 255))
+                text = self.title_font.render("七徽归位，封印解除", True, COLOR_TITLE_TEXT)
+                text.set_alpha(text_alpha)
+                text_rect = text.get_rect(centerx=cx, centery=cy + 60)
+                self.internal_surface.blit(text, text_rect)
+
+        elif self._outro_phase == 1:
+            # 秘境消散
+            # 先画游戏场景（简化版）
+            self.internal_surface.fill((40, 80, 40))
+            # 绿色消散效果
+            if self._outro_fade_alpha > 0:
+                fade_surf = pygame.Surface((INTERNAL_WIDTH, INTERNAL_HEIGHT), pygame.SRCALPHA)
+                fade_surf.fill((60, 180, 80, self._outro_fade_alpha))
+                self.internal_surface.blit(fade_surf, (0, 0))
+            # 消散文字
+            if self._outro_timer > 1.0:
+                text_alpha = min(255, int((self._outro_timer - 1.0) * 150))
+                text = self.info_font.render("秘境之力缓缓消散……桂子山重归现实。", True, COLOR_WHITE)
+                text.set_alpha(text_alpha)
+                text_rect = text.get_rect(
+                    centerx=INTERNAL_WIDTH // 2, centery=INTERNAL_HEIGHT // 2
+                )
+                self.internal_surface.blit(text, text_rect)
+
+        elif self._outro_phase == 2:
+            # 结局文字
+            self._draw_outro_ending_text()
+
+        elif self._outro_phase == 3:
+            # 制作组
+            self.internal_surface.fill(COLOR_BLACK)
+            texts = [
+                "桂子山秘境探险",
+                "",
+                "制作组",
+                "",
+                "策划 · 程序 · 美术",
+                "",
+                "感谢游玩！",
+                "",
+                "按 Esc 返回标题",
+            ]
+            y = INTERNAL_HEIGHT // 2 - 60
+            for text in texts:
+                if text:
+                    t_surf = self.info_font.render(text, True, COLOR_WHITE)
+                    t_rect = t_surf.get_rect(centerx=INTERNAL_WIDTH // 2, centery=y)
+                    self.internal_surface.blit(t_surf, t_rect)
+                y += 14
+
+    def _draw_outro_ending_text(self):
+        """绘制结局差异文字"""
+        self.internal_surface.fill((20, 20, 40))
+
+        if self._outro_ending_type == "true":
+            title = "真结局·桂花永绽"
+            lines = [
+                "七枚徽章碎片合而为一，绽放出璀璨的金色光芒。",
+                "秘境守护者微笑着点了点头：",
+                "「你不仅解开了封印，更理解了桂子山的真谛。」",
+                "「桂花的芬芳，将永远守护这片校园。」",
+                "金色的桂花在校园中永远绽放，",
+                "桂子山迎来了最美好的秋天。",
+            ]
+        elif self._outro_ending_type == "good":
+            title = "好结局·秋日重归"
+            lines = [
+                "七枚徽章碎片归位，秘境的力量逐渐消散。",
+                "秘境守护者轻声说道：",
+                "「你做得很好，桂子山恢复了平静。」",
+                "「但秘境的痕迹，或许永远不会完全消失……」",
+                "校园恢复了往日的宁静，",
+                "只是偶尔，桂花树下似乎还有微光闪烁。",
+            ]
+        else:
+            title = "普通结局·秘境消散"
+            lines = [
+                "七枚徽章碎片归位，秘境的力量消散了。",
+                "校园恢复了正常，一切仿佛从未发生。",
+                "但你知道，那段秘境中的经历，",
+                "将永远铭刻在你的记忆中。",
+                "桂子山的秋天，依然美丽如初。",
+            ]
+
+        # 标题
+        title_surf = self.title_font.render(title, True, COLOR_TITLE_TEXT)
+        title_rect = title_surf.get_rect(
+            centerx=INTERNAL_WIDTH // 2, centery=30
+        )
+        self.internal_surface.blit(title_surf, title_rect)
+
+        # 分隔线
+        pygame.draw.line(self.internal_surface, (100, 100, 140),
+                         (INTERNAL_WIDTH // 4, 48),
+                         (3 * INTERNAL_WIDTH // 4, 48), 1)
+
+        # 文字逐行显示
+        y = 60
+        for i, line in enumerate(lines):
+            # 逐行延迟显示
+            line_delay = i * 0.6
+            if self._outro_timer > line_delay:
+                alpha = min(255, int((self._outro_timer - line_delay) * 200))
+                line_surf = self.info_font.render(line, True, COLOR_WHITE)
+                line_surf.set_alpha(alpha)
+                line_rect = line_surf.get_rect(
+                    centerx=INTERNAL_WIDTH // 2, centery=y
+                )
+                self.internal_surface.blit(line_surf, line_rect)
+            y += 16
+
+        # 提示
+        if self._outro_timer > len(lines) * 0.6 + 1.0:
+            hint = self.info_font.render("按 回车键 继续", True, (150, 150, 170))
+            hint_rect = hint.get_rect(
+                centerx=INTERNAL_WIDTH // 2, centery=INTERNAL_HEIGHT - 15
+            )
+            self.internal_surface.blit(hint, hint_rect)
+
+    def _return_to_title(self):
+        """返回标题画面"""
+        self.state = GameState.TITLE
+        self._title_menu_active = False
+        self._title_menu_index = 0
+        self._title_logo_settled = False
+        self._title_logo_y = -30
+        self._title_anim_timer = 0.0
+        # 重置游戏状态
+        self._reset_game_state()
+
+    def _reset_game_state(self):
+        """重置游戏状态（用于新游戏）"""
+        self.current_map_id = "main_campus"
+        tmx_path = self._get_tmx_path("main_campus")
+        self.tile_map = TileMap(tmx_path)
+        spawn_x, spawn_y = self.tile_map.get_spawn_position()
+        self.player = Player(spawn_x, spawn_y)
+        self.camera = Camera(self.tile_map.width, self.tile_map.height)
+        self.camera.update(self.player.x, self.player.y - PLAYER_HEIGHT / 2)
+
+        self.interactive_objects = list(self.tile_map.interactive_objects)
+        self.npcs = list(self.tile_map.npcs)
+        self.triggers = list(self.tile_map.triggers)
+
+        self._setup_test_entities()
+        self._update_npc_visibility()
+
+        self.puzzle_manager = PuzzleManager()
+        self.guizhong_puzzle = GuizhongPuzzle(self.puzzle_manager, self.player.inventory)
+        self.nanhulou_puzzle = NanhulouPuzzle(self.puzzle_manager, self.player.inventory)
+        self.dining_puzzle = DiningPuzzle(self.puzzle_manager, self.player.inventory)
+        self.library_puzzle = LibraryPuzzle(self.puzzle_manager, self.player.inventory)
+        self.boya_puzzle = BoyaPuzzle(self.puzzle_manager, self.player.inventory)
+        self.gym_puzzle = GymPuzzle(self.puzzle_manager, self.player.inventory)
+        self.fountain_puzzle = FountainPuzzle(self.puzzle_manager, self.player.inventory)
+
+        self.game_clock = GameClock()
+        self._dialog_flags = {}
+        self._realm_triggered = False
+        self._realm_animating = False
+        self._realm_first_night_shown = False
+        self._tutorial_shown = False
+        self._visited_nanhu = False
+        self._pending_nanhu_intro = False
+        self._active_puzzle = None
+        self._map_cache = {"main_campus": self.tile_map}

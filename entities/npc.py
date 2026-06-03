@@ -1,3 +1,5 @@
+"""NPC模块：非玩家角色逻辑、精灵渲染和互动"""
+import os
 import pygame
 from config import (
     TILE_SIZE,
@@ -12,6 +14,40 @@ from config import (
     COLOR_NPC_HAIR,
 )
 from world.entity import Entity
+
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+SPRITES_DIR = os.path.join(PROJECT_ROOT, "assets", "sprites")
+
+# NPC精灵表映射：npc_id -> 精灵文件名
+NPC_SPRITE_MAP = {
+    "senior_student": "senior_student_sheet.png",
+    "librarian": "librarian_sheet.png",
+    "dancing_auntie": "dancing_auntie_sheet.png",
+    "pe_teacher": "pe_teacher_sheet.png",
+    "cafeteria_auntie": "cafeteria_auntie_sheet.png",
+    "guardian": "guardian_sheet.png",
+}
+
+# 精灵表缓存
+_sprite_cache = {}
+
+SPRITE_FRAME_W = 16
+SPRITE_FRAME_H = 24
+
+
+def _load_npc_sprite(npc_id):
+    """加载NPC精灵表（带缓存）"""
+    if npc_id in _sprite_cache:
+        return _sprite_cache[npc_id]
+    filename = NPC_SPRITE_MAP.get(npc_id)
+    if filename:
+        path = os.path.join(SPRITES_DIR, filename)
+        if os.path.exists(path):
+            sheet = pygame.image.load(path).convert_alpha()
+            _sprite_cache[npc_id] = sheet
+            return sheet
+    _sprite_cache[npc_id] = None
+    return None
 
 
 class NPC(Entity):
@@ -37,6 +73,12 @@ class NPC(Entity):
             self.direction = self.properties["direction"]
         self._idle_timer = 0.0
         self._idle_offset = 0
+        self._sprite_sheet = None
+
+    def _ensure_sprite_loaded(self):
+        """延迟加载精灵表"""
+        if self._sprite_sheet is None and self.npc_id in NPC_SPRITE_MAP:
+            self._sprite_sheet = _load_npc_sprite(self.npc_id)
 
     def is_player_nearby(self, player_x, player_y):
         if not self.visible:
@@ -59,12 +101,29 @@ class NPC(Entity):
     def draw(self, surface, camera):
         if not self.visible:
             return
+        self._ensure_sprite_loaded()
         draw_x, draw_y = camera.apply(
             self.x - self.width / 2,
             self.y - self.height,
         )
         ix, iy = int(draw_x), int(draw_y) - self._idle_offset
 
+        # 使用精灵表渲染
+        if self._sprite_sheet is not None:
+            col = self._idle_offset  # 0或1，对应待机动画帧
+            src_rect = pygame.Rect(
+                col * SPRITE_FRAME_W, 0,
+                SPRITE_FRAME_W, SPRITE_FRAME_H,
+            )
+            offset_x = (NPC_WIDTH - SPRITE_FRAME_W) // 2
+            offset_y = NPC_HEIGHT - SPRITE_FRAME_H
+            surface.blit(self._sprite_sheet, (ix + offset_x, iy + offset_y), src_rect)
+        else:
+            # 降级：使用代码绘制
+            self._draw_fallback(surface, ix, iy)
+
+    def _draw_fallback(self, surface, ix, iy):
+        """降级绘制：当精灵表不可用时使用代码绘制"""
         body_rect = pygame.Rect(ix + 1, iy + 8, self.width - 2, self.height - 8)
         pygame.draw.rect(surface, self.body_color, body_rect)
 

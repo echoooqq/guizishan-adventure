@@ -1,3 +1,4 @@
+import os
 import pygame
 from config import (
     INTERNAL_WIDTH,
@@ -11,6 +12,35 @@ from config import (
     COLOR_DIALOG_NAME,
     COLOR_CHOICE_HIGHLIGHT,
 )
+
+# 角色头像映射：说话者名称 -> 头像文件名
+PORTRAIT_MAP = {
+    "神秘学长": "portrait_senior_student.png",
+    "图书管理员": "portrait_librarian.png",
+    "广场舞阿姨": "portrait_dancing_auntie.png",
+    "体育老师": "portrait_pe_teacher.png",
+    "食堂阿姨": "portrait_cafeteria_auntie.png",
+    "秘境守护者": "portrait_guardian.png",
+}
+
+_PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+_PORTRAIT_DIR = os.path.join(_PROJECT_ROOT, "assets", "ui", "sprites")
+_portrait_cache = {}
+
+
+def _load_portrait(speaker_name):
+    """加载角色头像（带缓存）"""
+    if speaker_name in _portrait_cache:
+        return _portrait_cache[speaker_name]
+    filename = PORTRAIT_MAP.get(speaker_name)
+    if filename:
+        path = os.path.join(_PORTRAIT_DIR, filename)
+        if os.path.exists(path):
+            portrait = pygame.image.load(path).convert_alpha()
+            _portrait_cache[speaker_name] = portrait
+            return portrait
+    _portrait_cache[speaker_name] = None
+    return None
 
 
 def create_border_surface(size=24, border_width=3, border_color=COLOR_DIALOG_BORDER, bg_color=COLOR_DIALOG_BG):
@@ -273,13 +303,22 @@ class DialogBox:
             self._portrait_x, self._portrait_y,
             self.PORTRAIT_SIZE, self.PORTRAIT_SIZE,
         )
-        pygame.draw.rect(surface, self.portrait_color, portrait_rect)
-        pygame.draw.rect(surface, COLOR_DIALOG_BORDER, portrait_rect, 1)
-        face_cx = self._portrait_x + self.PORTRAIT_SIZE // 2
-        face_cy = self._portrait_y + self.PORTRAIT_SIZE // 2
-        pygame.draw.rect(surface, (0, 0, 0), (face_cx - 4, face_cy - 2, 3, 3))
-        pygame.draw.rect(surface, (0, 0, 0), (face_cx + 2, face_cy - 2, 3, 3))
-        pygame.draw.rect(surface, (0, 0, 0), (face_cx - 2, face_cy + 3, 4, 2))
+        # 尝试加载角色头像精灵
+        portrait_sprite = _load_portrait(self.speaker) if self.speaker else None
+        if portrait_sprite is not None:
+            # 缩放头像到肖像框大小
+            scaled = pygame.transform.scale(portrait_sprite, (self.PORTRAIT_SIZE, self.PORTRAIT_SIZE))
+            surface.blit(scaled, (self._portrait_x, self._portrait_y))
+            pygame.draw.rect(surface, COLOR_DIALOG_BORDER, portrait_rect, 1)
+        else:
+            # 降级：使用颜色矩形+简笔脸
+            pygame.draw.rect(surface, self.portrait_color, portrait_rect)
+            pygame.draw.rect(surface, COLOR_DIALOG_BORDER, portrait_rect, 1)
+            face_cx = self._portrait_x + self.PORTRAIT_SIZE // 2
+            face_cy = self._portrait_y + self.PORTRAIT_SIZE // 2
+            pygame.draw.rect(surface, (0, 0, 0), (face_cx - 4, face_cy - 2, 3, 3))
+            pygame.draw.rect(surface, (0, 0, 0), (face_cx + 2, face_cy - 2, 3, 3))
+            pygame.draw.rect(surface, (0, 0, 0), (face_cx - 2, face_cy + 3, 4, 2))
 
         if self.speaker:
             name_surf = self.font.render(self.speaker, True, self.speaker_color)

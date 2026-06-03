@@ -1,3 +1,6 @@
+"""全局配置：定义游戏常量、字体路径、颜色等"""
+import os
+
 SCREEN_WIDTH = 960
 SCREEN_HEIGHT = 540
 INTERNAL_WIDTH = 480
@@ -20,7 +23,17 @@ PLAYER_HITBOX_HEIGHT = 6
 SCALE_X = SCREEN_WIDTH / INTERNAL_WIDTH
 SCALE_Y = SCREEN_HEIGHT / INTERNAL_HEIGHT
 
-FONT_PATH = "C:/Windows/Fonts/simhei.ttf"
+# 字体配置：优先使用Zpix像素风字体，降级使用系统黑体
+_PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
+_ZPIX_PATH = os.path.join(_PROJECT_ROOT, "assets", "fonts", "zpix.ttf")
+_SIMHEI_PATH = "C:/Windows/Fonts/simhei.ttf"
+
+if os.path.exists(_ZPIX_PATH):
+    FONT_PATH = _ZPIX_PATH
+else:
+    FONT_PATH = _SIMHEI_PATH
+
+# Zpix字体最佳渲染尺寸为12的倍数
 FONT_TITLE_SIZE = 24
 FONT_INFO_SIZE = 12
 

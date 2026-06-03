@@ -1,5 +1,45 @@
+"""可互动物体模块：处理场景中的可交互元素及其精灵渲染"""
+import os
 import pygame
 from config import INTERACTION_RANGE, TILE_SIZE
+
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+SPRITES_DIR = os.path.join(PROJECT_ROOT, "assets", "sprites")
+
+# 可互动物体精灵映射：interactive_type 或 sprite_key -> 精灵文件名
+OBJECT_SPRITE_MAP = {
+    "osmanthus_tree": "osmanthus_tree.png",
+    "osmanthus_tree_glow": "osmanthus_tree_glow.png",
+    "street_lamp": "street_lamp.png",
+    "bookshelf": "bookshelf.png",
+    "bulletin_board": "bulletin_board.png",
+    "computer_terminal": "computer_terminal.png",
+    "sculpture": "sculpture.png",
+    "fountain": "fountain.png",
+    "badge_pickup": "badge_pickup.png",
+    "dining_table": "dining_table.png",
+    "scoreboard": "scoreboard.png",
+    "equipment_cabinet": "equipment_cabinet.png",
+    "door_entrance": "door_entrance.png",
+}
+
+# 精灵缓存
+_sprite_cache = {}
+
+
+def _load_object_sprite(sprite_key):
+    """加载物体精灵（带缓存）"""
+    if sprite_key in _sprite_cache:
+        return _sprite_cache[sprite_key]
+    filename = OBJECT_SPRITE_MAP.get(sprite_key)
+    if filename:
+        path = os.path.join(SPRITES_DIR, filename)
+        if os.path.exists(path):
+            sprite = pygame.image.load(path).convert_alpha()
+            _sprite_cache[sprite_key] = sprite
+            return sprite
+    _sprite_cache[sprite_key] = None
+    return None
 
 
 class InteractiveObject:
@@ -16,6 +56,8 @@ class InteractiveObject:
         self.on_interact = None
         self.color = self.properties.get("color", (120, 100, 80))
         self.item_id = self.properties.get("item_id", "")
+        self.sprite_key = self.properties.get("sprite", "")
+        self._sprite = None
 
     def _default_prompt(self):
         prompts = {
@@ -53,6 +95,11 @@ class InteractiveObject:
             result["dialogue_id"] = self.properties.get("dialogue_id", "")
         return result
 
+    def _ensure_sprite_loaded(self):
+        """延迟加载精灵"""
+        if self._sprite is None and self.sprite_key:
+            self._sprite = _load_object_sprite(self.sprite_key)
+
     def draw(self, surface, camera):
         if self.properties.get("invisible", False):
             return
@@ -60,11 +107,24 @@ class InteractiveObject:
             return
         if self.interactive_type == "enter":
             return
+
+        self._ensure_sprite_loaded()
         sx, sy = camera.apply(self.x, self.y)
         ix, iy = int(sx), int(sy)
-        rect = pygame.Rect(ix, iy, self.width, self.height)
-        pygame.draw.rect(surface, self.color, rect)
-        pygame.draw.rect(surface, (200, 200, 200), rect, 1)
+
+        # 使用精灵渲染
+        if self._sprite is not None:
+            # 居中精灵到物体区域
+            sprite_w = self._sprite.get_width()
+            sprite_h = self._sprite.get_height()
+            offset_x = (self.width - sprite_w) // 2
+            offset_y = self.height - sprite_h  # 底部对齐
+            surface.blit(self._sprite, (ix + offset_x, iy + offset_y))
+        else:
+            # 降级：使用矩形绘制
+            rect = pygame.Rect(ix, iy, self.width, self.height)
+            pygame.draw.rect(surface, self.color, rect)
+            pygame.draw.rect(surface, (200, 200, 200), rect, 1)
 
     def draw_prompt(self, surface, camera, font):
         sx, sy = camera.apply(self.center_x, self.y - 4)

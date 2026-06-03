@@ -1,3 +1,5 @@
+"""玩家模块：处理玩家移动、体力、背包和精灵渲染"""
+import os
 import pygame
 from config import (
     TILE_SIZE,
@@ -18,8 +20,20 @@ from config import (
 from world.entity import Entity
 from player.inventory import Inventory
 
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+SPRITE_PATH = os.path.join(PROJECT_ROOT, "assets", "sprites", "player_sheet.png")
+
+# 精灵表参数
+SPRITE_FRAME_W = 16
+SPRITE_FRAME_H = 24
+SPRITE_COLS = 4  # 每行4帧
+SPRITE_ROWS = 4  # 4个方向：下、左、右、上
+DIRECTION_ROW = {"down": 0, "left": 1, "right": 2, "up": 3}
+
 
 class Player(Entity):
+    _sprite_sheet = None  # 类变量，共享精灵表
+
     def __init__(self, x, y):
         super().__init__(
             x, y,
@@ -31,6 +45,17 @@ class Player(Entity):
         self.stamina = MAX_STAMINA
         self.is_sprinting = False
         self.inventory = Inventory()
+        self._load_sprites()
+
+    @classmethod
+    def _load_sprites(cls):
+        """加载玩家精灵表（仅加载一次）"""
+        if cls._sprite_sheet is not None:
+            return
+        if os.path.exists(SPRITE_PATH):
+            cls._sprite_sheet = pygame.image.load(SPRITE_PATH).convert_alpha()
+        else:
+            cls._sprite_sheet = None
 
     def update(self, dt, keys, collision_map, map_width, map_height):
         dx, dy = 0.0, 0.0
@@ -83,6 +108,24 @@ class Player(Entity):
         )
         ix, iy = int(draw_x), int(draw_y)
 
+        # 使用精灵表渲染
+        if self._sprite_sheet is not None:
+            row = DIRECTION_ROW.get(self.direction, 0)
+            col = self.animation_frame % SPRITE_COLS
+            src_rect = pygame.Rect(
+                col * SPRITE_FRAME_W, row * SPRITE_FRAME_H,
+                SPRITE_FRAME_W, SPRITE_FRAME_H,
+            )
+            # 居中对齐精灵到碰撞盒上方
+            offset_x = (PLAYER_WIDTH - SPRITE_FRAME_W) // 2
+            offset_y = PLAYER_HEIGHT - SPRITE_FRAME_H
+            surface.blit(self._sprite_sheet, (ix + offset_x, iy + offset_y), src_rect)
+        else:
+            # 降级：使用代码绘制
+            self._draw_fallback(surface, ix, iy)
+
+    def _draw_fallback(self, surface, ix, iy):
+        """降级绘制：当精灵表不可用时使用代码绘制"""
         body_rect = pygame.Rect(ix + 1, iy + 8, self.width - 2, self.height - 8)
         pygame.draw.rect(surface, COLOR_PLAYER_BODY, body_rect)
 
