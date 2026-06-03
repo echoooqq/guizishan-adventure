@@ -568,28 +568,113 @@ def create_computer_terminal(path):
 
 
 def create_sculpture(path):
-    """校园雕塑: 20×28"""
-    surf = make_surface(20, 28)
-    # 底座
-    draw_rect_filled(surf, 2, 22, 16, 6, (140, 140, 140))
-    draw_rect_filled(surf, 3, 23, 14, 4, (160, 160, 160))
-    draw_hline(surf, 2, 17, 22, (120, 120, 120))
-    # 雕塑主体 - 抽象人形
-    # 身体
-    draw_rect_filled(surf, 8, 8, 4, 12, (170, 170, 170))
-    draw_rect_filled(surf, 7, 10, 6, 8, (170, 170, 170))
-    # 头
-    draw_rect_filled(surf, 8, 4, 4, 5, (180, 180, 180))
-    draw_rect_filled(surf, 7, 5, 6, 3, (180, 180, 180))
-    # 手臂伸展
-    draw_hline(surf, 3, 7, 11, (170, 170, 170))
-    draw_hline(surf, 12, 16, 11, (170, 170, 170))
-    # 手
-    draw_pixel(surf, 3, 11, (180, 180, 180))
-    draw_pixel(surf, 16, 11, (180, 180, 180))
+    """博雅广场雕塑: 桂花树与书卷造型, 24x32"""
+    surf = make_surface(24, 32)
+
+    # 底座 - 三层石阶
+    # 底层
+    draw_rect_filled(surf, 1, 26, 22, 6, (120, 118, 115))
+    draw_rect_filled(surf, 2, 27, 20, 4, (140, 138, 135))
+    # 中层
+    draw_rect_filled(surf, 3, 23, 18, 4, (150, 148, 145))
+    draw_rect_filled(surf, 4, 24, 16, 2, (165, 163, 160))
+    # 顶层
+    draw_rect_filled(surf, 5, 21, 14, 3, (160, 158, 155))
+    # 底座铭文刻线
+    draw_hline(surf, 6, 17, 22, (100, 95, 90))
+    draw_hline(surf, 7, 16, 22, (180, 175, 160))
+
+    # 书卷主体（树干/书脊）
+    draw_rect_filled(surf, 10, 8, 4, 14, (90, 130, 90))
+    draw_rect_filled(surf, 9, 10, 6, 10, (85, 125, 85))
+    # 书卷展开部分
+    draw_rect_filled(surf, 6, 12, 3, 6, (100, 140, 100))
+    draw_rect_filled(surf, 15, 12, 3, 6, (100, 140, 100))
+    # 书页纹理线
+    draw_hline(surf, 7, 8, 14, (120, 160, 120))
+    draw_hline(surf, 16, 17, 14, (120, 160, 120))
+    draw_hline(surf, 7, 8, 16, (120, 160, 120))
+    draw_hline(surf, 16, 17, 16, (120, 160, 120))
+
+    # 桂花树冠 - 金色花朵簇
+    # 中心花簇
+    draw_rect_filled(surf, 10, 4, 4, 5, (200, 180, 60))
+    draw_rect_filled(surf, 9, 5, 6, 3, (210, 190, 70))
+    # 左侧花簇
+    draw_rect_filled(surf, 6, 5, 3, 4, (190, 170, 55))
+    draw_rect_filled(surf, 5, 6, 4, 2, (200, 180, 65))
+    # 右侧花簇
+    draw_rect_filled(surf, 15, 5, 3, 4, (190, 170, 55))
+    draw_rect_filled(surf, 15, 6, 4, 2, (200, 180, 65))
+    # 顶部花簇
+    draw_rect_filled(surf, 9, 2, 6, 3, (205, 185, 65))
+    draw_rect_filled(surf, 10, 1, 4, 2, (220, 200, 80))
+
+    # 桂花细节点缀（小亮点模拟花瓣）
+    draw_pixel(surf, 7, 4, (230, 210, 90))
+    draw_pixel(surf, 16, 4, (230, 210, 90))
+    draw_pixel(surf, 8, 3, (240, 220, 100))
+    draw_pixel(surf, 15, 3, (240, 220, 100))
+    draw_pixel(surf, 11, 2, (250, 230, 110))
+    draw_pixel(surf, 12, 2, (250, 230, 110))
+
     # 高光
-    draw_vline(surf, 9, 5, 18, (190, 190, 190))
-    draw_pixel(surf, 9, 4, (190, 190, 190))
+    draw_vline(surf, 11, 3, 20, (225, 205, 85))
+    draw_pixel(surf, 11, 2, (235, 215, 95))
+    draw_pixel(surf, 10, 9, (110, 150, 110))
+    draw_pixel(surf, 10, 13, (110, 150, 110))
+
+    pygame.image.save(surf, path)
+
+
+def create_flowerbed(path):
+    """花坛: 32x16, 横向长方形"""
+    surf = make_surface(32, 16)
+
+    # 花坛外框 - 深绿色边缘
+    draw_rect_filled(surf, 0, 2, 32, 14, (60, 100, 40))
+    draw_rect_filled(surf, 1, 3, 30, 12, (70, 115, 45))
+    # 内部土壤
+    draw_rect_filled(surf, 2, 4, 28, 10, (80, 60, 40))
+
+    # 小花 - 红色
+    draw_pixel(surf, 5, 6, (220, 60, 60))
+    draw_pixel(surf, 6, 5, (220, 60, 60))
+    draw_pixel(surf, 6, 7, (220, 60, 60))
+    draw_pixel(surf, 7, 6, (220, 60, 60))
+    draw_pixel(surf, 6, 6, (255, 100, 100))
+
+    # 小花 - 黄色
+    draw_pixel(surf, 12, 8, (220, 200, 40))
+    draw_pixel(surf, 13, 7, (220, 200, 40))
+    draw_pixel(surf, 13, 9, (220, 200, 40))
+    draw_pixel(surf, 14, 8, (220, 200, 40))
+    draw_pixel(surf, 13, 8, (255, 240, 80))
+
+    # 小花 - 紫色
+    draw_pixel(surf, 19, 5, (180, 80, 200))
+    draw_pixel(surf, 20, 4, (180, 80, 200))
+    draw_pixel(surf, 20, 6, (180, 80, 200))
+    draw_pixel(surf, 21, 5, (180, 80, 200))
+    draw_pixel(surf, 20, 5, (210, 110, 230))
+
+    # 小花 - 白色
+    draw_pixel(surf, 26, 7, (220, 220, 220))
+    draw_pixel(surf, 27, 6, (220, 220, 220))
+    draw_pixel(surf, 27, 8, (220, 220, 220))
+    draw_pixel(surf, 28, 7, (220, 220, 220))
+    draw_pixel(surf, 27, 7, (255, 255, 255))
+
+    # 绿叶点缀
+    draw_pixel(surf, 4, 8, (60, 160, 60))
+    draw_pixel(surf, 8, 5, (60, 160, 60))
+    draw_pixel(surf, 11, 9, (60, 160, 60))
+    draw_pixel(surf, 15, 6, (60, 160, 60))
+    draw_pixel(surf, 18, 8, (60, 160, 60))
+    draw_pixel(surf, 22, 7, (60, 160, 60))
+    draw_pixel(surf, 25, 5, (60, 160, 60))
+    draw_pixel(surf, 29, 8, (60, 160, 60))
+
     pygame.image.save(surf, path)
 
 
@@ -905,6 +990,7 @@ if __name__ == "__main__":
         ("bulletin_board.png", create_bulletin_board),
         ("computer_terminal.png", create_computer_terminal),
         ("sculpture.png", create_sculpture),
+        ("flowerbed.png", create_flowerbed),
         ("fountain.png", create_fountain),
         ("badge_pickup.png", create_badge_pickup),
         ("dining_table.png", create_dining_table),

@@ -1,241 +1,151 @@
+"""博雅广场谜题：地砖阵法
+
+广场中央雕塑周围有8块颜色略异的地砖，位于8个方位。
+雕塑底座铭文的方位顺序暗示了正确的踩踏顺序。
+玩家走到对应方位的地砖上按F踩踏，按铭文字序依次踩踏即可破解阵法。
+"""
+import random
 import pygame
-from config import (
-    INTERNAL_WIDTH,
-    INTERNAL_HEIGHT,
-    FONT_PATH,
-    FONT_INFO_SIZE,
-    COLOR_WHITE,
-    COLOR_CHOICE_HIGHLIGHT,
-)
-from ui.dialog_box import create_border_surface, draw_nine_slice
+from config import TILE_SIZE
 
 
 class BoyaPuzzle:
-    TILE_LABELS = [
-        "西北", "北", "东北",
-        "西",   "中", "东",
-        "西南", "南", "东南",
+    # 8个方位名（按索引顺序：0=北, 1=东北, 2=东, 3=东南, 4=南, 5=西南, 6=西, 7=西北）
+    DIRECTIONS = [
+        "北", "东北", "东", "东南",
+        "南", "西南", "西", "西北",
     ]
-    CORRECT_ORDER = [5, 7, 3, 1, 4, 8, 0, 2, 6]
-    HINT_ORDER_TEXT = "东→南→西→北→中→东南→西北→东北→西南"
 
-    TILE_W = 60
-    TILE_H = 40
-    TILE_GAP = 8
-    GRID_COLS = 3
-    GRID_ROWS = 3
+    # 8块地砖的微异颜色（石砖色调，略有深浅差异）
+    TILE_COLORS = [
+        (110, 105, 95),   # 北
+        (100, 95, 88),    # 东北
+        (105, 100, 90),   # 东
+        (95, 90, 85),     # 东南
+        (108, 102, 92),   # 南
+        (98, 92, 86),     # 西南
+        (102, 96, 90),    # 西
+        (115, 108, 98),   # 西北
+    ]
 
-    COLOR_UNSTEPPED = (80, 80, 80)
-    COLOR_STEPPED = (200, 180, 50)
-    COLOR_CURSOR_BORDER = (255, 255, 255)
+    # 已踩踏地砖的发光颜色（金色半透明）
+    COLOR_STEPPED_GLOW = (255, 220, 80)
+    COLOR_WRONG_FLASH = (255, 80, 80)
 
     def __init__(self, puzzle_manager, inventory):
         self.puzzle_manager = puzzle_manager
         self.inventory = inventory
-        self.active = False
         self.solved = False
-        self.on_complete = None
+
+        # 随机生成正确踩踏顺序（8个方位的排列）
+        self.CORRECT_ORDER = list(range(8))
+        random.shuffle(self.CORRECT_ORDER)
+
+        # 根据随机顺序生成铭文
+        self.INSCRIPTION = "·".join(self.DIRECTIONS[i] for i in self.CORRECT_ORDER)
 
         self._current_step = 0
-        self._stepped = [False] * 9
-        self._cursor_row = 1
-        self._cursor_col = 1
-        self._message = ""
-        self._message_timer = 0.0
-        self._message_duration = 2.0
-        self._is_correct = False
+        self._stepped = [False] * 8
+        self._wrong_flash_timer = 0.0
+        self._wrong_flash_duration = 0.5
 
-        self.font = pygame.font.Font(FONT_PATH, FONT_INFO_SIZE)
-        self.title_font = pygame.font.Font(FONT_PATH, FONT_INFO_SIZE + 4)
-        self.border_image = create_border_surface()
+        # 8块地砖的世界坐标（像素），由 _setup_boya_entities 设置
+        self.tile_positions = []  # [(x, y), ...] 共8个
 
-    def start(self, on_complete=None):
-        if self.puzzle_manager.get_state("boya").value == "solved":
-            return False
-        self.active = True
-        self.solved = False
-        self.on_complete = on_complete
-        self._current_step = 0
-        self._stepped = [False] * 9
-        self._cursor_row = 1
-        self._cursor_col = 1
-        self._message = ""
-        self._message_timer = 0.0
-        self._is_correct = False
-        self.puzzle_manager.start_puzzle("boya")
-        return True
+    def setup_tiles(self, center_x, center_y):
+        """根据中心坐标设置8块地砖的位置（环绕雕塑，间隔1格）"""
+        self.tile_positions = []
+        # 8个方位偏移：距离中心32像素（间隔1格16像素 + 半格8像素 = 24像素，取32更宽松）
+        # 使用 2格距离 = 32像素，让地砖与雕塑之间有1格空隙
+        dist = 32  # 2格距离
+        offsets = [
+            (0, -dist),      # 北
+            (dist, -dist),   # 东北
+            (dist, 0),       # 东
+            (dist, dist),    # 东南
+            (0, dist),       # 南
+            (-dist, dist),   # 西南
+            (-dist, 0),      # 西
+            (-dist, -dist),  # 西北
+        ]
+        for dx, dy in offsets:
+            # 地砖左上角坐标 = 中心 + 偏移 - 半格（使偏移点为地砖中心）
+            x = center_x + dx - TILE_SIZE // 2
+            y = center_y + dy - TILE_SIZE // 2
+            self.tile_positions.append((x, y))
 
-    @property
-    def has_sculpture_rubbing(self):
-        return self.inventory.has_item("sculpture_rubbing")
+    def get_tile_index_at(self, player_x, player_y):
+        """判断玩家当前站在哪块地砖上，返回索引或 None"""
+        for idx, (tx, ty) in enumerate(self.tile_positions):
+            if tx <= player_x < tx + TILE_SIZE and ty <= player_y < ty + TILE_SIZE:
+                return idx
+        return None
 
-    def handle_event(self, event):
-        if not self.active:
-            return
-        if event.type != pygame.KEYDOWN:
-            return
+    def step_tile(self, tile_idx):
+        """踩踏指定索引的地砖，返回结果字典"""
+        if self.solved:
+            return {"result": "none", "message": "地砖阵法已经破解了。"}
 
-        if self._message:
-            if event.key in (pygame.K_f, pygame.K_SPACE, pygame.K_RETURN):
-                if self._is_correct:
-                    self._message = ""
-                    self._message_timer = 0.0
-                    self._finish()
-                else:
-                    self._message = ""
-                    self._message_timer = 0.0
-            return
-
-        if event.key == pygame.K_ESCAPE:
-            self._finish()
-        elif event.key in (pygame.K_UP, pygame.K_w):
-            self._cursor_row = (self._cursor_row - 1) % self.GRID_ROWS
-        elif event.key in (pygame.K_DOWN, pygame.K_s):
-            self._cursor_row = (self._cursor_row + 1) % self.GRID_ROWS
-        elif event.key in (pygame.K_LEFT, pygame.K_a):
-            self._cursor_col = (self._cursor_col - 1) % self.GRID_COLS
-        elif event.key in (pygame.K_RIGHT, pygame.K_d):
-            self._cursor_col = (self._cursor_col + 1) % self.GRID_COLS
-        elif event.key in (pygame.K_f, pygame.K_RETURN, pygame.K_SPACE):
-            self._step_tile()
-
-    def _step_tile(self):
-        idx = self._cursor_row * self.GRID_COLS + self._cursor_col
-
-        if self._stepped[idx]:
-            return
+        if self._stepped[tile_idx]:
+            return {"result": "none", "message": "这块地砖已经踩过了。"}
 
         expected = self.CORRECT_ORDER[self._current_step]
 
-        if idx == expected:
-            self._stepped[idx] = True
+        if tile_idx == expected:
+            self._stepped[tile_idx] = True
             self._current_step += 1
 
             if self._current_step >= len(self.CORRECT_ORDER):
                 self.solved = True
-                self._is_correct = True
-                self._message = "地砖阵法破解！雕塑缓缓移开了……"
-                self._message_timer = 0.0
+                self.puzzle_manager.solve("boya", self.inventory)
+                return {"result": "complete", "message": "地砖阵法破解！中央雕塑缓缓移开了……"}
+            return {"result": "correct", "message": ""}
         else:
-            self._is_correct = False
-            self._message = "顺序不对，重新开始！"
-            self._message_timer = 0.0
+            self._wrong_flash_timer = self._wrong_flash_duration
             self._current_step = 0
-            self._stepped = [False] * 9
+            self._stepped = [False] * 8
+            return {"result": "wrong", "message": "顺序似乎不对，地砖恢复了原状……"}
+
+    def is_tile_stepped(self, tile_idx):
+        return self._stepped[tile_idx]
+
+    def get_inscription_hint(self):
+        return self.INSCRIPTION
 
     def update(self, dt):
-        if not self.active:
+        if self._wrong_flash_timer > 0:
+            self._wrong_flash_timer -= dt
+            if self._wrong_flash_timer < 0:
+                self._wrong_flash_timer = 0.0
+
+    def draw(self, surface, camera):
+        """在场景上绘制8块可踩踏地砖的视觉标识、发光特效和错误闪烁"""
+        if not self.tile_positions:
             return
 
-        if self._message:
-            self._message_timer += dt
+        for idx, (tx, ty) in enumerate(self.tile_positions):
+            sx, sy = camera.apply(tx, ty)
+            ix, iy = int(sx), int(sy)
+            rect = pygame.Rect(ix, iy, TILE_SIZE, TILE_SIZE)
 
-    def _finish(self):
-        self.active = False
-        if self.on_complete:
-            callback = self.on_complete
-            self.on_complete = None
-            callback()
-
-    def draw(self, surface):
-        if not self.active:
-            return
-
-        panel_w = 280
-        panel_h = 220
-        panel_x = (INTERNAL_WIDTH - panel_w) // 2
-        panel_y = (INTERNAL_HEIGHT - panel_h) // 2
-
-        draw_nine_slice(
-            surface, self.border_image,
-            (panel_x, panel_y, panel_w, panel_h),
-        )
-
-        title = self.title_font.render("地砖阵法", True, COLOR_CHOICE_HIGHLIGHT)
-        title_rect = title.get_rect(centerx=panel_x + panel_w // 2, top=panel_y + 8)
-        surface.blit(title, title_rect)
-
-        grid_total_w = self.GRID_COLS * self.TILE_W + (self.GRID_COLS - 1) * self.TILE_GAP
-        grid_total_h = self.GRID_ROWS * self.TILE_H + (self.GRID_ROWS - 1) * self.TILE_GAP
-        grid_x = panel_x + (panel_w - grid_total_w) // 2
-        grid_y = panel_y + 28
-
-        for row in range(self.GRID_ROWS):
-            for col in range(self.GRID_COLS):
-                idx = row * self.GRID_COLS + col
-                tx = grid_x + col * (self.TILE_W + self.TILE_GAP)
-                ty = grid_y + row * (self.TILE_H + self.TILE_GAP)
-
-                tile_rect = pygame.Rect(tx, ty, self.TILE_W, self.TILE_H)
-
-                if self._stepped[idx]:
-                    tile_color = self.COLOR_STEPPED
-                else:
-                    tile_color = self.COLOR_UNSTEPPED
-
-                pygame.draw.rect(surface, tile_color, tile_rect)
-
-                if row == self._cursor_row and col == self._cursor_col:
-                    pygame.draw.rect(surface, self.COLOR_CURSOR_BORDER, tile_rect, 2)
-
-                label = self.font.render(self.TILE_LABELS[idx], True, COLOR_WHITE)
-                label_rect = label.get_rect(center=tile_rect.center)
-                surface.blit(label, label_rect)
-
-        step_text = f"第{self._current_step + 1}步/共9步" if self._current_step < 9 else "完成"
-        step_surf = self.font.render(step_text, True, COLOR_WHITE)
-        surface.blit(step_surf, (grid_x, grid_y + grid_total_h + 6))
-
-        hint_y = grid_y + grid_total_h + 20
-        if self.has_sculpture_rubbing:
-            hint = self.font.render(f"提示：{self.HINT_ORDER_TEXT}", True, (180, 180, 0))
-            surface.blit(hint, (grid_x, hint_y))
-
-        controls = self.font.render("方向键移动 | F踩踏 | Esc退出", True, (160, 160, 160))
-        controls_rect = controls.get_rect(centerx=panel_x + panel_w // 2, bottom=panel_y + panel_h - 4)
-        surface.blit(controls, controls_rect)
-
-        if self._message:
-            self._draw_message(surface)
-
-    def _draw_message(self, surface):
-        msg_w = 260
-        lines = self._wrap_text(self._message, msg_w - 20)
-        line_height = self.font.get_linesize()
-        msg_h = max(50, len(lines) * line_height + 28)
-        msg_x = (INTERNAL_WIDTH - msg_w) // 2
-        msg_y = (INTERNAL_HEIGHT + 60) // 2
-
-        draw_nine_slice(
-            surface, self.border_image,
-            (msg_x, msg_y, msg_w, msg_h),
-        )
-
-        color = self.COLOR_STEPPED if self._is_correct else (255, 100, 100)
-        text_y = msg_y + 8
-        for line in lines:
-            line_surf = self.font.render(line, True, color)
-            line_rect = line_surf.get_rect(centerx=msg_x + msg_w // 2, top=text_y)
-            surface.blit(line_surf, line_rect)
-            text_y += line_height
-
-        cont = self.font.render("按 F 继续", True, COLOR_WHITE)
-        cont_rect = cont.get_rect(centerx=msg_x + msg_w // 2, top=text_y + 2)
-        surface.blit(cont, cont_rect)
-
-    def _wrap_text(self, text, max_width):
-        if not text:
-            return [""]
-        lines = []
-        current_line = ""
-        for char in text:
-            test_line = current_line + char
-            if self.font.size(test_line)[0] <= max_width:
-                current_line = test_line
+            # 常态：微异底色 + 深棕边框（与普通地砖区分）
+            if not self._stepped[idx]:
+                tile_surf = pygame.Surface((TILE_SIZE, TILE_SIZE), pygame.SRCALPHA)
+                tile_surf.fill((*self.TILE_COLORS[idx], 60))
+                surface.blit(tile_surf, rect.topleft)
+                pygame.draw.rect(surface, (107, 91, 79), rect, 1)
             else:
-                if current_line:
-                    lines.append(current_line)
-                current_line = char
-        if current_line:
-            lines.append(current_line)
-        return lines
+                # 已踩踏：金色半透明发光 + 亮金边框
+                glow_surf = pygame.Surface((TILE_SIZE, TILE_SIZE), pygame.SRCALPHA)
+                glow_surf.fill((*self.COLOR_STEPPED_GLOW, 120))
+                surface.blit(glow_surf, rect.topleft)
+                pygame.draw.rect(surface, (255, 200, 60), rect, 2)
+
+        # 错误闪烁：全8块红色闪烁
+        if self._wrong_flash_timer > 0:
+            alpha = int(180 * (self._wrong_flash_timer / self._wrong_flash_duration))
+            flash_surf = pygame.Surface((TILE_SIZE, TILE_SIZE), pygame.SRCALPHA)
+            flash_surf.fill((*self.COLOR_WRONG_FLASH, alpha))
+            for tx, ty in self.tile_positions:
+                sx, sy = camera.apply(tx, ty)
+                surface.blit(flash_surf, (int(sx), int(sy)))

@@ -15,6 +15,7 @@ OBJECT_SPRITE_MAP = {
     "bulletin_board": "bulletin_board.png",
     "computer_terminal": "computer_terminal.png",
     "sculpture": "sculpture.png",
+    "flowerbed": "flowerbed.png",
     "fountain": "fountain.png",
     "badge_pickup": "badge_pickup.png",
     "dining_table": "dining_table.png",

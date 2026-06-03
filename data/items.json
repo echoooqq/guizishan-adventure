@@ -107,14 +107,14 @@
     "combine_result": "",
     "sprite": "note"
   },
-  "sculpture_rubbing": {
-    "name": "雕塑铭文拓片",
-    "category": "clue",
-    "description": "博雅广场雕塑底座的铭文拓片，隐含着地砖阵法的踩踏顺序。",
+  "boya_stone": {
+    "name": "博雅石",
+    "category": "material",
+    "description": "花坛角落发现的温润石头，上面隐约刻着桂花纹路，似乎蕴含着博雅广场的灵气。",
     "droppable": true,
     "combinable_with": [],
     "combine_result": "",
-    "sprite": "note"
+    "sprite": "stone"
   },
   "meal_card": {
     "name": "饭卡",

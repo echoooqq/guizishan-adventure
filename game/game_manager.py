@@ -787,74 +787,106 @@ class GameManager:
         from entities.interactive_object import InteractiveObject
         from entities.npc import NPC
 
-        # 博雅广场位于地图坐标(85, 25)，像素坐标(1360, 400)
-        sculpture_x = 85 * TILE_SIZE
-        sculpture_y = 25 * TILE_SIZE
+        # 博雅广场位于地图坐标(85, 13)，像素坐标(1360, 208)
+        # 使用地图中已有的雕塑对象(id=58, x=1360, y=208, 32x32)
+        sculpture = None
+        for obj in self.interactive_objects:
+            # Tiled 中 type 在 XML 属性里，解析后可能存为 properties 的 "type" 或对象的 type 属性
+            if hasattr(obj, 'properties') and obj.properties.get("type") == "sculpture":
+                sculpture = obj
+                break
+            # 备选：通过坐标匹配（博雅广场雕塑在 1360, 208）
+            if abs(obj.x - 1360) < 5 and abs(obj.y - 208) < 5:
+                sculpture = obj
+                break
 
-        sculpture = InteractiveObject(
-            x=sculpture_x, y=sculpture_y,
-            width=16, height=16,
-            interactive_type="examine",
-            properties={
-                "prompt_text": "查看雕塑",
-                "color": (180, 180, 160),
-                "puzzle_id": "boya",
-            },
-        )
+        # 如果地图中没有找到雕塑对象，则创建一个
+        if sculpture is None:
+            sculpture = InteractiveObject(
+                x=85 * TILE_SIZE, y=13 * TILE_SIZE,
+                width=32, height=32,
+                interactive_type="examine",
+                properties={
+                    "prompt_text": "查看雕塑",
+                    "color": (180, 180, 160),
+                    "puzzle_id": "boya",
+                    "type": "sculpture",
+                },
+            )
+            self.interactive_objects.append(sculpture)
+
+        # 设置雕塑精灵图
+        sculpture.sprite_key = "sculpture"
+        self._boya_sculpture_obj = sculpture
 
         gm = self
+        sculpture_center_x = sculpture.x + sculpture.width / 2
+        sculpture_center_y = sculpture.y + sculpture.height / 2
 
         def on_sculpture_interact(obj):
+            inscription = gm.boya_puzzle.get_inscription_hint()
             if gm.puzzle_manager.get_state("boya") == PuzzleState.SOLVED:
                 return {"type": "dialog", "dialogue_data": {
                     "default": [{"speaker": "", "text": "雕塑底座的铭文已经看过了，地砖阵法也已破解。"}]
                 }}
-            if gm.player.inventory.has_item("sculpture_rubbing"):
+            if gm.puzzle_manager.get_state("boya") != PuzzleState.UNDISCOVERED:
                 return {"type": "dialog", "dialogue_data": {
-                    "default": [{"speaker": "", "text": "雕塑底座铭文：'东·南·西·北·中·东南·西北·东北·西南'。你已经拓印过了。"}]
+                    "default": [{"speaker": "", "text": f"雕塑底座铭文：'{inscription}'。按这方位顺序踩踏周围地砖……"}]
                 }}
-            gm.player.inventory.add_item("sculpture_rubbing")
             gm.puzzle_manager.discover("boya")
             return {"type": "dialog", "dialogue_data": {
                 "default": [
-                    {"speaker": "", "text": "雕塑底座刻着古老的铭文：'东·南·西·北·中·东南·西北·东北·西南'"},
-                    {"speaker": "", "text": "你将铭文拓印下来，收入背包。广场上的异色地砖似乎与这顺序有关……"},
+                    {"speaker": "", "text": f"雕塑底座刻着古老的铭文：'{inscription}'"},
+                    {"speaker": "", "text": "广场周围有8块颜色略异的地砖，分布在雕塑的八个方位。铭文的方位顺序似乎暗示着踩踏的顺序……"},
                 ]
             }}
 
         sculpture.on_interact = on_sculpture_interact
-        self.interactive_objects.append(sculpture)
-        self._boya_sculpture_obj = sculpture
 
-        tile_entrance = InteractiveObject(
-            x=sculpture_x + 20, y=sculpture_y,
-            width=16, height=16,
-            interactive_type="mechanism",
-            properties={
-                "prompt_text": "地砖阵法",
-                "color": (100, 100, 140),
-                "puzzle_id": "boya",
-                "mechanism_text": "",
-            },
-        )
+        # 设置8块地砖的世界坐标（以雕塑中心为基准，8方位环绕）
+        self.boya_puzzle.setup_tiles(sculpture_center_x, sculpture_center_y)
 
-        puzzle_ref = self.boya_puzzle
+        # 创建8块地砖的互动物体（invisible=True，只负责检测和互动）
+        for idx in range(8):
+            tx, ty = self.boya_puzzle.tile_positions[idx]
+            tile_obj = InteractiveObject(
+                x=tx, y=ty,
+                width=TILE_SIZE, height=TILE_SIZE,
+                interactive_type="mechanism",
+                properties={
+                    "prompt_text": "踩踏",
+                    "invisible": True,
+                    "boya_tile_idx": idx,
+                },
+            )
 
-        def on_tile_entrance_interact(obj):
-            if gm.puzzle_manager.get_state("boya") == PuzzleState.SOLVED:
-                return {"type": "dialog", "dialogue_data": {
-                    "default": [{"speaker": "", "text": "地砖阵法已经破解了。"}]
-                }}
-            gm._active_puzzle = puzzle_ref
-            gm.state = GameState.PUZZLE
-            puzzle_ref.start(on_complete=gm._on_puzzle_complete)
-            return None
+            def make_tile_interact(tile_idx):
+                def on_tile_interact(obj):
+                    if gm.puzzle_manager.get_state("boya") == PuzzleState.SOLVED:
+                        return {"type": "dialog", "dialogue_data": {
+                            "default": [{"speaker": "", "text": "地砖阵法已经破解了。"}]
+                        }}
+                    step_result = gm.boya_puzzle.step_tile(tile_idx)
+                    if step_result["result"] == "complete":
+                        # 解谜完成：雕塑消失，生成徽章碎片
+                        gm._create_boya_badge_pickup()
+                        return {"type": "dialog", "dialogue_data": {
+                            "default": [{"speaker": "", "text": step_result["message"]}]
+                        }}
+                    elif step_result["result"] == "wrong":
+                        return {"type": "dialog", "dialogue_data": {
+                            "default": [{"speaker": "", "text": step_result["message"]}]
+                        }}
+                    # correct: 只发光，不弹对话框
+                    return None
+                return on_tile_interact
 
-        tile_entrance.on_interact = on_tile_entrance_interact
-        self.interactive_objects.append(tile_entrance)
+            tile_obj.on_interact = make_tile_interact(idx)
+            self.interactive_objects.append(tile_obj)
 
+        # 广场舞阿姨
         dancing_auntie = NPC(
-            x=sculpture_x - 16, y=sculpture_y + 16,
+            x=sculpture_center_x - 32, y=sculpture_center_y + 32,
             npc_id="dancing_auntie",
             dialogue_id="dancing_auntie",
             properties={
@@ -864,6 +896,68 @@ class GameManager:
             },
         )
         self.npcs.append(dancing_auntie)
+
+        # 花坛（可翻找，隐藏道具：博雅石）- 放在广场右下角边缘，靠近草地
+        flowerbed = InteractiveObject(
+            x=sculpture_center_x + 80, y=sculpture_center_y + 64,
+            width=32, height=16,
+            interactive_type="pickup",
+            properties={
+                "prompt_text": "翻找花坛",
+                "color": (80, 140, 60),
+                "item_id": "boya_stone",
+                "sprite": "flowerbed",
+            },
+        )
+
+        def on_flowerbed_interact(obj):
+            if obj.interacted:
+                return {"type": "dialog", "dialogue_data": {
+                    "default": [{"speaker": "", "text": "花坛里已经没有别的东西了。"}]
+                }}
+            gm.player.inventory.add_item("boya_stone")
+            obj.interacted = True
+            return {"type": "dialog", "dialogue_data": {
+                "default": [
+                    {"speaker": "", "text": "你在花坛角落翻找了一下……"},
+                    {"speaker": "", "text": "发现了一块温润的石头，上面隐约刻着桂花纹路！"},
+                    {"speaker": "", "text": "获得了博雅石！"},
+                ]
+            }}
+
+        flowerbed.on_interact = on_flowerbed_interact
+        self.interactive_objects.append(flowerbed)
+
+    def _create_boya_badge_pickup(self):
+        """解谜完成后在雕塑位置生成徽章碎片拾取物，并隐藏雕塑"""
+        from entities.interactive_object import InteractiveObject
+
+        # 隐藏雕塑
+        if self._boya_sculpture_obj:
+            self._boya_sculpture_obj.properties["invisible"] = True
+
+        # 在雕塑位置生成徽章碎片
+        if self._boya_badge_obj is None:
+            sculpture = self._boya_sculpture_obj
+            if sculpture:
+                bx = sculpture.x + sculpture.width / 2 - 6
+                by = sculpture.y + sculpture.height / 2 - 6
+            else:
+                bx = 85 * TILE_SIZE + 10
+                by = 13 * TILE_SIZE + 10
+
+            badge_obj = InteractiveObject(
+                x=bx, y=by,
+                width=12, height=12,
+                interactive_type="pickup",
+                properties={
+                    "prompt_text": "拾取徽章碎片",
+                    "item_id": "badge_4",
+                    "sprite": "badge_pickup",
+                },
+            )
+            self.interactive_objects.append(badge_obj)
+            self._boya_badge_obj = badge_obj
 
     def _setup_fountain_entities(self):
         from entities.interactive_object import InteractiveObject
@@ -1613,6 +1707,31 @@ class GameManager:
             )
         elif interact_type == "mechanism":
             obj = result.get("object")
+
+            # 博雅广场地砖特殊处理
+            if obj and hasattr(obj, "properties") and obj.properties.get("boya_tile_idx") is not None:
+                tile_idx = obj.properties["boya_tile_idx"]
+                step_result = self.boya_puzzle.step_tile(tile_idx)
+                if step_result["result"] == "complete":
+                    self._create_boya_badge_pickup()
+                    self.state = GameState.DIALOG
+                    self.dialog_box.start(
+                        {"default": [{"speaker": "", "text": step_result["message"]}]},
+                        start_key="default",
+                        on_complete=self._on_dialog_complete,
+                        game_state=self._get_dialog_game_state(),
+                    )
+                elif step_result["result"] == "wrong":
+                    self.state = GameState.DIALOG
+                    self.dialog_box.start(
+                        {"default": [{"speaker": "", "text": step_result["message"]}]},
+                        start_key="default",
+                        on_complete=self._on_dialog_complete,
+                        game_state=self._get_dialog_game_state(),
+                    )
+                # correct: 只发光，不弹对话框，继续游戏
+                return
+
             mech_text = "操作了机关。"
             if obj and hasattr(obj, "properties"):
                 mech_text = obj.properties.get("mechanism_text", "操作了机关。")
@@ -1738,6 +1857,10 @@ class GameManager:
 
             for npc in self.npcs:
                 npc.update(dt)
+
+            # 更新博雅广场谜题（错误闪烁计时器等）
+            if self.current_map_id == "main_campus":
+                self.boya_puzzle.update(dt)
 
             self._check_nearby_interactables()
             self._check_auto_triggers()
@@ -1992,6 +2115,10 @@ class GameManager:
             self.guizhong_puzzle.draw(
                 self.internal_surface, self.camera, self.game_clock.is_night()
             )
+
+        # 绘制博雅广场地砖发光特效（在物体渲染之前）
+        if self.current_map_id == "main_campus" and self.boya_puzzle.tile_positions:
+            self.boya_puzzle.draw(self.internal_surface, self.camera)
 
         for obj in self.interactive_objects:
             obj.draw(self.internal_surface, self.camera)
