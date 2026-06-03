@@ -1084,6 +1084,203 @@ def create_door_entrance(path):
     pygame.image.save(surf, path)
 
 
+def create_shooting_station(path):
+    """投篮站: 24×32，篮球架（加高版）"""
+    surf = make_surface(24, 32)
+    # 篮板支架（更高）
+    draw_rect_filled(surf, 18, 4, 3, 24, (120, 120, 130))
+    draw_pixel(surf, 19, 5, (140, 140, 150))
+    draw_pixel(surf, 19, 10, (130, 130, 140))
+    # 篮板（更高位置）
+    draw_rect_filled(surf, 12, 4, 8, 7, (220, 220, 230))
+    draw_rect_filled(surf, 13, 5, 6, 5, (200, 200, 210))
+    # 篮板内框
+    draw_rect_filled(surf, 14, 6, 4, 3, (180, 180, 190))
+    # 篮筐
+    draw_hline(surf, 8, 13, 11, (200, 80, 30))
+    draw_pixel(surf, 7, 11, (200, 80, 30))
+    # 篮网（几条竖线）
+    draw_pixel(surf, 9, 12, (230, 230, 240))
+    draw_pixel(surf, 10, 13, (230, 230, 240))
+    draw_pixel(surf, 11, 12, (230, 230, 240))
+    draw_pixel(surf, 12, 13, (230, 230, 240))
+    draw_pixel(surf, 13, 14, (230, 230, 240))
+    # 底座
+    draw_rect_filled(surf, 16, 27, 6, 3, (100, 100, 110))
+    draw_rect_filled(surf, 15, 29, 8, 2, (80, 80, 90))
+    # 底座高光
+    draw_pixel(surf, 17, 27, (120, 120, 130))
+    # 篮球（地面位置）
+    draw_pixel(surf, 5, 28, (220, 120, 40))
+    draw_pixel(surf, 6, 27, (220, 120, 40))
+    draw_pixel(surf, 6, 28, (200, 100, 30))
+    draw_pixel(surf, 5, 27, (200, 100, 30))
+    # 球上纹线
+    draw_pixel(surf, 6, 28, (180, 80, 20))
+    # 篮球高光
+    draw_pixel(surf, 5, 27, (240, 140, 60))
+    pygame.image.save(surf, path)
+
+
+def create_osmanthus_branch(path):
+    """桂花枝: 12×12，拾取物"""
+    surf = make_surface(12, 12)
+    # 枝条（棕色弧线）
+    draw_pixel(surf, 2, 9, (100, 70, 30))
+    draw_pixel(surf, 3, 8, (110, 75, 35))
+    draw_pixel(surf, 4, 7, (110, 75, 35))
+    draw_pixel(surf, 5, 6, (120, 80, 40))
+    draw_pixel(surf, 6, 5, (120, 80, 40))
+    draw_pixel(surf, 7, 4, (110, 75, 35))
+    draw_pixel(surf, 8, 3, (100, 70, 30))
+    draw_pixel(surf, 9, 2, (100, 70, 30))
+    # 叶子（绿色椭圆）
+    draw_pixel(surf, 3, 7, (60, 140, 40))
+    draw_pixel(surf, 4, 6, (70, 150, 50))
+    draw_pixel(surf, 6, 4, (60, 140, 40))
+    draw_pixel(surf, 7, 3, (70, 150, 50))
+    draw_pixel(surf, 8, 4, (65, 145, 45))
+    # 桂花（黄色小点）
+    draw_pixel(surf, 4, 5, (240, 220, 60))
+    draw_pixel(surf, 5, 4, (255, 230, 70))
+    draw_pixel(surf, 6, 3, (240, 220, 60))
+    draw_pixel(surf, 7, 2, (255, 230, 70))
+    draw_pixel(surf, 8, 2, (240, 220, 60))
+    draw_pixel(surf, 9, 1, (255, 230, 70))
+    # 花朵高光
+    draw_pixel(surf, 5, 3, (255, 245, 120))
+    draw_pixel(surf, 8, 1, (255, 245, 120))
+    pygame.image.save(surf, path)
+
+
+def create_old_bookmark(path):
+    """古旧书签: 12×12，拾取物"""
+    surf = make_surface(12, 12)
+    # 书签主体（竹黄色长条）
+    draw_rect_filled(surf, 4, 1, 4, 9, (190, 160, 90))
+    draw_rect_filled(surf, 5, 1, 2, 9, (200, 170, 100))
+    # 暗色纹理
+    draw_pixel(surf, 4, 3, (170, 140, 75))
+    draw_pixel(surf, 7, 5, (170, 140, 75))
+    draw_pixel(surf, 5, 7, (170, 140, 75))
+    # 顶部装饰（红色横条）
+    draw_rect_filled(surf, 3, 1, 6, 2, (160, 50, 40))
+    draw_pixel(surf, 4, 1, (180, 60, 50))
+    # 顶部圆孔
+    draw_pixel(surf, 6, 1, (190, 160, 90))
+    # 穗子（从底部垂下）
+    draw_pixel(surf, 5, 10, (160, 50, 40))
+    draw_pixel(surf, 6, 10, (160, 50, 40))
+    draw_pixel(surf, 5, 11, (140, 40, 30))
+    draw_pixel(surf, 6, 11, (140, 40, 30))
+    # 穗子流苏
+    draw_pixel(surf, 4, 11, (140, 40, 30))
+    draw_pixel(surf, 7, 11, (140, 40, 30))
+    # 中间文字纹（小横线模拟古文）
+    draw_pixel(surf, 5, 4, (140, 110, 60))
+    draw_pixel(surf, 6, 4, (140, 110, 60))
+    draw_pixel(surf, 5, 6, (140, 110, 60))
+    draw_pixel(surf, 6, 6, (140, 110, 60))
+    draw_pixel(surf, 5, 8, (140, 110, 60))
+    draw_pixel(surf, 6, 8, (140, 110, 60))
+    pygame.image.save(surf, path)
+
+
+def create_water_bottle(path):
+    """水壶: 12×12，拾取物"""
+    surf = make_surface(12, 12)
+    # 壶盖（白色）
+    draw_rect_filled(surf, 4, 1, 4, 2, (220, 220, 230))
+    draw_pixel(surf, 5, 0, (200, 200, 210))
+    draw_pixel(surf, 6, 0, (200, 200, 210))
+    # 壶身（蓝色）
+    draw_rect_filled(surf, 3, 3, 6, 7, (80, 140, 210))
+    draw_rect_filled(surf, 4, 3, 4, 7, (100, 160, 230))
+    # 壶身高光
+    draw_pixel(surf, 4, 4, (140, 190, 250))
+    draw_pixel(surf, 4, 5, (130, 180, 245))
+    draw_pixel(surf, 4, 6, (120, 170, 240))
+    # 壶身暗面
+    draw_pixel(surf, 8, 4, (60, 120, 190))
+    draw_pixel(surf, 8, 6, (60, 120, 190))
+    # 壶底
+    draw_rect_filled(surf, 3, 9, 6, 1, (60, 110, 180))
+    # 标签（白色小条）
+    draw_rect_filled(surf, 5, 5, 2, 3, (230, 230, 240))
+    draw_pixel(surf, 5, 6, (200, 200, 210))
+    pygame.image.save(surf, path)
+
+
+def create_old_badge(path):
+    """旧校徽: 12×12，拾取物"""
+    surf = make_surface(12, 12)
+    # 徽章外圈（铜色）
+    for dy in range(-4, 5):
+        for dx in range(-4, 5):
+            dist = dx * dx + dy * dy
+            if dist <= 20:
+                draw_pixel(surf, 6 + dx, 6 + dy, (180, 150, 80))
+    # 徽章内圈（深铜色）
+    for dy in range(-3, 4):
+        for dx in range(-3, 4):
+            dist = dx * dx + dy * dy
+            if dist <= 11:
+                draw_pixel(surf, 6 + dx, 6 + dy, (150, 120, 60))
+    # 徽章中心图案（暗色）
+    for dy in range(-2, 3):
+        for dx in range(-2, 3):
+            dist = dx * dx + dy * dy
+            if dist <= 5:
+                draw_pixel(surf, 6 + dx, 6 + dy, (120, 90, 40))
+    # 中心高光点
+    draw_pixel(surf, 5, 5, (210, 180, 100))
+    # 边缘高光
+    draw_pixel(surf, 3, 3, (200, 170, 90))
+    draw_pixel(surf, 8, 4, (190, 160, 85))
+    # 暗面
+    draw_pixel(surf, 4, 8, (140, 110, 55))
+    draw_pixel(surf, 8, 8, (140, 110, 55))
+    pygame.image.save(surf, path)
+
+
+def create_magnifying_glass(path):
+    """放大镜: 12×12，拾取物"""
+    surf = make_surface(12, 12)
+    # 镜片（圆形，蓝色高光）
+    for dy in range(-3, 4):
+        for dx in range(-3, 4):
+            dist = dx * dx + dy * dy
+            if dist <= 9:
+                draw_pixel(surf, 4 + dx, 4 + dy, (160, 200, 240))
+    # 镜片内部高光
+    for dy in range(-2, 3):
+        for dx in range(-2, 3):
+            dist = dx * dx + dy * dy
+            if dist <= 5:
+                draw_pixel(surf, 4 + dx, 4 + dy, (180, 220, 255))
+    # 镜片中心亮点
+    draw_pixel(surf, 3, 3, (220, 240, 255))
+    draw_pixel(surf, 4, 4, (200, 230, 250))
+    # 镜框（深棕色圆环）
+    for dy in range(-3, 4):
+        for dx in range(-3, 4):
+            dist = dx * dx + dy * dy
+            if 8 < dist <= 11:
+                draw_pixel(surf, 4 + dx, 4 + dy, (100, 70, 35))
+    # 镜框高光
+    draw_pixel(surf, 2, 2, (130, 90, 50))
+    # 手柄（棕色，斜向右下）
+    draw_pixel(surf, 7, 7, (110, 75, 35))
+    draw_pixel(surf, 8, 8, (120, 80, 40))
+    draw_pixel(surf, 9, 9, (110, 75, 35))
+    draw_pixel(surf, 10, 10, (100, 70, 30))
+    draw_pixel(surf, 11, 11, (90, 60, 25))
+    # 手柄高光
+    draw_pixel(surf, 8, 7, (140, 100, 55))
+    draw_pixel(surf, 9, 8, (130, 90, 50))
+    pygame.image.save(surf, path)
+
+
 # ============================================================
 # 主函数
 # ============================================================
@@ -1144,6 +1341,12 @@ if __name__ == "__main__":
         ("scoreboard.png", create_scoreboard),
         ("equipment_cabinet.png", create_equipment_cabinet),
         ("door_entrance.png", create_door_entrance),
+        ("shooting_station.png", create_shooting_station),
+        ("osmanthus_branch.png", create_osmanthus_branch),
+        ("old_bookmark.png", create_old_bookmark),
+        ("water_bottle.png", create_water_bottle),
+        ("old_badge.png", create_old_badge),
+        ("magnifying_glass.png", create_magnifying_glass),
     ]
 
     for filename, generator in object_generators:

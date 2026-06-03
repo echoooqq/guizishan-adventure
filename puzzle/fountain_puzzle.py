@@ -366,8 +366,8 @@ class FountainPuzzle:
             cx = start_x + i * (self.SLOT_RADIUS * 2 + self.SLOT_GAP) + self.SLOT_RADIUS
             cy = slot_y + self.SLOT_RADIUS
 
-            # 每帧每个徽章生成1-2个粒子
-            for _ in range(random.randint(1, 2)):
+            # 每帧每个徽章生成0-1个粒子（减少数量避免杂乱）
+            if random.random() < 0.6:
                 # 起始位置在徽章边缘随机位置
                 angle = random.uniform(0, 2 * math.pi)
                 px = cx + int(self.SLOT_RADIUS * 0.8 * math.cos(angle))

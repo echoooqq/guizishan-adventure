@@ -22,6 +22,12 @@ OBJECT_SPRITE_MAP = {
     "scoreboard": "scoreboard.png",
     "equipment_cabinet": "equipment_cabinet.png",
     "door_entrance": "door_entrance.png",
+    "shooting_station": "shooting_station.png",
+    "osmanthus_branch": "osmanthus_branch.png",
+    "old_bookmark": "old_bookmark.png",
+    "water_bottle": "water_bottle.png",
+    "old_badge": "old_badge.png",
+    "magnifying_glass": "magnifying_glass.png",
 }
 
 # 精灵缓存

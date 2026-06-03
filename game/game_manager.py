@@ -295,7 +295,7 @@ class GameManager:
             x=spawn_x + 80, y=spawn_y - 16,
             width=16, height=16,
             interactive_type="examine",
-            properties={"prompt_text": "查看告示牌", "color": (160, 140, 100)},
+            properties={"prompt_text": "查看告示牌", "color": (160, 140, 100), "sprite_key": "bulletin_board"},
         )
         test_obj.on_interact = lambda obj: {
             "type": "dialog",
@@ -315,6 +315,7 @@ class GameManager:
             properties={
                 "prompt_text": "拾取桂花枝",
                 "color": (180, 160, 60),
+                "sprite_key": "osmanthus_branch",
                 "item_id": "osmanthus_branch",
                 "pickup_text": "拾取了桂花枝！散发着淡淡的桂花清香。",
             },
@@ -328,6 +329,7 @@ class GameManager:
             properties={
                 "prompt_text": "拾取古旧书签",
                 "color": (140, 100, 60),
+                "sprite_key": "old_bookmark",
                 "item_id": "old_bookmark",
                 "pickup_text": "拾取了古旧书签！一枚精致的竹制书签。",
             },
@@ -341,6 +343,7 @@ class GameManager:
             properties={
                 "prompt_text": "拾取水壶",
                 "color": (100, 160, 220),
+                "sprite_key": "water_bottle",
                 "item_id": "water_bottle",
                 "pickup_text": "拾取了水壶！可以恢复体力。",
             },
@@ -354,6 +357,7 @@ class GameManager:
             properties={
                 "prompt_text": "拾取旧校徽",
                 "color": (180, 180, 60),
+                "sprite_key": "old_badge",
                 "item_id": "old_badge",
                 "pickup_text": "拾取了旧校徽！表面似乎有隐藏的纹路。",
             },
@@ -367,6 +371,7 @@ class GameManager:
             properties={
                 "prompt_text": "拾取放大镜",
                 "color": (160, 200, 220),
+                "sprite_key": "magnifying_glass",
                 "item_id": "magnifying_glass",
                 "pickup_text": "拾取了放大镜！也许能发现隐藏的细节。",
             },
@@ -527,6 +532,7 @@ class GameManager:
                 properties={
                     "prompt_text": "查看公告栏",
                     "color": (180, 160, 120),
+                    "sprite_key": "bulletin_board",
                     "puzzle_id": "nanhulou",
                 },
             )
@@ -572,6 +578,7 @@ class GameManager:
             properties={
                 "prompt_text": "使用电脑",
                 "color": (80, 80, 120),
+                "sprite_key": "computer_terminal",
                 "puzzle_id": "nanhulou",
                 "mechanism_text": "",
             },
@@ -599,6 +606,7 @@ class GameManager:
             properties={
                 "prompt_text": "查看书架",
                 "color": (120, 80, 40),
+                "sprite_key": "bookshelf",
                 "examine_text": "一个摆满书籍的书架，看起来很普通。",
             },
         )
@@ -731,6 +739,7 @@ class GameManager:
                 properties={
                     "prompt_text": "查看餐桌",
                     "color": (120, 100, 80),
+                    "sprite_key": "dining_table",
                     "examine_text": "已经找到饭卡了，快去还给食堂阿姨吧！",
                 },
             )
@@ -741,17 +750,26 @@ class GameManager:
 
         puzzle_ref = self.dining_puzzle
 
+        # 3张餐桌整齐排列：2张上方1张下方，居中摆放
+        # 食堂2楼地图22×16 tiles (352×256)，spawn在(48,32)
+        # 餐桌放在地图中央区域，避免与墙壁和其他物体重叠
+        table_positions = [
+            (96, 80),   # 左上桌
+            (176, 80),  # 右上桌
+            (136, 144), # 下方居中桌
+        ]
+
         for i in range(DiningPuzzle.TABLE_COUNT):
-            tx = spawn_x - 40 + i * 32
-            ty = spawn_y - 32
+            tx, ty = table_positions[i]
 
             table = InteractiveObject(
                 x=tx, y=ty,
-                width=20, height=14,
+                width=24, height=16,
                 interactive_type="examine",
                 properties={
                     "prompt_text": f"搜索餐桌{i + 1}",
                     "color": (120, 100, 80),
+                    "sprite_key": "dining_table",
                     "puzzle_id": "dining_hall",
                     "examine_text": "",
                 },
@@ -1105,6 +1123,7 @@ class GameManager:
             properties={
                 "prompt_text": "放置书籍",
                 "color": (120, 80, 40),
+                "sprite_key": "bookshelf",
                 "puzzle_id": "library",
                 "mechanism_text": "",
             },
@@ -1188,12 +1207,13 @@ class GameManager:
         self.npcs.append(pe_teacher)
 
         shooting_station = InteractiveObject(
-            x=spawn_x - 32, y=spawn_y - 16,
-            width=16, height=16,
+            x=spawn_x - 32, y=spawn_y - 32,
+            width=24, height=32,
             interactive_type="mechanism",
             properties={
                 "prompt_text": "投篮",
                 "color": (180, 120, 60),
+                "sprite_key": "shooting_station",
                 "puzzle_id": "gym",
                 "mechanism_text": "",
             },
@@ -1250,6 +1270,7 @@ class GameManager:
             cabinet_obj.on_interact = on_cabinet_interact
             cabinet_obj.interactive_type = "mechanism"
             cabinet_obj.properties["prompt_text"] = "查看器材柜"
+            cabinet_obj.properties["sprite_key"] = "equipment_cabinet"
             self._gym_equipment_cabinet_obj = cabinet_obj
 
         if scoreboard_obj is not None:
@@ -1276,6 +1297,7 @@ class GameManager:
             scoreboard_obj.on_interact = on_scoreboard_interact
             scoreboard_obj.interactive_type = "mechanism"
             scoreboard_obj.properties["prompt_text"] = "拨动记分牌"
+            scoreboard_obj.properties["sprite_key"] = "scoreboard"
             self._gym_scoreboard_obj = scoreboard_obj
 
         self.puzzle_manager.discover("gym")
@@ -2754,8 +2776,8 @@ class GameManager:
                 self._outro_timer = 0.0
 
         elif self._outro_phase == 1:
-            # 阶段1：白光爆发 → 渐隐到校园场景
-            if self._outro_timer > 4.0:
+            # 阶段1：白光爆发 → 渐隐到校园场景（6秒）
+            if self._outro_timer > 6.0:
                 self._outro_phase = 2
                 self._outro_timer = 0.0
                 self._outro_text_shown = False
@@ -2818,28 +2840,36 @@ class GameManager:
                 self.internal_surface.blit(text, text_rect)
 
         elif self._outro_phase == 1:
-            # 白光爆发 → 渐隐到校园场景
+            # 白光爆发 → 渐隐到校园场景 → 自然过渡到结局文字
+            cx, cy = INTERNAL_WIDTH // 2, INTERNAL_HEIGHT // 2
+            max_radius = int(math.sqrt(cx * cx + cy * cy))
+
             if self._outro_timer < 1.0:
-                # 白光从中心扩展到全屏（1秒）
+                # 白光从中心扩展到全屏（1秒），边缘柔和
                 progress = self._outro_timer / 1.0
-                cx, cy = INTERNAL_WIDTH // 2, INTERNAL_HEIGHT // 2
-                # 多层白/金色光芒扩展
-                max_radius = int(math.sqrt(cx * cx + cy * cy))
                 radius = int(max_radius * progress)
-                # 外层金色光晕
+                # 多层柔和光晕（步进更小，alpha衰减更平缓）
                 glow_surf = pygame.Surface((INTERNAL_WIDTH, INTERNAL_HEIGHT), pygame.SRCALPHA)
-                for r in range(radius, 0, -3):
-                    alpha = int(min(255, progress * 300) * (1 - r / max(radius, 1)) * 0.6)
+                for r in range(radius, 0, -2):
+                    # 高斯式衰减：边缘alpha极低，中心alpha高
+                    ratio = r / max(radius, 1)
+                    alpha = int(min(255, progress * 300) * math.exp(-3 * ratio * ratio) * 0.8)
+                    alpha = min(255, alpha)
                     pygame.draw.circle(glow_surf, (255, 240, 180, alpha), (cx, cy), r)
                 self.internal_surface.blit(glow_surf, (0, 0))
-                # 内层白色亮核
-                core_alpha = int(min(255, progress * 400))
-                white_surf = pygame.Surface((INTERNAL_WIDTH, INTERNAL_HEIGHT), pygame.SRCALPHA)
-                pygame.draw.circle(white_surf, (255, 255, 255, core_alpha), (cx, cy), int(radius * 0.7))
-                self.internal_surface.blit(white_surf, (0, 0))
-            elif self._outro_timer < 2.0:
-                # 全屏白光，逐渐减弱（1秒）
-                fade = 1.0 - (self._outro_timer - 1.0)
+                # 内层白色亮核（同样柔和边缘）
+                core_radius = int(radius * 0.6)
+                core_surf = pygame.Surface((INTERNAL_WIDTH, INTERNAL_HEIGHT), pygame.SRCALPHA)
+                for r in range(core_radius, 0, -2):
+                    ratio = r / max(core_radius, 1)
+                    alpha = int(min(255, progress * 400) * math.exp(-2 * ratio * ratio))
+                    alpha = min(255, alpha)
+                    pygame.draw.circle(core_surf, (255, 255, 255, alpha), (cx, cy), r)
+                self.internal_surface.blit(core_surf, (0, 0))
+            elif self._outro_timer < 2.5:
+                # 全屏白光逐渐减弱，露出暖色校园场景（1.5秒）
+                fade = 1.0 - (self._outro_timer - 1.0) / 1.5
+                fade = max(0, fade)
                 white_alpha = int(255 * fade)
                 # 底层：暖色调校园场景
                 self.internal_surface.fill((200, 180, 140))
@@ -2847,14 +2877,40 @@ class GameManager:
                 white_surf = pygame.Surface((INTERNAL_WIDTH, INTERNAL_HEIGHT), pygame.SRCALPHA)
                 white_surf.fill((255, 255, 255, white_alpha))
                 self.internal_surface.blit(white_surf, (0, 0))
-            else:
-                # 校园场景 + 消散文字
+            elif self._outro_timer < 4.5:
+                # 校园场景 + 消散文字（文字停留1.5秒）
                 self.internal_surface.fill((200, 180, 140))
                 # 淡入文字
-                if self._outro_timer > 2.5:
-                    text_alpha = min(255, int((self._outro_timer - 2.5) * 200))
+                if self._outro_timer > 3.0:
+                    text_alpha = min(255, int((self._outro_timer - 3.0) * 200))
                     text = self.info_font.render("秘境之力缓缓消散……桂子山重归现实。", True, COLOR_WHITE)
                     text.set_alpha(text_alpha)
+                    text_rect = text.get_rect(
+                        centerx=INTERNAL_WIDTH // 2, centery=INTERNAL_HEIGHT // 2
+                    )
+                    self.internal_surface.blit(text, text_rect)
+            else:
+                # 渐暗过渡：暖金色 → 暗棕色 → 深蓝色（1.5秒）
+                fade_progress = min(1.0, (self._outro_timer - 4.5) / 1.5)
+                if fade_progress < 0.5:
+                    # 前0.75秒：暖金色 → 暗棕色（同色系变暗）
+                    t = fade_progress / 0.5
+                    r = int(200 * (1 - t) + 60 * t)
+                    g = int(180 * (1 - t) + 45 * t)
+                    b = int(140 * (1 - t) + 30 * t)
+                    self.internal_surface.fill((r, g, b))
+                else:
+                    # 后0.75秒：暗棕色 → 深蓝色
+                    t = (fade_progress - 0.5) / 0.5
+                    r = int(60 * (1 - t) + 20 * t)
+                    g = int(45 * (1 - t) + 20 * t)
+                    b = int(30 * (1 - t) + 40 * t)
+                    self.internal_surface.fill((r, g, b))
+                # 文字也随之渐暗
+                if self._outro_timer < 5.0:
+                    text_fade = max(0, 1.0 - (self._outro_timer - 4.5) / 0.5)
+                    text = self.info_font.render("秘境之力缓缓消散……桂子山重归现实。", True, COLOR_WHITE)
+                    text.set_alpha(int(255 * text_fade))
                     text_rect = text.get_rect(
                         centerx=INTERNAL_WIDTH // 2, centery=INTERNAL_HEIGHT // 2
                     )
@@ -2936,9 +2992,9 @@ class GameManager:
         y = 60
         for i, line in enumerate(lines):
             # 逐行延迟显示
-            line_delay = i * 1.0
+            line_delay = i * 1.5
             if self._outro_timer > line_delay:
-                alpha = min(255, int((self._outro_timer - line_delay) * 120))
+                alpha = min(255, int((self._outro_timer - line_delay) * 80))
                 line_surf = self.info_font.render(line, True, COLOR_WHITE)
                 line_surf.set_alpha(alpha)
                 line_rect = line_surf.get_rect(
@@ -2948,7 +3004,7 @@ class GameManager:
             y += 16
 
         # 提示（字幕后延迟更久才显示）
-        if self._outro_timer > len(lines) * 1.0 + 2.0:
+        if self._outro_timer > len(lines) * 1.5 + 2.0:
             hint = self.info_font.render("按 回车键 继续", True, (150, 150, 170))
             hint_rect = hint.get_rect(
                 centerx=INTERNAL_WIDTH // 2, centery=INTERNAL_HEIGHT - 15
