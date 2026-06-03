@@ -1,7 +1,9 @@
-"""小地图 — 右下角显示，简化色块缩略图+迷雾+玩家亮点+地标
+"""小地图 — 角色中心雷达式 + 全屏迷雾地图
 
-阶段1：简化色块缩略图，不同颜色代表不同地形
-阶段2：羊皮纸质感底图+像素风建筑图标+迷雾遮罩+玩家闪烁亮点
+角落小地图：始终以玩家位置为中心，显示周围区域（雷达式）
+全屏地图（M键）：显示整个地图，已探索区域清晰，未探索区域半透明迷雾
+地图渲染：从Tiled地图实际图层采样，缩放为缩略图，显示真实环境外观
+迷雾：深蓝灰色半透明，已探索边缘距离渐变羽化
 """
 
 import os
@@ -15,24 +17,21 @@ from config import (
 )
 
 
-# 小地图尺寸
+# 角落小地图尺寸
 MINIMAP_WIDTH = 60
 MINIMAP_HEIGHT = 45
 MINIMAP_MARGIN = 4
 
-# 地形颜色映射
-TERRAIN_COLORS = {
-    "grass": (60, 140, 60),       # 草地：绿色
-    "road": (160, 140, 120),      # 道路：灰棕色
-    "water": (60, 100, 180),      # 水面：蓝色
-    "building": (120, 100, 90),   # 建筑：深棕色
-    "floor": (180, 160, 130),     # 室内地板：浅棕色
-    "wall": (80, 70, 65),         # 墙壁：深色
-    "default": (80, 80, 80),      # 默认：灰色
-}
+# 雷达视野半径（小地图上显示的tile范围）
+RADAR_RADIUS_TILES = 30
 
-# 迷雾颜色
-FOG_COLOR = (0, 0, 0, 180)
+# 迷雾颜色 — 深蓝灰色半透明
+FOG_RGB = (10, 15, 35)
+FOG_ALPHA_RADAR = 140       # 角落小地图迷雾最大alpha
+FOG_ALPHA_FULLSCREEN = 160  # 全屏地图迷雾最大alpha
+
+# 羽化宽度（chunk单位，1 chunk = 4 tile）
+FEATHER_RADIUS_CHUNKS = 3   # 边缘3个chunk宽度渐变
 
 # 玩家亮点颜色
 PLAYER_DOT_COLOR = (255, 255, 255)
@@ -66,16 +65,30 @@ LANDMARKS = {
     ],
 }
 
+# 地标中文名称（全屏地图用）
+LANDMARK_NAMES = {
+    "library": "图书馆",
+    "gym": "体育馆",
+    "dining_hall": "食堂",
+    "fountain": "喷泉",
+    "boya_square": "博雅广场",
+    "nanhu_building": "综合楼",
+    "gate": "校门",
+    "bus_stop": "校车站",
+}
+
 
 class Minimap:
-    """小地图"""
+    """小地图 — 角色中心雷达式"""
 
     def __init__(self):
-        self._cache = {}
-        self._player_blink_timer = 0.0
-        self._player_blink_on = True
+        self._fullmap_render_cache = {}  # map_id -> 原始分辨率全图Surface
+        self._fullmap_cache = {}  # map_id -> 缩放后的缩略图Surface（含迷雾）
         self._explored_chunks = {}  # map_id -> set of (chunk_x, chunk_y)
+        self._fog_dirty = set()  # 需要重新渲染迷雾的map_id集合
+        self._fullscreen_fog_cache = {}  # (map_id, render_w, render_h) -> fog Surface
         self._minimap_frame = None
+        self._font = None
         self._load_frame()
 
     def _load_frame(self):
@@ -90,24 +103,37 @@ class Minimap:
             except pygame.error:
                 pass
 
+    def _get_font(self):
+        """获取字体（延迟加载）"""
+        if self._font is None:
+            self._font = pygame.font.Font(FONT_PATH, 8)
+        return self._font
+
     def update(self, dt):
-        """更新小地图动画（玩家亮点闪烁）"""
-        self._player_blink_timer += dt
-        if self._player_blink_timer >= 0.5:
-            self._player_blink_timer -= 0.5
-            self._player_blink_on = not self._player_blink_on
+        """更新小地图状态"""
+        pass
 
     def mark_explored(self, map_id, player_tile_x, player_tile_y, radius=8):
         """标记玩家周围区域为已探索"""
         if map_id not in self._explored_chunks:
             self._explored_chunks[map_id] = set()
         chunks = self._explored_chunks[map_id]
+        old_count = len(chunks)
         for dx in range(-radius, radius + 1):
             for dy in range(-radius, radius + 1):
                 if dx * dx + dy * dy <= radius * radius:
                     cx = (player_tile_x + dx) // 4
                     cy = (player_tile_y + dy) // 4
                     chunks.add((cx, cy))
+        # 如果有新chunk被探索，标记迷雾需要重绘
+        if len(chunks) > old_count:
+            self._fog_dirty.add(map_id)
+            # 清除全屏迷雾缓存
+            keys_to_remove = [k for k in self._fullscreen_fog_cache if k[0] == map_id]
+            for k in keys_to_remove:
+                del self._fullscreen_fog_cache[k]
+            # 清除其他校区缩略图缓存
+            self._fullmap_cache.pop(map_id, None)
 
     def is_explored(self, map_id, tile_x, tile_y):
         """检查指定位置是否已探索"""
@@ -115,6 +141,46 @@ class Minimap:
         cx = tile_x // 4
         cy = tile_y // 4
         return (cx, cy) in chunks
+
+    def _get_chunk_distance(self, map_id, chunk_x, chunk_y):
+        """计算指定chunk到最近已探索chunk的距离（chunk单位）
+
+        返回0表示已探索，返回FEATHER_RADIUS_CHUNKS+1表示完全在羽化范围外
+        """
+        chunks = self._explored_chunks.get(map_id, set())
+        if not chunks:
+            return FEATHER_RADIUS_CHUNKS + 1
+
+        if (chunk_x, chunk_y) in chunks:
+            return 0
+
+        # 在羽化半径内搜索最近的已探索chunk
+        min_dist = FEATHER_RADIUS_CHUNKS + 1
+        search_r = FEATHER_RADIUS_CHUNKS
+        for dx in range(-search_r, search_r + 1):
+            for dy in range(-search_r, search_r + 1):
+                if (chunk_x + dx, chunk_y + dy) in chunks:
+                    # 欧几里得距离
+                    dist = math.sqrt(dx * dx + dy * dy)
+                    if dist < min_dist:
+                        min_dist = dist
+        return min_dist
+
+    def _get_fog_alpha(self, chunk_dist, max_alpha):
+        """根据chunk距离计算迷雾alpha值（羽化渐变）
+
+        chunk_dist=0 → alpha=0（已探索，无迷雾）
+        chunk_dist=1 → alpha约为max_alpha的1/3（羽化边缘）
+        chunk_dist=2 → alpha约为max_alpha的2/3
+        chunk_dist>=FEATHER_RADIUS_CHUNKS → alpha=max_alpha（完全未探索）
+        """
+        if chunk_dist <= 0:
+            return 0
+        if chunk_dist >= FEATHER_RADIUS_CHUNKS:
+            return max_alpha
+        # 线性插值
+        ratio = chunk_dist / FEATHER_RADIUS_CHUNKS
+        return int(max_alpha * ratio)
 
     def get_explored_data(self):
         """获取已探索区域数据（用于存档）"""
@@ -130,31 +196,111 @@ class Minimap:
             self._explored_chunks[map_id] = set(
                 tuple(c) for c in chunk_list
             )
+        # 全部标记为需要重绘
+        self._fog_dirty = set(self._explored_chunks.keys())
+        self._fullscreen_fog_cache.clear()
+        self._fullmap_cache.clear()
+
+    # ─── 从Tiled地图渲染真实外观 ───
+
+    def _render_fullmap_tiles(self, tile_map, map_id):
+        """从Tiled地图的实际图层渲染全图（原始分辨率），结果缓存"""
+        if map_id in self._fullmap_render_cache:
+            return self._fullmap_render_cache[map_id]
+
+        map_w = tile_map.width
+        map_h = tile_map.height
+        pixel_w = map_w * TILE_SIZE
+        pixel_h = map_h * TILE_SIZE
+
+        surf = pygame.Surface((pixel_w, pixel_h))
+        surf.fill((25, 28, 40))
+
+        if tile_map._load_failed or tile_map.tmx_data is None:
+            self._fullmap_render_cache[map_id] = surf
+            return surf
+
+        for layer_index in tile_map._visible_layers:
+            layer = tile_map.tmx_data.layers[layer_index]
+            if not hasattr(layer, 'data'):
+                continue
+            for row in range(map_h):
+                for col in range(map_w):
+                    gid = layer.data[row][col]
+                    if gid == 0:
+                        continue
+                    tile_image = tile_map.tmx_data.get_tile_image_by_gid(gid)
+                    if tile_image:
+                        surf.blit(tile_image, (col * TILE_SIZE, row * TILE_SIZE))
+
+        self._fullmap_render_cache[map_id] = surf
+        return surf
+
+    # ─── 角落小地图（雷达式，以玩家为中心） ───
 
     def draw(self, surface, tile_map, map_id, player, camera):
-        """绘制小地图到游戏画面右下角"""
+        """绘制雷达式小地图到游戏画面右下角"""
         if tile_map is None:
             return
 
-        # 生成或获取缓存的缩略图
-        if map_id not in self._cache:
-            self._cache[map_id] = self._render_minimap(tile_map, map_id)
-        minimap_surf = self._cache[map_id]
+        map_w = tile_map.width
+        map_h = tile_map.height
+        if map_w <= 0 or map_h <= 0:
+            return
 
-        # 绘制迷雾
-        self._draw_fog(minimap_surf, map_id, tile_map)
+        # 获取全图渲染结果（缓存）
+        fullmap = self._render_fullmap_tiles(tile_map, map_id)
 
-        # 绘制地标
-        self._draw_landmarks(minimap_surf, map_id, tile_map)
+        # 玩家像素坐标
+        player_px = player.x
+        player_py = player.y
 
-        # 绘制玩家位置
-        self._draw_player_dot(minimap_surf, player, tile_map)
+        # 雷达视野对应的像素范围
+        radar_px_w = RADAR_RADIUS_TILES * 2 * TILE_SIZE
+        radar_px_h = RADAR_RADIUS_TILES * 2 * TILE_SIZE
 
-        # 计算小地图在屏幕上的位置（右下角）
+        # 裁剪区域（以玩家为中心）
+        crop_x = player_px - radar_px_w / 2
+        crop_y = player_py - radar_px_h / 2
+
+        # 创建小地图Surface
+        minimap_surf = pygame.Surface((MINIMAP_WIDTH, MINIMAP_HEIGHT), pygame.SRCALPHA)
+        minimap_surf.fill((20, 22, 35, 200))
+
+        # 从全图中裁剪雷达范围并缩放到小地图尺寸
+        src_x = max(0, int(crop_x))
+        src_y = max(0, int(crop_y))
+        src_right = min(fullmap.get_width(), int(crop_x + radar_px_w))
+        src_bottom = min(fullmap.get_height(), int(crop_y + radar_px_h))
+        src_w = src_right - src_x
+        src_h = src_bottom - src_y
+
+        if src_w > 0 and src_h > 0:
+            cropped = fullmap.subsurface(pygame.Rect(src_x, src_y, src_w, src_h))
+            scaled = pygame.transform.smoothscale(cropped, (MINIMAP_WIDTH, MINIMAP_HEIGHT))
+            minimap_surf.blit(scaled, (0, 0))
+
+        # 未探索区域叠加羽化迷雾
+        fog = self._render_fog_radar(map_id, tile_map, player_px, player_py)
+        minimap_surf.blit(fog, (0, 0))
+
+        # 绘制地标（仅已探索区域）
+        self._draw_landmarks_radar(minimap_surf, map_id, player_px, player_py)
+
+        # 绘制玩家中心亮点（常亮）
+        center_x = MINIMAP_WIDTH // 2
+        center_y = MINIMAP_HEIGHT // 2
+        for dx in range(-PLAYER_DOT_RADIUS, PLAYER_DOT_RADIUS + 1):
+            for dy in range(-PLAYER_DOT_RADIUS, PLAYER_DOT_RADIUS + 1):
+                if dx * dx + dy * dy <= PLAYER_DOT_RADIUS * PLAYER_DOT_RADIUS:
+                    nx, ny = center_x + dx, center_y + dy
+                    if 0 <= nx < MINIMAP_WIDTH and 0 <= ny < MINIMAP_HEIGHT:
+                        minimap_surf.set_at((nx, ny), PLAYER_DOT_COLOR)
+
+        # 绘制到屏幕右下角
         dest_x = INTERNAL_WIDTH - MINIMAP_WIDTH - MINIMAP_MARGIN
         dest_y = INTERNAL_HEIGHT - MINIMAP_HEIGHT - MINIMAP_MARGIN
 
-        # 绘制边框背景
         border_rect = pygame.Rect(
             dest_x - 2, dest_y - 2,
             MINIMAP_WIDTH + 4, MINIMAP_HEIGHT + 4,
@@ -168,131 +314,84 @@ class Minimap:
             (0, 0, border_rect.width, border_rect.height), 1,
         )
         surface.blit(border_surf, border_rect.topleft)
-
-        # 绘制小地图
         surface.blit(minimap_surf, (dest_x, dest_y))
 
-    def _render_minimap(self, tile_map, map_id):
-        """渲染地图缩略图"""
-        surf = pygame.Surface((MINIMAP_WIDTH, MINIMAP_HEIGHT))
-        surf.fill((30, 30, 40))
+    def _render_fog_radar(self, map_id, tile_map, player_px, player_py):
+        """渲染雷达式小地图的迷雾层（含羽化渐变）"""
+        fog = pygame.Surface((MINIMAP_WIDTH, MINIMAP_HEIGHT), pygame.SRCALPHA)
 
         map_w = tile_map.width
         map_h = tile_map.height
-        if map_w <= 0 or map_h <= 0:
-            return surf
 
-        # 缩放比例
-        scale_x = MINIMAP_WIDTH / map_w
-        scale_y = MINIMAP_HEIGHT / map_h
+        tiles_per_pixel_x = (RADAR_RADIUS_TILES * 2) / MINIMAP_WIDTH
+        tiles_per_pixel_y = (RADAR_RADIUS_TILES * 2) / MINIMAP_HEIGHT
 
-        # 从碰撞层推断地形
-        for ty in range(map_h):
-            for tx in range(map_w):
-                px = int(tx * scale_x)
-                py = int(ty * scale_y)
-                if px >= MINIMAP_WIDTH or py >= MINIMAP_HEIGHT:
+        player_tx = player_px / TILE_SIZE
+        player_ty = player_py / TILE_SIZE
+
+        # 预计算本帧可见范围内的chunk距离（避免逐像素重复计算）
+        # 收集可见范围内的所有chunk坐标
+        chunk_dist_cache = {}
+
+        for py in range(MINIMAP_HEIGHT):
+            for px in range(MINIMAP_WIDTH):
+                tile_x = int(player_tx - RADAR_RADIUS_TILES + px * tiles_per_pixel_x)
+                tile_y = int(player_ty - RADAR_RADIUS_TILES + py * tiles_per_pixel_y)
+
+                if tile_x < 0 or tile_x >= map_w or tile_y < 0 or tile_y >= map_h:
                     continue
 
-                # 判断地形类型
-                color = self._get_tile_color(tile_map, tx, ty)
-                surf.set_at((px, py), color)
+                # 获取chunk坐标
+                cx = tile_x // 4
+                cy = tile_y // 4
 
-        return surf
+                # 缓存chunk距离
+                if (cx, cy) not in chunk_dist_cache:
+                    chunk_dist_cache[(cx, cy)] = self._get_chunk_distance(map_id, cx, cy)
 
-    def _get_tile_color(self, tile_map, tx, ty):
-        """获取指定Tile在小地图上的颜色"""
-        # 检查碰撞层判断是否为墙壁/建筑
-        if tile_map.collision_map and ty < len(tile_map.collision_map) and tx < len(tile_map.collision_map[ty]):
-            if tile_map.collision_map[ty][tx]:
-                return TERRAIN_COLORS["building"]
+                dist = chunk_dist_cache[(cx, cy)]
+                alpha = self._get_fog_alpha(dist, FOG_ALPHA_RADAR)
 
-        # 默认为草地
-        return TERRAIN_COLORS["grass"]
+                if alpha > 0:
+                    fog.set_at((px, py), (FOG_RGB[0], FOG_RGB[1], FOG_RGB[2], alpha))
 
-    def _draw_fog(self, minimap_surf, map_id, tile_map):
-        """在缩略图上绘制迷雾"""
-        if map_id not in self._explored_chunks:
-            # 全部迷雾
-            fog = pygame.Surface(
-                (MINIMAP_WIDTH, MINIMAP_HEIGHT), pygame.SRCALPHA
-            )
-            fog.fill(FOG_COLOR)
-            minimap_surf.blit(fog, (0, 0))
-            return
+        return fog
 
-        chunks = self._explored_chunks[map_id]
-        if not chunks:
-            fog = pygame.Surface(
-                (MINIMAP_WIDTH, MINIMAP_HEIGHT), pygame.SRCALPHA
-            )
-            fog.fill(FOG_COLOR)
-            minimap_surf.blit(fog, (0, 0))
-            return
-
-        # 逐像素判断是否已探索
-        map_w = tile_map.width
-        map_h = tile_map.height
-        if map_w <= 0 or map_h <= 0:
-            return
-
-        scale_x = MINIMAP_WIDTH / map_w
-        scale_y = MINIMAP_HEIGHT / map_h
-
-        fog = pygame.Surface(
-            (MINIMAP_WIDTH, MINIMAP_HEIGHT), pygame.SRCALPHA
-        )
-
-        # 先全部填充迷雾
-        fog.fill(FOG_COLOR)
-
-        # 清除已探索区域的迷雾
-        for (cx, cy) in chunks:
-            # 每个chunk覆盖4x4的tile区域
-            for dy in range(4):
-                for dx in range(4):
-                    tile_x = cx * 4 + dx
-                    tile_y = cy * 4 + dy
-                    px = int(tile_x * scale_x)
-                    py = int(tile_y * scale_y)
-                    if 0 <= px < MINIMAP_WIDTH and 0 <= py < MINIMAP_HEIGHT:
-                        fog.set_at((px, py), (0, 0, 0, 0))
-
-        minimap_surf.blit(fog, (0, 0))
-
-    def _draw_landmarks(self, minimap_surf, map_id, tile_map):
-        """绘制地标图标"""
+    def _draw_landmarks_radar(self, minimap_surf, map_id, player_px, player_py):
+        """在雷达式小地图上绘制地标"""
         landmarks = LANDMARKS.get(map_id, [])
         if not landmarks:
             return
 
-        map_w = tile_map.width
-        map_h = tile_map.height
-        if map_w <= 0 or map_h <= 0:
-            return
-
-        scale_x = MINIMAP_WIDTH / map_w
-        scale_y = MINIMAP_HEIGHT / map_h
+        player_tx = player_px / TILE_SIZE
+        player_ty = player_py / TILE_SIZE
+        tiles_per_pixel_x = (RADAR_RADIUS_TILES * 2) / MINIMAP_WIDTH
+        tiles_per_pixel_y = (RADAR_RADIUS_TILES * 2) / MINIMAP_HEIGHT
 
         for landmark_type, tile_x, tile_y in landmarks:
-            # 仅绘制已探索区域的地标
             if not self.is_explored(map_id, tile_x, tile_y):
                 continue
 
-            px = int(tile_x * scale_x)
-            py = int(tile_y * scale_y)
-            color = LANDMARK_COLORS.get(landmark_type, (200, 200, 200))
+            dx = tile_x - player_tx
+            dy = tile_y - player_ty
+            px = int(MINIMAP_WIDTH / 2 + dx / tiles_per_pixel_x)
+            py = int(MINIMAP_HEIGHT / 2 + dy / tiles_per_pixel_y)
 
-            # 绘制2x2像素的地标点
-            for dx in range(-1, 2):
-                for dy in range(-1, 2):
-                    nx, ny = px + dx, py + dy
+            if px < 1 or px >= MINIMAP_WIDTH - 1 or py < 1 or py >= MINIMAP_HEIGHT - 1:
+                continue
+
+            color = LANDMARK_COLORS.get(landmark_type, (200, 200, 200))
+            for ddx in range(-1, 2):
+                for ddy in range(-1, 2):
+                    nx, ny = px + ddx, py + ddy
                     if 0 <= nx < MINIMAP_WIDTH and 0 <= ny < MINIMAP_HEIGHT:
                         minimap_surf.set_at((nx, ny), color)
 
-    def _draw_player_dot(self, minimap_surf, player, tile_map):
-        """绘制玩家位置亮点"""
-        if not self._player_blink_on:
+    # ─── 全屏地图（M键，显示整个地图+迷雾） ───
+
+    def draw_fullscreen(self, surface, tile_map, map_id, player, all_maps=None):
+        """绘制全屏地图视图"""
+        if tile_map is None:
             return
 
         map_w = tile_map.width
@@ -300,26 +399,147 @@ class Minimap:
         if map_w <= 0 or map_h <= 0:
             return
 
-        player_tile_x = player.x / TILE_SIZE
-        player_tile_y = player.y / TILE_SIZE
+        # 全屏地图区域
+        map_area_x = 20
+        map_area_y = 30
+        map_area_w = INTERNAL_WIDTH - 40
+        map_area_h = INTERNAL_HEIGHT - 50
 
-        scale_x = MINIMAP_WIDTH / map_w
-        scale_y = MINIMAP_HEIGHT / map_h
+        # 缩放比例（保持宽高比）
+        scale = min(map_area_w / map_w, map_area_h / map_h)
+        render_w = int(map_w * scale)
+        render_h = int(map_h * scale)
+        offset_x = map_area_x + (map_area_w - render_w) // 2
+        offset_y = map_area_y + (map_area_h - render_h) // 2
 
-        px = int(player_tile_x * scale_x)
-        py = int(player_tile_y * scale_y)
+        # 从Tiled图层渲染全图并缩放
+        fullmap = self._render_fullmap_tiles(tile_map, map_id)
+        scaled_map = pygame.transform.smoothscale(fullmap, (render_w, render_h))
+        surface.blit(scaled_map, (offset_x, offset_y))
 
-        # 绘制白色亮点
-        for dx in range(-PLAYER_DOT_RADIUS, PLAYER_DOT_RADIUS + 1):
-            for dy in range(-PLAYER_DOT_RADIUS, PLAYER_DOT_RADIUS + 1):
-                if dx * dx + dy * dy <= PLAYER_DOT_RADIUS * PLAYER_DOT_RADIUS:
+        # 绘制迷雾层（含羽化渐变，带缓存）
+        cache_key = (map_id, render_w, render_h)
+        if cache_key not in self._fullscreen_fog_cache:
+            fog_surf = self._render_fog_fullscreen(map_id, tile_map, render_w, render_h, scale)
+            self._fullscreen_fog_cache[cache_key] = fog_surf
+            self._fog_dirty.discard(map_id)
+        surface.blit(self._fullscreen_fog_cache[cache_key], (offset_x, offset_y))
+
+        # 绘制地标（仅已探索区域）
+        self._draw_landmarks_fullscreen(surface, map_id, scale, offset_x, offset_y)
+
+        # 绘制玩家位置（常亮白色亮点）
+        player_tx = player.x / TILE_SIZE
+        player_ty = player.y / TILE_SIZE
+        px = int(offset_x + player_tx * scale)
+        py = int(offset_y + player_ty * scale)
+
+        for dx in range(-3, 4):
+            for dy in range(-3, 4):
+                if dx * dx + dy * dy <= 9:
                     nx, ny = px + dx, py + dy
-                    if 0 <= nx < MINIMAP_WIDTH and 0 <= ny < MINIMAP_HEIGHT:
-                        minimap_surf.set_at((nx, ny), PLAYER_DOT_COLOR)
+                    if 0 <= nx < INTERNAL_WIDTH and 0 <= ny < INTERNAL_HEIGHT:
+                        surface.set_at((nx, ny), PLAYER_DOT_COLOR)
+
+        # 绘制其他校区的缩略图
+        if all_maps:
+            other_x = 10
+            other_y = INTERNAL_HEIGHT - 70
+            for other_id, other_map in all_maps.items():
+                if other_id == map_id:
+                    continue
+                if other_id not in self._fullmap_cache:
+                    other_fullmap = self._render_fullmap_tiles(other_map, other_id)
+                    small_w = 50
+                    small_h = 38
+                    small_surf = pygame.transform.smoothscale(other_fullmap, (small_w, small_h))
+                    small_scale = min(small_w / other_map.width, small_h / other_map.height)
+                    small_fog = self._render_fog_fullscreen(other_id, other_map, small_w, small_h, small_scale)
+                    small_surf.blit(small_fog, (0, 0))
+                    self._fullmap_cache[other_id] = small_surf
+
+                small_cached = self._fullmap_cache[other_id]
+                surface.blit(small_cached, (other_x, other_y))
+
+                font = self._get_font()
+                name = "南湖校区" if "nanhu" in other_id else "本部校区"
+                name_surf = font.render(name, True, (180, 180, 200))
+                surface.blit(name_surf, (other_x, other_y - 10))
+                other_x += 60
+
+    def _render_fog_fullscreen(self, map_id, tile_map, render_w, render_h, scale):
+        """渲染全屏地图的迷雾层（含羽化渐变）"""
+        fog = pygame.Surface((render_w, render_h), pygame.SRCALPHA)
+
+        map_w = tile_map.width
+        map_h = tile_map.height
+        if map_w <= 0 or map_h <= 0:
+            fog.fill((FOG_RGB[0], FOG_RGB[1], FOG_RGB[2], FOG_ALPHA_FULLSCREEN))
+            return fog
+
+        # 预计算chunk距离缓存
+        chunk_dist_cache = {}
+
+        for py in range(render_h):
+            for px in range(render_w):
+                tile_x = int(px / scale)
+                tile_y = int(py / scale)
+
+                if tile_x < 0 or tile_x >= map_w or tile_y < 0 or tile_y >= map_h:
+                    fog.set_at((px, py), (FOG_RGB[0], FOG_RGB[1], FOG_RGB[2], FOG_ALPHA_FULLSCREEN))
+                    continue
+
+                cx = tile_x // 4
+                cy = tile_y // 4
+
+                if (cx, cy) not in chunk_dist_cache:
+                    chunk_dist_cache[(cx, cy)] = self._get_chunk_distance(map_id, cx, cy)
+
+                dist = chunk_dist_cache[(cx, cy)]
+                alpha = self._get_fog_alpha(dist, FOG_ALPHA_FULLSCREEN)
+
+                if alpha > 0:
+                    fog.set_at((px, py), (FOG_RGB[0], FOG_RGB[1], FOG_RGB[2], alpha))
+
+        return fog
+
+    def _draw_landmarks_fullscreen(self, surface, map_id, scale, offset_x, offset_y):
+        """在全屏地图上绘制地标图标和名称"""
+        landmarks = LANDMARKS.get(map_id, [])
+        if not landmarks:
+            return
+
+        font = self._get_font()
+
+        for landmark_type, tile_x, tile_y in landmarks:
+            if not self.is_explored(map_id, tile_x, tile_y):
+                continue
+
+            px = int(offset_x + tile_x * scale)
+            py = int(offset_y + tile_y * scale)
+            color = LANDMARK_COLORS.get(landmark_type, (200, 200, 200))
+
+            for dx in range(-2, 3):
+                for dy in range(-2, 3):
+                    if dx * dx + dy * dy <= 4:
+                        nx, ny = px + dx, py + dy
+                        if 0 <= nx < INTERNAL_WIDTH and 0 <= ny < INTERNAL_HEIGHT:
+                            surface.set_at((nx, ny), color)
+
+            name = LANDMARK_NAMES.get(landmark_type, "")
+            if name:
+                name_surf = font.render(name, True, color)
+                surface.blit(name_surf, (px + 4, py - 4))
 
     def invalidate_cache(self, map_id=None):
         """使缓存失效（地图变化时调用）"""
         if map_id:
-            self._cache.pop(map_id, None)
+            self._fullmap_render_cache.pop(map_id, None)
+            self._fullmap_cache.pop(map_id, None)
+            keys_to_remove = [k for k in self._fullscreen_fog_cache if k[0] == map_id]
+            for k in keys_to_remove:
+                del self._fullscreen_fog_cache[k]
         else:
-            self._cache.clear()
+            self._fullmap_render_cache.clear()
+            self._fullmap_cache.clear()
+            self._fullscreen_fog_cache.clear()

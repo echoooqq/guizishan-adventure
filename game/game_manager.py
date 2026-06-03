@@ -2078,7 +2078,7 @@ class GameManager:
         self.internal_surface.blit(hint_surf, text_rect)
 
     def _draw_map_view(self):
-        """绘制全局地图视图"""
+        """绘制全局地图视图（全屏，已探索区域清晰，未探索区域迷雾）"""
         self.internal_surface.fill((20, 20, 30))
 
         # 标题
@@ -2088,22 +2088,15 @@ class GameManager:
         )
         self.internal_surface.blit(title, title_rect)
 
-        # 绘制本部校区小地图
-        if "main_campus" in self._map_cache:
-            main_map = self._map_cache["main_campus"]
-            self.minimap.draw(
-                self.internal_surface, main_map,
-                "main_campus", self.player, self.camera,
-            )
+        # 使用minimap的draw_fullscreen绘制全屏地图
+        all_maps = {}
+        for map_id, tile_map in self._map_cache.items():
+            all_maps[map_id] = tile_map
 
-        # 绘制南湖校区小地图（如果有缓存）
-        if "nanhu_campus" in self._map_cache:
-            nanhu_map = self._map_cache["nanhu_campus"]
-            # 在左下角绘制南湖校区缩略图
-            if "nanhu_campus" not in self.minimap._cache:
-                self.minimap._cache["nanhu_campus"] = self.minimap._render_minimap(nanhu_map, "nanhu_campus")
-            nanhu_surf = self.minimap._cache["nanhu_campus"]
-            self.internal_surface.blit(nanhu_surf, (10, INTERNAL_HEIGHT - 55))
+        self.minimap.draw_fullscreen(
+            self.internal_surface, self.tile_map,
+            self.current_map_id, self.player, all_maps,
+        )
 
         # 提示
         hint = self.info_font.render("按 M 或 Esc 返回游戏", True, (180, 180, 200))
