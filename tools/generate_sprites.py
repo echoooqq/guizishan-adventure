@@ -679,119 +679,173 @@ def create_flowerbed(path):
 
 
 def create_fountain(path):
-    """喷泉: 32×32，含7个凹槽的精美喷泉"""
-    surf = make_surface(32, 32)
+    """喷泉: 96×96，完整喷泉外观含7个凹槽"""
+    surf = make_surface(96, 96)
 
-    # ---- 底座（多层椭圆营造立体感）----
+    # ---- 背景：石板路纹理（与喷泉广场地面一致）----
+    stone_base = (180, 160, 120)
+    stone_line = (150, 130, 100)
+    stone_line2 = (160, 140, 110)
+    surf.fill(stone_base)
+    # 石板网格线（模拟16×16 tile的石板路纹理）
+    for ty in range(0, 96, 16):
+        draw_hline(surf, 0, 95, ty, stone_line)
+    for tx in range(0, 96, 16):
+        draw_vline(surf, tx, 0, 95, stone_line)
+    # 石板内部纹理线
+    for ty in range(0, 96, 16):
+        for tx in range(0, 96, 16):
+            draw_hline(surf, tx + 8, tx + 15, ty + 8, stone_line2)
+            draw_vline(surf, tx + 8, ty, ty + 8, stone_line2)
+            draw_hline(surf, tx, tx + 7, ty + 8, stone_line2)
+            draw_vline(surf, tx + 4, ty + 8, ty + 15, stone_line2)
+    # 石板上的随机深浅斑点
+    for tx, ty in [(3,5),(18,3),(35,7),(50,2),(67,6),(82,4),
+                   (5,18),(22,22),(38,17),(55,20),(72,19),(88,21),
+                   (8,35),(25,38),(42,33),(58,36),(75,34),(90,37),
+                   (3,50),(20,53),(37,48),(53,51),(70,49),(85,52),
+                   (6,66),(23,69),(40,64),(56,67),(73,65),(88,68),
+                   (4,82),(21,85),(38,80),(54,83),(71,81),(86,84)]:
+        draw_pixel(surf, tx, ty, (170, 150, 110))
+
+    cx, cy = 48, 56  # 喷泉底座中心（稍微上移，让底座更饱满）
+
+    # ---- 底座（多层椭圆营造立体感，放大尺寸）----
     # 最外层阴影
-    for y in range(18, 32):
-        for x in range(32):
-            dx = abs(x - 16)
-            dy = y - 26
-            if dx * dx + dy * dy < 225:
+    for y in range(30, 92):
+        for x in range(96):
+            dx = abs(x - cx)
+            dy = y - cy
+            if (dx / 46) ** 2 + (dy / 28) ** 2 < 1.0:
                 draw_pixel(surf, x, y, (110, 108, 105))
     # 底座主体
-    for y in range(19, 31):
-        for x in range(2, 30):
-            dx = abs(x - 16)
-            dy = y - 26
-            if dx * dx + dy * dy < 196:
+    for y in range(32, 90):
+        for x in range(2, 94):
+            dx = abs(x - cx)
+            dy = y - cy
+            if (dx / 44) ** 2 + (dy / 26) ** 2 < 1.0:
                 draw_pixel(surf, x, y, (160, 158, 155))
     # 内层暗面
-    for y in range(20, 30):
-        for x in range(4, 28):
-            dx = abs(x - 16)
-            dy = y - 26
-            if dx * dx + dy * dy < 150:
+    for y in range(34, 88):
+        for x in range(6, 90):
+            dx = abs(x - cx)
+            dy = y - cy
+            if (dx / 40) ** 2 + (dy / 22) ** 2 < 1.0:
                 draw_pixel(surf, x, y, (145, 143, 140))
     # 内圈
-    for y in range(21, 29):
-        for x in range(6, 26):
-            dx = abs(x - 16)
-            dy = y - 26
-            if dx * dx + dy * dy < 110:
+    for y in range(36, 86):
+        for x in range(10, 86):
+            dx = abs(x - cx)
+            dy = y - cy
+            if (dx / 36) ** 2 + (dy / 18) ** 2 < 1.0:
                 draw_pixel(surf, x, y, (130, 128, 125))
 
-    # 石纹纹理
-    for tx, ty in [(8,22),(12,21),(18,23),(22,25),(10,27),(16,28),(7,25)]:
+    # 石纹纹理（底座上的深浅斑点）
+    stone_dark = [(16,38),(28,34),(40,40),(55,36),(68,42),(80,38),(90,44),
+                  (12,50),(24,54),(36,48),(50,52),(62,56),(74,50),(86,54),
+                  (18,62),(30,66),(44,60),(56,64),(68,68),(80,62),(92,66),
+                  (22,74),(36,76),(52,72),(66,78),(82,74)]
+    stone_light = [(20,40),(32,36),(46,38),(58,40),(70,44),(82,40),
+                   (14,52),(26,56),(40,50),(52,54),(66,52),(78,56),
+                   (20,64),(32,68),(48,62),(60,66),(74,64),(86,68)]
+    for tx, ty in stone_dark:
         draw_pixel(surf, tx, ty, (140, 138, 135))
-    for tx, ty in [(9,23),(14,22),(20,24),(13,27),(8,26)]:
+    for tx, ty in stone_light:
         draw_pixel(surf, tx, ty, (170, 168, 165))
 
     # ---- 水面 ----
-    for y in range(22, 28):
-        for x in range(8, 24):
-            dx = abs(x - 16)
-            dy = y - 26
-            if dx * dx + dy * dy < 80:
+    for y in range(40, 84):
+        for x in range(14, 82):
+            dx = abs(x - cx)
+            dy = y - cy
+            if (dx / 32) ** 2 + (dy / 16) ** 2 < 1.0:
                 draw_pixel(surf, x, y, (50, 100, 200))
-    # 水面波纹
-    for x in range(11, 18):
-        dx = abs(x - 14)
-        if dx < 3:
-            draw_pixel(surf, x, 24, (70, 125, 215))
-    for x in range(12, 17):
-        dx = abs(x - 14)
-        if dx < 2:
-            draw_pixel(surf, x, 25, (65, 118, 210))
+    # 水面波纹（同心弧线）
+    for y in range(42, 82):
+        for x in range(18, 78):
+            dx = abs(x - cx)
+            dy = y - cy
+            r = (dx / 28) ** 2 + (dy / 14) ** 2
+            if 0.3 < r < 0.5:
+                draw_pixel(surf, x, y, (70, 130, 220))
+            if 0.6 < r < 0.75:
+                draw_pixel(surf, x, y, (65, 120, 210))
     # 水面高光
-    draw_pixel(surf, 13, 24, (120, 180, 245))
-    draw_pixel(surf, 14, 23, (110, 175, 240))
-    draw_pixel(surf, 18, 25, (100, 165, 235))
+    for tx, ty in [(36,48),(40,46),(44,50),(48,47),(54,52),(58,49),(62,54)]:
+        draw_pixel(surf, tx, ty, (120, 180, 245))
+    for tx, ty in [(34,58),(38,60),(52,62),(56,64)]:
+        draw_pixel(surf, tx, ty, (100, 165, 235))
 
     # ---- 7个凹槽（均匀分布在底座椭圆边缘）----
-    # 椭圆中心(16,26)，rx≈13, ry≈5（底座椭圆的参数）
-    # 7个凹槽角度：从顶部开始顺时针，间隔 360/7 ≈ 51.43°
-    slot_cx, slot_cy = 16, 26
-    slot_rx, slot_ry = 12, 5
+    slot_rx, slot_ry = 40, 22
     for i in range(7):
         angle = math.radians(-90 + i * 360 / 7)
-        sx = int(slot_cx + slot_rx * math.cos(angle))
-        sy = int(slot_cy + slot_ry * math.sin(angle))
-        # 凹槽：3×3深色凹陷
-        for dy in range(-1, 2):
-            for dx in range(-1, 2):
+        sx = int(cx + slot_rx * math.cos(angle))
+        sy = int(cy + slot_ry * math.sin(angle))
+        # 凹槽：5×5深色凹陷
+        for dy in range(-2, 3):
+            for dx in range(-2, 3):
                 draw_pixel(surf, sx + dx, sy + dy, (55, 50, 45))
         # 凹槽中心更暗
         draw_pixel(surf, sx, sy, (35, 30, 25))
-        # 金色边框高光
-        draw_pixel(surf, sx + 1, sy - 1, (200, 170, 60))
-        draw_pixel(surf, sx - 1, sy + 1, (160, 130, 40))
+        # 凹槽内圈纹理
+        draw_pixel(surf, sx - 1, sy, (45, 40, 35))
+        draw_pixel(surf, sx + 1, sy, (45, 40, 35))
+        draw_pixel(surf, sx, sy - 1, (45, 40, 35))
+        draw_pixel(surf, sx, sy + 1, (45, 40, 35))
+        # 金色边框
+        draw_pixel(surf, sx + 2, sy - 2, (210, 180, 60))
+        draw_pixel(surf, sx + 3, sy - 1, (200, 170, 55))
+        draw_pixel(surf, sx - 2, sy + 2, (170, 140, 45))
+        draw_pixel(surf, sx - 3, sy + 1, (160, 130, 40))
 
-    # ---- 中心柱（加粗，带石质纹理）----
-    draw_rect_filled(surf, 14, 10, 4, 14, (130, 128, 125))
-    draw_rect_filled(surf, 15, 10, 2, 14, (155, 153, 150))
+    # ---- 中心柱 ----
+    draw_rect_filled(surf, 42, 16, 12, 44, (130, 128, 125))
+    draw_rect_filled(surf, 44, 16, 8, 44, (155, 153, 150))
     # 柱身纹理
-    draw_pixel(surf, 14, 14, (140, 138, 135))
-    draw_pixel(surf, 17, 16, (140, 138, 135))
-    draw_pixel(surf, 15, 18, (165, 163, 160))
+    for ty in range(18, 58, 4):
+        draw_pixel(surf, 42, ty, (140, 138, 135))
+        draw_pixel(surf, 53, ty + 2, (140, 138, 135))
+        draw_pixel(surf, 44, ty + 1, (165, 163, 160))
 
-    # ---- 顶部碗状结构（更立体）----
-    draw_rect_filled(surf, 10, 8, 12, 3, (140, 138, 135))
-    draw_rect_filled(surf, 11, 9, 10, 1, (160, 158, 155))
-    draw_rect_filled(surf, 12, 8, 8, 1, (165, 163, 160))
-    # 碗沿高光
-    draw_hline(surf, 11, 20, 8, (175, 173, 170))
+    # ---- 顶部碗状结构 ----
+    # 碗身（梯形）
+    for y in range(10, 18):
+        half_w = 15 - (y - 10)  # 上宽下窄
+        draw_hline(surf, cx - half_w, cx + half_w, y, (140, 138, 135))
+    # 碗内沿高光
+    draw_hline(surf, cx - 14, cx + 14, 10, (165, 163, 160))
+    draw_hline(surf, cx - 13, cx + 13, 11, (175, 173, 170))
+    # 碗沿
+    draw_hline(surf, cx - 15, cx + 15, 10, (180, 178, 175))
 
-    # ---- 水花（多层弧线）----
-    # 顶部水柱
-    draw_pixel(surf, 15, 5, (120, 185, 250))
-    draw_pixel(surf, 16, 4, (120, 185, 250))
-    # 第一层飞溅
-    draw_pixel(surf, 14, 3, (100, 165, 235))
-    draw_pixel(surf, 17, 3, (100, 165, 235))
-    # 第二层飞溅
-    draw_pixel(surf, 13, 2, (80, 145, 220))
-    draw_pixel(surf, 18, 2, (80, 145, 220))
+    # ---- 水花（从碗口喷出）----
+    # 中心水柱
+    draw_rect_filled(surf, 46, 0, 4, 12, (100, 170, 240))
+    draw_rect_filled(surf, 47, 0, 2, 12, (120, 190, 250))
     # 顶部水珠
-    draw_pixel(surf, 16, 1, (80, 140, 200))
+    draw_pixel(surf, 47, 0, (130, 200, 255))
+    draw_pixel(surf, 48, 0, (120, 190, 250))
+    # 第一层飞溅
+    draw_pixel(surf, 44, 1, (100, 170, 240))
+    draw_pixel(surf, 51, 1, (100, 170, 240))
+    draw_pixel(surf, 43, 3, (90, 160, 230))
+    draw_pixel(surf, 52, 3, (90, 160, 230))
+    # 第二层飞溅
+    draw_pixel(surf, 40, 5, (80, 150, 220))
+    draw_pixel(surf, 55, 5, (80, 150, 220))
+    draw_pixel(surf, 38, 8, (70, 140, 210))
+    draw_pixel(surf, 57, 8, (70, 140, 210))
     # 侧面水滴
-    draw_pixel(surf, 11, 6, (100, 170, 235))
-    draw_pixel(surf, 20, 5, (100, 170, 235))
-    draw_pixel(surf, 10, 7, (80, 150, 215))
-    draw_pixel(surf, 21, 7, (80, 150, 215))
-    draw_pixel(surf, 9, 8, (70, 135, 205))
-    draw_pixel(surf, 22, 8, (70, 135, 205))
+    draw_pixel(surf, 36, 11, (60, 130, 200))
+    draw_pixel(surf, 59, 11, (60, 130, 200))
+    draw_pixel(surf, 34, 14, (50, 120, 190))
+    draw_pixel(surf, 61, 14, (50, 120, 190))
+    # 碗口溢出水滴
+    draw_pixel(surf, 34, 18, (80, 150, 220))
+    draw_pixel(surf, 61, 18, (80, 150, 220))
+    draw_pixel(surf, 32, 20, (70, 140, 210))
+    draw_pixel(surf, 63, 20, (70, 140, 210))
 
     pygame.image.save(surf, path)
 

@@ -1263,27 +1263,15 @@ def _place_fountain_square(ground, structures, decorations, collision, interacti
         ground[sy + sh - 1][x] = GID_PATH_DIRT
 
     fx, fy = sx + sw // 2 - 3, sy + sh // 2 - 3
+    # 喷泉区域：structures层设为空（喷泉外观由精灵渲染）
     for dy in range(6):
         for dx in range(6):
-            structures[fy + dy][fx + dx] = GID_FOUNTAIN_BASE
+            structures[fy + dy][fx + dx] = GID_EMPTY
+    # 碰撞区域：仅底座核心部分（4×3 tiles），留出外围1格供玩家靠近交互
+    # 底座在精灵中偏下方，对应 tile 区域为 (fx+1, fy+2) 到 (fx+4, fy+4)
+    for dy in range(2, 5):
+        for dx in range(1, 5):
             collision[fy + dy][fx + dx] = GID_COLLISION
-    structures[fy + 2][fx + 2] = GID_FOUNTAIN_WATER
-    structures[fy + 2][fx + 3] = GID_FOUNTAIN_WATER
-    structures[fy + 3][fx + 2] = GID_FOUNTAIN_WATER
-    structures[fy + 3][fx + 3] = GID_FOUNTAIN_WATER
-
-    # 7个凹槽 tile（替换对应位置的 BASE tile）
-    # 凹槽在6×6网格中的位置：
-    #   0: tile(3,0) 顶部  1: tile(4,1) 右上  2: tile(5,3) 右侧
-    #   3: tile(4,4) 右下  4: tile(1,4) 左下  5: tile(0,3) 左侧
-    #   6: tile(1,1) 左上
-    structures[fy + 0][fx + 3] = GID_FOUNTAIN_SLOT_0
-    structures[fy + 1][fx + 4] = GID_FOUNTAIN_SLOT_1
-    structures[fy + 3][fx + 5] = GID_FOUNTAIN_SLOT_2
-    structures[fy + 4][fx + 4] = GID_FOUNTAIN_SLOT_3
-    structures[fy + 4][fx + 1] = GID_FOUNTAIN_SLOT_4
-    structures[fy + 3][fx + 0] = GID_FOUNTAIN_SLOT_5
-    structures[fy + 1][fx + 1] = GID_FOUNTAIN_SLOT_6
 
     interactive_objects.append({
         "x": fx * TILE_SIZE, "y": fy * TILE_SIZE,

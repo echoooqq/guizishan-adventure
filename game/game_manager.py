@@ -964,12 +964,19 @@ class GameManager:
         from entities.interactive_object import InteractiveObject
         from entities.npc import NPC
 
-        # 从地图交互对象中查找喷泉（type="fountain"）
+        # 从地图交互对象中查找喷泉（通过 display_name 或坐标识别）
         fountain_obj = None
         for obj in self.interactive_objects:
-            if hasattr(obj, 'properties') and obj.properties.get("type") == "fountain":
-                fountain_obj = obj
-                break
+            if hasattr(obj, 'properties'):
+                # 匹配方式1：display_name 为"喷泉"
+                if obj.properties.get("display_name") == "喷泉":
+                    fountain_obj = obj
+                    break
+                # 匹配方式2：坐标在喷泉广场中心附近
+                if (obj.x >= 900 and obj.x <= 930 and
+                    obj.y >= 820 and obj.y <= 850):
+                    fountain_obj = obj
+                    break
 
         if fountain_obj is not None:
             fountain_x = fountain_obj.x
@@ -990,6 +997,7 @@ class GameManager:
                 "color": (100, 140, 180),
                 "puzzle_id": "fountain",
                 "mechanism_text": "",
+                "sprite_key": "fountain",  # 使用96×96喷泉精灵渲染
             },
         )
 
@@ -2746,17 +2754,16 @@ class GameManager:
                 self._outro_timer = 0.0
 
         elif self._outro_phase == 1:
-            # 阶段1：秘境消散
-            self._outro_fade_alpha = max(0, int(255 - self._outro_timer * 80))
+            # 阶段1：白光爆发 → 渐隐到校园场景
             if self._outro_timer > 4.0:
                 self._outro_phase = 2
                 self._outro_timer = 0.0
                 self._outro_text_shown = False
 
         elif self._outro_phase == 2:
-            # 阶段2：结局文字
+            # 阶段2：结局文字（延长停留时间让玩家看清）
             self._outro_text_shown = True
-            if self._outro_timer > 5.0:
+            if self._outro_timer > 10.0:
                 self._outro_phase = 3
                 self._outro_timer = 0.0
 
@@ -2811,23 +2818,47 @@ class GameManager:
                 self.internal_surface.blit(text, text_rect)
 
         elif self._outro_phase == 1:
-            # 秘境消散
-            # 先画游戏场景（简化版）
-            self.internal_surface.fill((40, 80, 40))
-            # 绿色消散效果
-            if self._outro_fade_alpha > 0:
-                fade_surf = pygame.Surface((INTERNAL_WIDTH, INTERNAL_HEIGHT), pygame.SRCALPHA)
-                fade_surf.fill((60, 180, 80, self._outro_fade_alpha))
-                self.internal_surface.blit(fade_surf, (0, 0))
-            # 消散文字
-            if self._outro_timer > 1.0:
-                text_alpha = min(255, int((self._outro_timer - 1.0) * 150))
-                text = self.info_font.render("秘境之力缓缓消散……桂子山重归现实。", True, COLOR_WHITE)
-                text.set_alpha(text_alpha)
-                text_rect = text.get_rect(
-                    centerx=INTERNAL_WIDTH // 2, centery=INTERNAL_HEIGHT // 2
-                )
-                self.internal_surface.blit(text, text_rect)
+            # 白光爆发 → 渐隐到校园场景
+            if self._outro_timer < 1.0:
+                # 白光从中心扩展到全屏（1秒）
+                progress = self._outro_timer / 1.0
+                cx, cy = INTERNAL_WIDTH // 2, INTERNAL_HEIGHT // 2
+                # 多层白/金色光芒扩展
+                max_radius = int(math.sqrt(cx * cx + cy * cy))
+                radius = int(max_radius * progress)
+                # 外层金色光晕
+                glow_surf = pygame.Surface((INTERNAL_WIDTH, INTERNAL_HEIGHT), pygame.SRCALPHA)
+                for r in range(radius, 0, -3):
+                    alpha = int(min(255, progress * 300) * (1 - r / max(radius, 1)) * 0.6)
+                    pygame.draw.circle(glow_surf, (255, 240, 180, alpha), (cx, cy), r)
+                self.internal_surface.blit(glow_surf, (0, 0))
+                # 内层白色亮核
+                core_alpha = int(min(255, progress * 400))
+                white_surf = pygame.Surface((INTERNAL_WIDTH, INTERNAL_HEIGHT), pygame.SRCALPHA)
+                pygame.draw.circle(white_surf, (255, 255, 255, core_alpha), (cx, cy), int(radius * 0.7))
+                self.internal_surface.blit(white_surf, (0, 0))
+            elif self._outro_timer < 2.0:
+                # 全屏白光，逐渐减弱（1秒）
+                fade = 1.0 - (self._outro_timer - 1.0)
+                white_alpha = int(255 * fade)
+                # 底层：暖色调校园场景
+                self.internal_surface.fill((200, 180, 140))
+                # 白光覆盖层
+                white_surf = pygame.Surface((INTERNAL_WIDTH, INTERNAL_HEIGHT), pygame.SRCALPHA)
+                white_surf.fill((255, 255, 255, white_alpha))
+                self.internal_surface.blit(white_surf, (0, 0))
+            else:
+                # 校园场景 + 消散文字
+                self.internal_surface.fill((200, 180, 140))
+                # 淡入文字
+                if self._outro_timer > 2.5:
+                    text_alpha = min(255, int((self._outro_timer - 2.5) * 200))
+                    text = self.info_font.render("秘境之力缓缓消散……桂子山重归现实。", True, COLOR_WHITE)
+                    text.set_alpha(text_alpha)
+                    text_rect = text.get_rect(
+                        centerx=INTERNAL_WIDTH // 2, centery=INTERNAL_HEIGHT // 2
+                    )
+                    self.internal_surface.blit(text, text_rect)
 
         elif self._outro_phase == 2:
             # 结局文字
@@ -2901,13 +2932,13 @@ class GameManager:
                          (INTERNAL_WIDTH // 4, 48),
                          (3 * INTERNAL_WIDTH // 4, 48), 1)
 
-        # 文字逐行显示
+        # 文字逐行显示（每行间隔1.0秒，淡入更缓慢）
         y = 60
         for i, line in enumerate(lines):
             # 逐行延迟显示
-            line_delay = i * 0.6
+            line_delay = i * 1.0
             if self._outro_timer > line_delay:
-                alpha = min(255, int((self._outro_timer - line_delay) * 200))
+                alpha = min(255, int((self._outro_timer - line_delay) * 120))
                 line_surf = self.info_font.render(line, True, COLOR_WHITE)
                 line_surf.set_alpha(alpha)
                 line_rect = line_surf.get_rect(
@@ -2916,8 +2947,8 @@ class GameManager:
                 self.internal_surface.blit(line_surf, line_rect)
             y += 16
 
-        # 提示
-        if self._outro_timer > len(lines) * 0.6 + 1.0:
+        # 提示（字幕后延迟更久才显示）
+        if self._outro_timer > len(lines) * 1.0 + 2.0:
             hint = self.info_font.render("按 回车键 继续", True, (150, 150, 170))
             hint_rect = hint.get_rect(
                 centerx=INTERNAL_WIDTH // 2, centery=INTERNAL_HEIGHT - 15
