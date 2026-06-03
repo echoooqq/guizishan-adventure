@@ -57,7 +57,7 @@ class InteractiveObject:
         self.on_interact = None
         self.color = self.properties.get("color", (120, 100, 80))
         self.item_id = self.properties.get("item_id", "")
-        self.sprite_key = self.properties.get("sprite", "")
+        self.sprite_key = self.properties.get("sprite_key", "") or self.properties.get("sprite", "")
         self._sprite = None
 
     def _default_prompt(self):

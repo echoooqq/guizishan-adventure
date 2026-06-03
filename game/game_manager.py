@@ -463,13 +463,13 @@ class GameManager:
 
         badge_obj = InteractiveObject(
             x=pos[0] - 6, y=pos[1] + 2,
-            width=12, height=12,
+            width=16, height=16,
             interactive_type="pickup",
             properties={
                 "prompt_text": "拾取徽章碎片",
-                "invisible": True,
                 "item_id": "badge_1",
                 "pickup_text": "获得了桂花徽章碎片·壹！",
+                "sprite_key": "badge_pickup",
             },
         )
 
@@ -646,9 +646,9 @@ class GameManager:
             interactive_type="pickup",
             properties={
                 "prompt_text": "拾取徽章碎片",
-                "color": (255, 215, 0),
                 "item_id": "badge_2",
                 "pickup_text": "在密室的基座上，你发现了桂花徽章碎片·贰！散发着温润的光芒……",
+                "sprite_key": "badge_pickup",
             },
         )
 
@@ -929,31 +929,32 @@ class GameManager:
         self.interactive_objects.append(flowerbed)
 
     def _create_boya_badge_pickup(self):
-        """解谜完成后在雕塑位置生成徽章碎片拾取物，并隐藏雕塑"""
+        """解谜完成后在雕塑前方生成徽章碎片拾取物，并隐藏雕塑"""
         from entities.interactive_object import InteractiveObject
 
         # 隐藏雕塑
         if self._boya_sculpture_obj:
             self._boya_sculpture_obj.properties["invisible"] = True
 
-        # 在雕塑位置生成徽章碎片
+        # 在雕塑与南方位地砖中间生成徽章碎片
         if self._boya_badge_obj is None:
             sculpture = self._boya_sculpture_obj
             if sculpture:
-                bx = sculpture.x + sculpture.width / 2 - 6
-                by = sculpture.y + sculpture.height / 2 - 6
+                # 雕塑中心到南地砖中心 = 32像素，偏左上方避免重叠
+                bx = sculpture.x + sculpture.width / 2 - 8
+                by = sculpture.y + sculpture.height / 2 + 10
             else:
                 bx = 85 * TILE_SIZE + 10
-                by = 13 * TILE_SIZE + 10
+                by = 13 * TILE_SIZE + 26
 
             badge_obj = InteractiveObject(
                 x=bx, y=by,
-                width=12, height=12,
+                width=16, height=16,
                 interactive_type="pickup",
                 properties={
                     "prompt_text": "拾取徽章碎片",
                     "item_id": "badge_4",
-                    "sprite": "badge_pickup",
+                    "sprite_key": "badge_pickup",
                 },
             )
             self.interactive_objects.append(badge_obj)
@@ -963,14 +964,26 @@ class GameManager:
         from entities.interactive_object import InteractiveObject
         from entities.npc import NPC
 
-        spawn_x, spawn_y = self.tile_map.get_spawn_position()
+        # 从地图交互对象中查找喷泉（type="fountain"）
+        fountain_obj = None
+        for obj in self.interactive_objects:
+            if hasattr(obj, 'properties') and obj.properties.get("type") == "fountain":
+                fountain_obj = obj
+                break
 
-        fountain_x = spawn_x
-        fountain_y = spawn_y + 96
+        if fountain_obj is not None:
+            fountain_x = fountain_obj.x
+            fountain_y = fountain_obj.y
+            # 移除地图原始的 examine 类型喷泉对象，替换为 mechanism 类型
+            self.interactive_objects.remove(fountain_obj)
+        else:
+            # 降级：使用喷泉广场中心坐标（tile 57,52 → 像素 912,832）
+            fountain_x = 57 * TILE_SIZE
+            fountain_y = 52 * TILE_SIZE
 
         fountain = InteractiveObject(
             x=fountain_x, y=fountain_y,
-            width=20, height=20,
+            width=96, height=96,
             interactive_type="mechanism",
             properties={
                 "prompt_text": "喷泉基座",
@@ -1000,8 +1013,9 @@ class GameManager:
         fountain.on_interact = on_fountain_interact
         self.interactive_objects.append(fountain)
 
+        # 守护者放在喷泉东侧约2格处，面朝左（朝向喷泉）
         guardian = NPC(
-            x=fountain_x + 24, y=fountain_y,
+            x=fountain_x + 96 + 32, y=fountain_y + 48,
             npc_id="guardian",
             dialogue_id="guardian",
             properties={
@@ -1279,20 +1293,6 @@ class GameManager:
                     {"default": [
                         {"speaker": "", "text": "全部答对！管理员递给你一本古旧典籍和一张索书号便签。"},
                         {"speaker": "", "text": "索书号便签上写着：'K291.5/Z3'。去2楼找到对应的书架放置书籍吧！"},
-                    ]},
-                    start_key="default",
-                    on_complete=self._on_dialog_complete,
-                    game_state=self._get_dialog_game_state(),
-                )
-
-        elif puzzle is self.boya_puzzle:
-            if self.boya_puzzle.solved:
-                self.puzzle_manager.solve("boya", self.player.inventory)
-                self.state = GameState.DIALOG
-                self.dialog_box.start(
-                    {"default": [
-                        {"speaker": "", "text": "地砖阵法破解！广场中央的雕塑缓缓移开了……"},
-                        {"speaker": "", "text": "获得了桂花徽章碎片·肆！"},
                     ]},
                     start_key="default",
                     on_complete=self._on_dialog_complete,

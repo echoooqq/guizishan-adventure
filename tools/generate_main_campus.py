@@ -77,8 +77,16 @@ GID_NANHU_DOOR = 59
 GID_NANHU_SIGN = 60
 GID_NANHU_AC = 61
 GID_NANHU_LOBBY_LIGHT = 62
+# 喷泉底座凹槽 tile（7个凹槽分布在6×6网格的不同位置）
+GID_FOUNTAIN_SLOT_0 = 63  # 顶部凹槽 - tile(3,0)
+GID_FOUNTAIN_SLOT_1 = 64  # 右上凹槽 - tile(4,1)
+GID_FOUNTAIN_SLOT_2 = 65  # 右侧凹槽 - tile(5,3)
+GID_FOUNTAIN_SLOT_3 = 66  # 右下凹槽 - tile(4,4)
+GID_FOUNTAIN_SLOT_4 = 67  # 左下凹槽 - tile(1,4)
+GID_FOUNTAIN_SLOT_5 = 68  # 左侧凹槽 - tile(0,3)
+GID_FOUNTAIN_SLOT_6 = 69  # 左上凹槽 - tile(1,1)
 
-TILE_COUNT = 62
+TILE_COUNT = 69
 
 SOLID_GIDS = {
     GID_WALL_BRICK, GID_WALL_BRICK_TOP, GID_WALL_GRAY,
@@ -93,7 +101,45 @@ SOLID_GIDS = {
     GID_GYM_WALL, GID_GYM_WINDOW, GID_GYM_ROOF_CENTER, GID_GYM_ROOF_SIDE, GID_GYM_VENT, GID_GYM_SIGN,
     GID_DINING_WALL, GID_DINING_WINDOW, GID_DINING_ROOF, GID_DINING_AWNING, GID_DINING_CHIMNEY, GID_DINING_SIGN, GID_DINING_MENU,
     GID_NANHU_WALL, GID_NANHU_GLASS, GID_NANHU_ROOF, GID_NANHU_ROOF_RAIL, GID_NANHU_AC, GID_NANHU_SIGN,
+    GID_FOUNTAIN_SLOT_0, GID_FOUNTAIN_SLOT_1, GID_FOUNTAIN_SLOT_2, GID_FOUNTAIN_SLOT_3,
+    GID_FOUNTAIN_SLOT_4, GID_FOUNTAIN_SLOT_5, GID_FOUNTAIN_SLOT_6,
 }
+
+
+def _draw_fountain_base_tile(surface, x, rect):
+    """绘制喷泉底座 tile 的基础外观（不含凹槽）"""
+    surface.fill((76, 153, 0), rect)
+    pygame.draw.ellipse(surface, (120, 118, 115), (x + 0, 1, 16, 14))
+    pygame.draw.ellipse(surface, (160, 158, 155), (x + 1, 2, 14, 12))
+    pygame.draw.ellipse(surface, (145, 143, 140), (x + 2, 3, 12, 10))
+    pygame.draw.ellipse(surface, (130, 128, 125), (x + 3, 4, 10, 8))
+    for tx, ty in [(x+3,5),(x+6,4),(x+10,6),(x+12,8),(x+5,10),(x+9,11),(x+2,8)]:
+        surface.set_at((tx, ty), (140, 138, 135))
+    for tx, ty in [(x+4,6),(x+8,5),(x+11,9),(x+7,10),(x+3,9)]:
+        surface.set_at((tx, ty), (170, 168, 165))
+    pygame.draw.ellipse(surface, (50, 100, 200), (x + 4, 5, 8, 6))
+    pygame.draw.arc(surface, (80, 140, 220), (x + 5, 6, 5, 3), 0.2, 2.9, 1)
+    pygame.draw.arc(surface, (70, 130, 215), (x + 6, 7, 4, 2), 0.5, 2.5, 1)
+    surface.set_at((x + 6, 6), (120, 180, 245))
+    surface.set_at((x + 9, 8), (100, 165, 235))
+
+
+def _draw_slot_marker(surface, sx, sy):
+    """在指定位置绘制凹槽标记（3×3深色凹陷+金色边框）"""
+    # 凹槽凹陷（深色）
+    for dy in range(-1, 2):
+        for dx in range(-1, 2):
+            px, py = sx + dx, sy + dy
+            if 0 <= px < surface.get_width() and 0 <= py < TILE_SIZE:
+                surface.set_at((px, py), (60, 55, 50))
+    # 凹槽中心（更暗）
+    if 0 <= sx < surface.get_width() and 0 <= sy < TILE_SIZE:
+        surface.set_at((sx, sy), (40, 35, 30))
+    # 金色边框高光（右上角）
+    if sx + 1 < surface.get_width() and sy - 1 >= 0:
+        surface.set_at((sx + 1, sy - 1), (200, 170, 60))
+    if sx - 1 >= 0 and sy + 1 < TILE_SIZE:
+        surface.set_at((sx - 1, sy + 1), (160, 130, 40))
 
 
 def create_tileset(output_path):
@@ -240,19 +286,89 @@ def _draw_tile(surface, gid, x):
         pygame.draw.rect(surface, (100, 100, 100), (x, 10, TILE_SIZE, 2))
     elif gid == GID_FOUNTAIN_BASE:
         surface.fill((76, 153, 0), rect)
-        pygame.draw.ellipse(surface, (160, 160, 160), (x + 1, 2, 14, 12))
-        pygame.draw.ellipse(surface, (130, 130, 130), (x + 3, 4, 10, 8))
-        pygame.draw.ellipse(surface, (65, 105, 225), (x + 4, 5, 8, 6))
+        # 多层石质底座（外深内浅渐变，营造立体感）
+        pygame.draw.ellipse(surface, (120, 118, 115), (x + 0, 1, 16, 14))  # 最外层阴影
+        pygame.draw.ellipse(surface, (160, 158, 155), (x + 1, 2, 14, 12))  # 底座主体
+        pygame.draw.ellipse(surface, (145, 143, 140), (x + 2, 3, 12, 10))  # 内层暗面
+        pygame.draw.ellipse(surface, (130, 128, 125), (x + 3, 4, 10, 8))   # 内圈
+        # 石纹纹理（深浅交替像素点）
+        for tx, ty in [(x+3,5),(x+6,4),(x+10,6),(x+12,8),(x+5,10),(x+9,11),(x+2,8)]:
+            surface.set_at((tx, ty), (140, 138, 135))
+        for tx, ty in [(x+4,6),(x+8,5),(x+11,9),(x+7,10),(x+3,9)]:
+            surface.set_at((tx, ty), (170, 168, 165))
+        # 水面
+        pygame.draw.ellipse(surface, (50, 100, 200), (x + 4, 5, 8, 6))
+        # 水面波纹
+        pygame.draw.arc(surface, (80, 140, 220), (x + 5, 6, 5, 3), 0.2, 2.9, 1)
+        pygame.draw.arc(surface, (70, 130, 215), (x + 6, 7, 4, 2), 0.5, 2.5, 1)
+        # 水面高光
+        surface.set_at((x + 6, 6), (120, 180, 245))
+        surface.set_at((x + 9, 8), (100, 165, 235))
     elif gid == GID_FOUNTAIN_WATER:
         surface.fill((76, 153, 0), rect)
-        pygame.draw.ellipse(surface, (160, 160, 160), (x + 1, 2, 14, 12))
-        pygame.draw.ellipse(surface, (130, 130, 130), (x + 3, 4, 10, 8))
-        pygame.draw.ellipse(surface, (65, 105, 225), (x + 4, 5, 8, 6))
-        pygame.draw.rect(surface, (160, 160, 160), (x + 7, 1, 2, 4))
-        for dy in range(3):
-            surface.set_at((x + 6, 1 + dy), (100, 149, 237))
-            surface.set_at((x + 9, 1 + dy), (100, 149, 237))
-        pygame.draw.circle(surface, (200, 220, 255), (x + 8, 1), 2)
+        # 底座（同 BASE）
+        pygame.draw.ellipse(surface, (120, 118, 115), (x + 0, 1, 16, 14))
+        pygame.draw.ellipse(surface, (160, 158, 155), (x + 1, 2, 14, 12))
+        pygame.draw.ellipse(surface, (145, 143, 140), (x + 2, 3, 12, 10))
+        pygame.draw.ellipse(surface, (130, 128, 125), (x + 3, 4, 10, 8))
+        for tx, ty in [(x+3,5),(x+6,4),(x+10,6),(x+12,8),(x+5,10),(x+9,11),(x+2,8)]:
+            surface.set_at((tx, ty), (140, 138, 135))
+        for tx, ty in [(x+4,6),(x+8,5),(x+11,9),(x+7,10),(x+3,9)]:
+            surface.set_at((tx, ty), (170, 168, 165))
+        # 水面
+        pygame.draw.ellipse(surface, (50, 100, 200), (x + 4, 5, 8, 6))
+        pygame.draw.arc(surface, (80, 140, 220), (x + 5, 6, 5, 3), 0.2, 2.9, 1)
+        pygame.draw.arc(surface, (70, 130, 215), (x + 6, 7, 4, 2), 0.5, 2.5, 1)
+        surface.set_at((x + 6, 6), (120, 180, 245))
+        surface.set_at((x + 9, 8), (100, 165, 235))
+        # 中心柱（加粗，带石质纹理）
+        pygame.draw.rect(surface, (130, 128, 125), (x + 6, 0, 4, 6))
+        pygame.draw.rect(surface, (155, 153, 150), (x + 7, 0, 2, 6))
+        # 顶部碗状结构（更立体）
+        pygame.draw.rect(surface, (140, 138, 135), (x + 4, 0, 8, 2))
+        pygame.draw.rect(surface, (160, 158, 155), (x + 5, 1, 6, 1))
+        # 水花（多层水滴弧线）
+        surface.set_at((x + 7, 14), (120, 185, 250))  # 向上水柱
+        surface.set_at((x + 8, 14), (120, 185, 250))
+        surface.set_at((x + 6, 13), (100, 165, 235))
+        surface.set_at((x + 9, 13), (100, 165, 235))
+        surface.set_at((x + 5, 12), (80, 145, 220))
+        surface.set_at((x + 10, 12), (80, 145, 220))
+        # 水滴飞溅
+        surface.set_at((x + 4, 11), (90, 155, 225))
+        surface.set_at((x + 11, 11), (90, 155, 225))
+        surface.set_at((x + 3, 10), (70, 135, 210))
+        surface.set_at((x + 12, 10), (70, 135, 210))
+    # 喷泉底座凹槽 tile：底座外观 + 凹槽标记
+    # 每个凹槽在 tile 内的相对位置不同，根据6×6网格中的位置精确绘制
+    elif gid == GID_FOUNTAIN_SLOT_0:
+        # 顶部凹槽 - tile(3,0)，凹槽在 tile 内 (0, 14)
+        _draw_fountain_base_tile(surface, x, rect)
+        _draw_slot_marker(surface, x + 0, 14)
+    elif gid == GID_FOUNTAIN_SLOT_1:
+        # 右上凹槽 - tile(4,1)，凹槽在 tile 内 (14, 11)
+        _draw_fountain_base_tile(surface, x, rect)
+        _draw_slot_marker(surface, x + 14, 11)
+    elif gid == GID_FOUNTAIN_SLOT_2:
+        # 右侧凹槽 - tile(5,3)，凹槽在 tile 内 (5, 8)
+        _draw_fountain_base_tile(surface, x, rect)
+        _draw_slot_marker(surface, x + 5, 8)
+    elif gid == GID_FOUNTAIN_SLOT_3:
+        # 右下凹槽 - tile(4,4)，凹槽在 tile 内 (0, 15)
+        _draw_fountain_base_tile(surface, x, rect)
+        _draw_slot_marker(surface, x + 0, 15)
+    elif gid == GID_FOUNTAIN_SLOT_4:
+        # 左下凹槽 - tile(1,4)，凹槽在 tile 内 (16, 15)
+        _draw_fountain_base_tile(surface, x, rect)
+        _draw_slot_marker(surface, x + 15, 15)
+    elif gid == GID_FOUNTAIN_SLOT_5:
+        # 左侧凹槽 - tile(0,3)，凹槽在 tile 内 (11, 8)
+        _draw_fountain_base_tile(surface, x, rect)
+        _draw_slot_marker(surface, x + 11, 8)
+    elif gid == GID_FOUNTAIN_SLOT_6:
+        # 左上凹槽 - tile(1,1)，凹槽在 tile 内 (2, 11)
+        _draw_fountain_base_tile(surface, x, rect)
+        _draw_slot_marker(surface, x + 2, 11)
     elif gid == GID_SCULPTURE:
         surface.fill((76, 153, 0), rect)
         pygame.draw.rect(surface, (140, 140, 140), (x + 4, 10, 8, 5))
@@ -1156,6 +1272,19 @@ def _place_fountain_square(ground, structures, decorations, collision, interacti
     structures[fy + 3][fx + 2] = GID_FOUNTAIN_WATER
     structures[fy + 3][fx + 3] = GID_FOUNTAIN_WATER
 
+    # 7个凹槽 tile（替换对应位置的 BASE tile）
+    # 凹槽在6×6网格中的位置：
+    #   0: tile(3,0) 顶部  1: tile(4,1) 右上  2: tile(5,3) 右侧
+    #   3: tile(4,4) 右下  4: tile(1,4) 左下  5: tile(0,3) 左侧
+    #   6: tile(1,1) 左上
+    structures[fy + 0][fx + 3] = GID_FOUNTAIN_SLOT_0
+    structures[fy + 1][fx + 4] = GID_FOUNTAIN_SLOT_1
+    structures[fy + 3][fx + 5] = GID_FOUNTAIN_SLOT_2
+    structures[fy + 4][fx + 4] = GID_FOUNTAIN_SLOT_3
+    structures[fy + 4][fx + 1] = GID_FOUNTAIN_SLOT_4
+    structures[fy + 3][fx + 0] = GID_FOUNTAIN_SLOT_5
+    structures[fy + 1][fx + 1] = GID_FOUNTAIN_SLOT_6
+
     interactive_objects.append({
         "x": fx * TILE_SIZE, "y": fy * TILE_SIZE,
         "width": 6 * TILE_SIZE, "height": 6 * TILE_SIZE,
@@ -1568,14 +1697,17 @@ def create_tmx(ground, terrain, structures, decorations, collision,
     image.set("width", str(TILE_COUNT * TILE_SIZE))
     image.set("height", str(TILE_SIZE))
 
-    for local_id in sorted(gid - 1 for gid in SOLID_GIDS):
+    # 为所有 tile 创建元素，确保 pytmx 正确分配 images 数组
+    solid_local_ids = set(gid - 1 for gid in SOLID_GIDS)
+    for local_id in range(TILE_COUNT):
         tile_elem = ET.SubElement(tileset, "tile")
         tile_elem.set("id", str(local_id))
-        props = ET.SubElement(tile_elem, "properties")
-        prop = ET.SubElement(props, "property")
-        prop.set("name", "solid")
-        prop.set("type", "bool")
-        prop.set("value", "true")
+        if local_id in solid_local_ids:
+            props = ET.SubElement(tile_elem, "properties")
+            prop = ET.SubElement(props, "property")
+            prop.set("name", "solid")
+            prop.set("type", "bool")
+            prop.set("value", "true")
 
     layer_id = 1
     next_object_id = 1

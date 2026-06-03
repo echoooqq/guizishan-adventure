@@ -679,89 +679,182 @@ def create_flowerbed(path):
 
 
 def create_fountain(path):
-    """喷泉: 32×32"""
+    """喷泉: 32×32，含7个凹槽的精美喷泉"""
     surf = make_surface(32, 32)
-    # 底座 - 外圈
-    for y in range(20, 32):
+
+    # ---- 底座（多层椭圆营造立体感）----
+    # 最外层阴影
+    for y in range(18, 32):
         for x in range(32):
             dx = abs(x - 16)
             dy = y - 26
-            if dx * dx + dy * dy < 196:
-                draw_pixel(surf, x, y, (150, 150, 155))
-            elif dx * dx + dy * dy < 225:
-                draw_pixel(surf, x, y, (130, 130, 135))
-    # 底座高光
-    for y in range(21, 28):
-        for x in range(8, 24):
+            if dx * dx + dy * dy < 225:
+                draw_pixel(surf, x, y, (110, 108, 105))
+    # 底座主体
+    for y in range(19, 31):
+        for x in range(2, 30):
             dx = abs(x - 16)
             dy = y - 26
-            if dx * dx + dy * dy < 120:
-                draw_pixel(surf, x, y, (165, 165, 170))
-    # 水面
+            if dx * dx + dy * dy < 196:
+                draw_pixel(surf, x, y, (160, 158, 155))
+    # 内层暗面
+    for y in range(20, 30):
+        for x in range(4, 28):
+            dx = abs(x - 16)
+            dy = y - 26
+            if dx * dx + dy * dy < 150:
+                draw_pixel(surf, x, y, (145, 143, 140))
+    # 内圈
+    for y in range(21, 29):
+        for x in range(6, 26):
+            dx = abs(x - 16)
+            dy = y - 26
+            if dx * dx + dy * dy < 110:
+                draw_pixel(surf, x, y, (130, 128, 125))
+
+    # 石纹纹理
+    for tx, ty in [(8,22),(12,21),(18,23),(22,25),(10,27),(16,28),(7,25)]:
+        draw_pixel(surf, tx, ty, (140, 138, 135))
+    for tx, ty in [(9,23),(14,22),(20,24),(13,27),(8,26)]:
+        draw_pixel(surf, tx, ty, (170, 168, 165))
+
+    # ---- 水面 ----
     for y in range(22, 28):
         for x in range(8, 24):
             dx = abs(x - 16)
             dy = y - 26
             if dx * dx + dy * dy < 80:
-                draw_pixel(surf, x, y, (80, 140, 200))
+                draw_pixel(surf, x, y, (50, 100, 200))
+    # 水面波纹
+    for x in range(11, 18):
+        dx = abs(x - 14)
+        if dx < 3:
+            draw_pixel(surf, x, 24, (70, 125, 215))
+    for x in range(12, 17):
+        dx = abs(x - 14)
+        if dx < 2:
+            draw_pixel(surf, x, 25, (65, 118, 210))
     # 水面高光
-    draw_pixel(surf, 13, 24, (120, 180, 240))
-    draw_pixel(surf, 14, 23, (120, 180, 240))
-    draw_pixel(surf, 18, 25, (120, 180, 240))
-    # 中心柱
-    draw_rect_filled(surf, 14, 12, 4, 12, (140, 140, 145))
-    draw_rect_filled(surf, 15, 12, 2, 12, (155, 155, 160))
-    # 顶部碗
-    draw_rect_filled(surf, 11, 10, 10, 3, (140, 140, 145))
-    draw_rect_filled(surf, 12, 11, 8, 1, (155, 155, 160))
-    # 水花
-    draw_pixel(surf, 15, 6, (120, 180, 240))
-    draw_pixel(surf, 16, 5, (120, 180, 240))
-    draw_pixel(surf, 14, 4, (100, 160, 220))
-    draw_pixel(surf, 17, 4, (100, 160, 220))
-    draw_pixel(surf, 13, 3, (80, 140, 200))
-    draw_pixel(surf, 18, 3, (80, 140, 200))
-    draw_pixel(surf, 16, 2, (80, 140, 200))
-    # 水滴
-    draw_pixel(surf, 12, 8, (100, 170, 230))
-    draw_pixel(surf, 19, 7, (100, 170, 230))
-    draw_pixel(surf, 11, 9, (80, 150, 210))
-    draw_pixel(surf, 20, 9, (80, 150, 210))
+    draw_pixel(surf, 13, 24, (120, 180, 245))
+    draw_pixel(surf, 14, 23, (110, 175, 240))
+    draw_pixel(surf, 18, 25, (100, 165, 235))
+
+    # ---- 7个凹槽（均匀分布在底座椭圆边缘）----
+    # 椭圆中心(16,26)，rx≈13, ry≈5（底座椭圆的参数）
+    # 7个凹槽角度：从顶部开始顺时针，间隔 360/7 ≈ 51.43°
+    slot_cx, slot_cy = 16, 26
+    slot_rx, slot_ry = 12, 5
+    for i in range(7):
+        angle = math.radians(-90 + i * 360 / 7)
+        sx = int(slot_cx + slot_rx * math.cos(angle))
+        sy = int(slot_cy + slot_ry * math.sin(angle))
+        # 凹槽：3×3深色凹陷
+        for dy in range(-1, 2):
+            for dx in range(-1, 2):
+                draw_pixel(surf, sx + dx, sy + dy, (55, 50, 45))
+        # 凹槽中心更暗
+        draw_pixel(surf, sx, sy, (35, 30, 25))
+        # 金色边框高光
+        draw_pixel(surf, sx + 1, sy - 1, (200, 170, 60))
+        draw_pixel(surf, sx - 1, sy + 1, (160, 130, 40))
+
+    # ---- 中心柱（加粗，带石质纹理）----
+    draw_rect_filled(surf, 14, 10, 4, 14, (130, 128, 125))
+    draw_rect_filled(surf, 15, 10, 2, 14, (155, 153, 150))
+    # 柱身纹理
+    draw_pixel(surf, 14, 14, (140, 138, 135))
+    draw_pixel(surf, 17, 16, (140, 138, 135))
+    draw_pixel(surf, 15, 18, (165, 163, 160))
+
+    # ---- 顶部碗状结构（更立体）----
+    draw_rect_filled(surf, 10, 8, 12, 3, (140, 138, 135))
+    draw_rect_filled(surf, 11, 9, 10, 1, (160, 158, 155))
+    draw_rect_filled(surf, 12, 8, 8, 1, (165, 163, 160))
+    # 碗沿高光
+    draw_hline(surf, 11, 20, 8, (175, 173, 170))
+
+    # ---- 水花（多层弧线）----
+    # 顶部水柱
+    draw_pixel(surf, 15, 5, (120, 185, 250))
+    draw_pixel(surf, 16, 4, (120, 185, 250))
+    # 第一层飞溅
+    draw_pixel(surf, 14, 3, (100, 165, 235))
+    draw_pixel(surf, 17, 3, (100, 165, 235))
+    # 第二层飞溅
+    draw_pixel(surf, 13, 2, (80, 145, 220))
+    draw_pixel(surf, 18, 2, (80, 145, 220))
+    # 顶部水珠
+    draw_pixel(surf, 16, 1, (80, 140, 200))
+    # 侧面水滴
+    draw_pixel(surf, 11, 6, (100, 170, 235))
+    draw_pixel(surf, 20, 5, (100, 170, 235))
+    draw_pixel(surf, 10, 7, (80, 150, 215))
+    draw_pixel(surf, 21, 7, (80, 150, 215))
+    draw_pixel(surf, 9, 8, (70, 135, 205))
+    draw_pixel(surf, 22, 8, (70, 135, 205))
+
     pygame.image.save(surf, path)
 
 
 def create_badge_pickup(path):
-    """徽章拾取物: 12×12"""
-    surf = make_surface(12, 12)
-    cx, cy = 6, 6
-    # 光晕
-    for y in range(12):
-        for x in range(12):
+    """桂花徽章碎片拾取物: 16x16, 桂花造型+金色光晕"""
+    surf = make_surface(16, 16)
+    cx, cy = 8, 8
+
+    # 金色光晕（外层淡金）
+    for y in range(16):
+        for x in range(16):
             dx = x - cx
             dy = y - cy
             dist = math.sqrt(dx * dx + dy * dy)
-            if dist < 6:
-                alpha = int(40 * (1 - dist / 6))
-                surf.set_at((x, y), (255, 220, 50, alpha))
-    # 星形
-    points = []
-    for i in range(5):
-        angle = math.radians(-90 + i * 72)
-        points.append((cx + int(4 * math.cos(angle)), cy + int(4 * math.sin(angle))))
-        angle2 = math.radians(-90 + i * 72 + 36)
-        points.append((cx + int(2 * math.cos(angle2)), cy + int(2 * math.sin(angle2))))
-    # 填充星形
-    for y in range(12):
-        for x in range(12):
-            if _point_in_polygon(x, y, points):
-                surf.set_at((x, y), (255, 215, 0))
-    # 星形边框
-    for i in range(len(points)):
-        x1, y1 = points[i]
-        x2, y2 = points[(i + 1) % len(points)]
-        _draw_line_on_surf(surf, x1, y1, x2, y2, (200, 170, 0))
-    # 中心亮点
-    draw_pixel(surf, cx, cy, (255, 255, 200))
+            if dist < 7.5:
+                alpha = int(50 * (1 - dist / 7.5))
+                surf.set_at((x, y), (255, 210, 60, alpha))
+
+    # 桂花花瓣 - 4瓣对称分布
+    petal_color = (255, 215, 0)
+    petal_highlight = (255, 235, 80)
+    petal_shadow = (220, 180, 0)
+
+    # 上花瓣
+    draw_rect_filled(surf, 7, 2, 2, 4, petal_color)
+    draw_pixel(surf, 7, 2, petal_highlight)
+    draw_pixel(surf, 8, 2, petal_highlight)
+    draw_pixel(surf, 7, 5, petal_shadow)
+    draw_pixel(surf, 8, 5, petal_shadow)
+    # 下花瓣
+    draw_rect_filled(surf, 7, 10, 2, 4, petal_color)
+    draw_pixel(surf, 7, 10, petal_highlight)
+    draw_pixel(surf, 8, 10, petal_highlight)
+    draw_pixel(surf, 7, 13, petal_shadow)
+    draw_pixel(surf, 8, 13, petal_shadow)
+    # 左花瓣
+    draw_rect_filled(surf, 2, 7, 4, 2, petal_color)
+    draw_pixel(surf, 2, 7, petal_highlight)
+    draw_pixel(surf, 2, 8, petal_highlight)
+    draw_pixel(surf, 5, 7, petal_shadow)
+    draw_pixel(surf, 5, 8, petal_shadow)
+    # 右花瓣
+    draw_rect_filled(surf, 10, 7, 4, 2, petal_color)
+    draw_pixel(surf, 10, 7, petal_highlight)
+    draw_pixel(surf, 10, 8, petal_highlight)
+    draw_pixel(surf, 13, 7, petal_shadow)
+    draw_pixel(surf, 13, 8, petal_shadow)
+
+    # 对角小花瓣（增加桂花层次感）
+    draw_pixel(surf, 5, 5, (240, 200, 40))
+    draw_pixel(surf, 10, 5, (240, 200, 40))
+    draw_pixel(surf, 5, 10, (240, 200, 40))
+    draw_pixel(surf, 10, 10, (240, 200, 40))
+
+    # 花蕊中心
+    draw_rect_filled(surf, 7, 7, 2, 2, (255, 240, 120))
+    draw_pixel(surf, 7, 7, (255, 255, 200))
+    draw_pixel(surf, 8, 8, (255, 255, 200))
+
+    # 中心最亮点
+    draw_pixel(surf, 7, 7, (255, 255, 230))
+
     pygame.image.save(surf, path)
 
 
