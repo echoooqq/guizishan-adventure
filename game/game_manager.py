@@ -158,7 +158,7 @@ class GameManager:
             (INTERNAL_WIDTH, INTERNAL_HEIGHT), pygame.SRCALPHA
         )
 
-        self._guizhong_tree_obj = None
+        self._guizhong_tree_objs = []
         self._guizhong_badge_obj = None
 
         self._nanhulou_bookshelf_obj = None
@@ -411,15 +411,26 @@ class GameManager:
     def _setup_guizhong_entities(self):
         from entities.interactive_object import InteractiveObject
 
+        # 从地图 structures 层扫描 GID=80（谜题桂花树）的 tile 位置
+        GID_TREE_OSMANTHUS_GLOW = 80
         tree_positions = []
-        for obj in self.interactive_objects:
-            if hasattr(obj, 'properties'):
-                if obj.properties.get("type") == "osmanthus_tree":
-                    cx = obj.x + obj.width / 2
-                    cy = obj.y
-                    tree_positions.append((cx, cy))
-                    if len(tree_positions) >= GuizhongPuzzle.TREE_COUNT:
-                        break
+        if self.tile_map.tmx_data:
+            for layer in self.tile_map.tmx_data.layers:
+                if hasattr(layer, 'name') and layer.name == "structures":
+                    for y in range(layer.height):
+                        for x in range(layer.width):
+                            gid = layer.data[y][x]
+                            if gid == GID_TREE_OSMANTHUS_GLOW:
+                                tx = x * TILE_SIZE + TILE_SIZE / 2
+                                ty = y * TILE_SIZE
+                                tree_positions.append((tx, ty))
+                    break
+
+        # 按 x 坐标排序，确保顺序一致
+        tree_positions.sort(key=lambda p: p[0])
+
+        # 限制为 7 棵（谜题需要）
+        tree_positions = tree_positions[:GuizhongPuzzle.TREE_COUNT]
 
         if len(tree_positions) < GuizhongPuzzle.TREE_COUNT:
             road_y_north = 35 * TILE_SIZE
@@ -431,59 +442,75 @@ class GameManager:
 
         self.guizhong_puzzle.setup_trees(tree_positions)
 
+        # 为谜题使用的 7 棵桂花树创建可交互对象
+        self._guizhong_tree_objs = []
+        puzzle_ref = self.guizhong_puzzle
+        gm = self
+
+        for i, (tx, ty) in enumerate(tree_positions):
+            is_glowing = (i == puzzle_ref.glowing_tree_index)
+
+            tree_obj = InteractiveObject(
+                x=tx - 8, y=ty - 16,
+                width=16, height=24,
+                interactive_type="mechanism",
+                properties={
+                    "prompt_text": "查看",
+                    "color": (100, 200, 80) if is_glowing else (60, 140, 50),
+                    "puzzle_id": "guizhong",
+                    "mechanism_text": "",
+                    "invisible": True,
+                    "tree_index": i,
+                },
+            )
+
+            def make_tree_interact(tree_idx, tree_obj_ref):
+                def on_tree_interact(obj):
+                    if gm.puzzle_manager.get_state("guizhong") == PuzzleState.SOLVED:
+                        return {"type": "dialog", "dialogue_data": {
+                            "default": [{"speaker": "", "text": "这棵桂花树已经不再发光了……"}]
+                        }}
+                    if not gm.game_clock.is_night():
+                        return {"type": "dialog", "dialogue_data": {
+                            "default": [{"speaker": "", "text": "这些桂花树比路旁的更加茂密，似乎有些特别……"}]
+                        }}
+                    # 只有发光的树才能交互
+                    if tree_idx != puzzle_ref.glowing_tree_index:
+                        if not gm.game_clock.is_night():
+                            return {"type": "dialog", "dialogue_data": {
+                                "default": [{"speaker": "", "text": "这些桂花树比路旁的更加茂密，似乎有些特别……"}]
+                            }}
+                        else:
+                            return {"type": "dialog", "dialogue_data": {
+                                "default": [{"speaker": "", "text": "夜风吹过，桂花香似乎更浓了……也许应该看看其他树？"}]
+                            }}
+                    state = puzzle_ref.state
+                    if state == GuizhongPuzzle.STATE_IDLE:
+                        puzzle_ref.examine_tree()
+                        return {"type": "dialog", "dialogue_data": {
+                            "default": [{"speaker": "", "text": "这棵桂花树散发着微光，似乎在呼唤你……"}]
+                        }}
+                    elif state == GuizhongPuzzle.STATE_EXAMINED:
+                        puzzle_ref.shake_tree()
+                        # 移除所有桂花树交互对象
+                        for t_obj in gm._guizhong_tree_objs:
+                            if t_obj in gm.interactive_objects:
+                                gm.interactive_objects.remove(t_obj)
+                        gm._guizhong_tree_objs = []
+                        return None
+                    return None
+                return on_tree_interact
+
+            tree_obj.on_interact = make_tree_interact(i, tree_obj)
+            self.interactive_objects.append(tree_obj)
+            self._guizhong_tree_objs.append(tree_obj)
+
         if self.puzzle_manager.get_state("guizhong") == PuzzleState.SOLVED:
             return
 
         if self.guizhong_puzzle.is_badge_dropped:
             self._create_guizhong_badge_pickup()
             return
-
-        glowing_pos = self.guizhong_puzzle.get_glowing_tree_pos()
-        if glowing_pos is None:
-            return
-
-        glow_tree = InteractiveObject(
-            x=glowing_pos[0] - 8, y=glowing_pos[1] - 16,
-            width=16, height=24,
-            interactive_type="mechanism",
-            properties={
-                "prompt_text": "查看",
-                "color": (100, 200, 80),
-                "puzzle_id": "guizhong",
-                "mechanism_text": "",
-                "invisible": True,
-            },
-        )
-
-        puzzle_ref = self.guizhong_puzzle
-        gm = self
-
-        def on_glow_tree_interact(obj):
-            if gm.puzzle_manager.get_state("guizhong") == PuzzleState.SOLVED:
-                return {"type": "dialog", "dialogue_data": {
-                    "default": [{"speaker": "", "text": "这棵桂花树已经不再发光了……"}]
-                }}
-            if not gm.game_clock.is_night():
-                return {"type": "dialog", "dialogue_data": {
-                    "default": [{"speaker": "", "text": "这棵桂花树看起来很普通，也许夜晚会有不同……"}]
-                }}
-            state = puzzle_ref.state
-            if state == GuizhongPuzzle.STATE_IDLE:
-                puzzle_ref.examine_tree()
-                return {"type": "dialog", "dialogue_data": {
-                    "default": [{"speaker": "", "text": "这棵桂花树散发着微光，似乎在呼唤你……"}]
-                }}
-            elif state == GuizhongPuzzle.STATE_EXAMINED:
-                puzzle_ref.shake_tree()
-                if obj in gm.interactive_objects:
-                    gm.interactive_objects.remove(obj)
-                gm._guizhong_tree_obj = None
-                return None
-            return None
-
-        glow_tree.on_interact = on_glow_tree_interact
-        self.interactive_objects.append(glow_tree)
-        self._guizhong_tree_obj = glow_tree
 
     def _create_guizhong_badge_pickup(self):
         from entities.interactive_object import InteractiveObject
@@ -626,7 +653,7 @@ class GameManager:
         self.interactive_objects.append(computer)
 
         bookshelf = InteractiveObject(
-            x=272, y=32,
+            x=272, y=128,
             width=16, height=16,
             interactive_type="examine",
             properties={
@@ -644,7 +671,7 @@ class GameManager:
         from entities.interactive_object import InteractiveObject
 
         entrance = InteractiveObject(
-            x=272, y=32,
+            x=272, y=128,
             width=16, height=16,
             interactive_type="mechanism",
             properties={
@@ -1772,7 +1799,8 @@ class GameManager:
             if not examine_text:
                 obj = result.get("object")
                 if obj and hasattr(obj, "properties"):
-                    examine_text = obj.properties.get("examine_text", "没有什么特别的。")
+                    # 优先使用 examine_text，其次使用 desc
+                    examine_text = obj.properties.get("examine_text", "") or obj.properties.get("desc", "没有什么特别的。")
                 else:
                     examine_text = "没有什么特别的。"
             self.state = GameState.DIALOG
@@ -2329,7 +2357,7 @@ class GameManager:
                 bg_surf.fill((0, 0, 0, 160))
                 self.internal_surface.blit(bg_surf, bg_rect.topleft)
                 self.internal_surface.blit(text_surf, text_rect)
-            elif self._nearby_interactable is self._guizhong_tree_obj:
+            elif self._nearby_interactable in self._guizhong_tree_objs:
                 self._draw_guizhong_tree_prompt()
             else:
                 self._nearby_interactable.draw_prompt(
@@ -2337,8 +2365,8 @@ class GameManager:
                 )
 
     def _draw_guizhong_tree_prompt(self):
-        obj = self._guizhong_tree_obj
-        if obj is None:
+        obj = self._nearby_interactable
+        if obj is None or obj not in self._guizhong_tree_objs:
             return
         state = self.guizhong_puzzle.state
         if state == GuizhongPuzzle.STATE_IDLE:
@@ -2453,18 +2481,37 @@ class GameManager:
         for r in range(light_radius, 0, -1):
             alpha = int(40 * (1 - r / light_radius))
             pygame.draw.circle(light_surf, (*light_color, alpha), (light_radius, light_radius), r)
-        for obj in self.interactive_objects:
-            if hasattr(obj, 'properties'):
-                itype = obj.properties.get("interactive_type", "")
-                if itype in ("examine", "mechanism"):
-                    sx, sy = self.camera.apply(obj.center_x, obj.center_y)
-                    self.internal_surface.blit(
-                        light_surf,
-                        (int(sx) - light_radius, int(sy) - light_radius),
-                    )
+
+        # 从地图的 decorations 层扫描路灯 tile 位置绘制夜光
+        lamp_positions = self._get_lamp_tile_positions()
+        for lx, ly in lamp_positions:
+            sx, sy = self.camera.apply(lx, ly)
+            self.internal_surface.blit(
+                light_surf,
+                (int(sx) - light_radius, int(sy) - light_radius),
+            )
 
         if is_awakened:
             self._draw_realm_glow_points()
+
+    def _get_lamp_tile_positions(self):
+        """从地图的 decorations 层扫描路灯 tile 的像素坐标列表"""
+        # 路灯 GID 在主校区 tileset 中为 16，南湖校区也为 16
+        LAMP_GID = 16
+        positions = []
+        if not self.tile_map or not self.tile_map.tmx_data:
+            return positions
+        for i, layer in enumerate(self.tile_map.tmx_data.layers):
+            if not isinstance(layer, pytmx.TiledTileLayer):
+                continue
+            if layer.name != "decorations":
+                continue
+            for x, y, gid in layer:
+                if gid == LAMP_GID:
+                    px = x * TILE_SIZE + TILE_SIZE // 2
+                    py = y * TILE_SIZE + TILE_SIZE // 2
+                    positions.append((px, py))
+        return positions
 
     def _draw_realm_glow_points(self):
         glow_radius = 16

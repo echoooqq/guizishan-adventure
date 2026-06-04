@@ -57,8 +57,10 @@ GID_SECRET_FLOOR = 41    # 密室碎石地面
 GID_SECRET_RUNE = 42     # 密室符文墙
 GID_SECRET_TORCH = 43    # 密室火把
 GID_OFFICE_DESK = 44     # 办公桌+电脑一体
+GID_LARGE_DESK_L = 45   # 大办公桌左半（抽屉柜+桌面物品）
+GID_LARGE_DESK_R = 46   # 大办公桌右半（显示器+键盘）
 
-TILE_COUNT = 44
+TILE_COUNT = 46
 
 SOLID_GIDS = {
     GID_INDOOR_WALL, GID_INDOOR_WALL_TOP, GID_BOOKSHELF, GID_BOOKSHELF_TOP,
@@ -70,7 +72,7 @@ SOLID_GIDS = {
     GID_DINING_WALL, GID_DINING_WALL_TOP, GID_DINING_SERVING,
     GID_NANHU_WALL, GID_NANHU_WALL_TOP, GID_NANHU_ELEVATOR,
     GID_SECRET_WALL, GID_SECRET_WALL_TOP, GID_SECRET_RUNE, GID_SECRET_TORCH,
-    GID_OFFICE_DESK,
+    GID_OFFICE_DESK, GID_LARGE_DESK_L, GID_LARGE_DESK_R,
 }
 
 
@@ -464,6 +466,77 @@ def _draw_tile(surface, gid, x):
         pygame.draw.rect(surface, (100, 140, 200), (x + 8, 1, 4, 2))
         # 键盘
         pygame.draw.rect(surface, (80, 80, 90), (x + 8, 7, 4, 1))
+    elif gid == GID_LARGE_DESK_L:
+        # 大办公桌左半：桌面+抽屉柜+桌面物品
+        surface.fill((0, 0, 0, 0), rect)
+        # 桌面顶部（浅木色，延伸到右边缘与右半无缝衔接）
+        pygame.draw.rect(surface, (139, 90, 43), (x + 1, 4, 15, 3))
+        # 桌面高光
+        pygame.draw.rect(surface, (160, 110, 55), (x + 2, 5, 13, 1))
+        # 桌面前面板（中木色）
+        pygame.draw.rect(surface, (120, 75, 35), (x + 1, 7, 15, 6))
+        # 前面板暗线
+        pygame.draw.rect(surface, (110, 68, 30), (x + 1, 10, 15, 1))
+        # 左侧边缘（深木色）
+        pygame.draw.rect(surface, (90, 55, 25), (x, 4, 1, 9))
+        # 抽屉柜（左侧，3层）
+        pygame.draw.rect(surface, (100, 65, 30), (x + 2, 8, 4, 5))
+        pygame.draw.rect(surface, (85, 50, 22), (x + 2, 8, 4, 5), 1)
+        # 抽屉分隔线
+        pygame.draw.line(surface, (80, 48, 20), (x + 2, 9), (x + 5, 9))
+        pygame.draw.line(surface, (80, 48, 20), (x + 2, 11), (x + 5, 11))
+        # 抽屉拉手
+        pygame.draw.rect(surface, (180, 155, 100), (x + 3, 8, 2, 1))
+        pygame.draw.rect(surface, (180, 155, 100), (x + 3, 10, 2, 1))
+        pygame.draw.rect(surface, (180, 155, 100), (x + 3, 12, 2, 1))
+        # 桌面物品：笔筒
+        pygame.draw.rect(surface, (70, 70, 80), (x + 10, 2, 3, 2))
+        pygame.draw.rect(surface, (90, 90, 100), (x + 10, 2, 3, 1))
+        # 笔（红色+蓝色）
+        surface.set_at((x + 11, 1), (200, 60, 60))
+        surface.set_at((x + 12, 2), (60, 100, 200))
+        # 桌面物品：文件堆
+        pygame.draw.rect(surface, (230, 225, 215), (x + 7, 4, 3, 2))
+        pygame.draw.rect(surface, (210, 205, 195), (x + 8, 4, 2, 2))
+        # 桌面阴影
+        pygame.draw.rect(surface, (100, 62, 28), (x + 1, 13, 15, 1))
+    elif gid == GID_LARGE_DESK_R:
+        # 大办公桌右半：桌面+显示器+键盘+鼠标
+        surface.fill((0, 0, 0, 0), rect)
+        # 桌面顶部（浅木色，从左边缘开始与左半无缝衔接）
+        pygame.draw.rect(surface, (139, 90, 43), (x, 4, 15, 3))
+        # 桌面高光
+        pygame.draw.rect(surface, (160, 110, 55), (x + 1, 5, 13, 1))
+        # 桌面前面板（中木色）
+        pygame.draw.rect(surface, (120, 75, 35), (x, 7, 15, 6))
+        # 前面板暗线
+        pygame.draw.rect(surface, (110, 68, 30), (x, 10, 15, 1))
+        # 右侧边缘（深木色）
+        pygame.draw.rect(surface, (90, 55, 25), (x + 15, 4, 1, 9))
+        # 右侧小柜门
+        pygame.draw.rect(surface, (105, 68, 32), (x + 10, 8, 4, 5))
+        pygame.draw.rect(surface, (85, 50, 22), (x + 10, 8, 4, 5), 1)
+        # 柜门拉手
+        pygame.draw.rect(surface, (180, 155, 100), (x + 13, 10, 1, 2))
+        # 显示器底座
+        pygame.draw.rect(surface, (55, 55, 65), (x + 5, 6, 4, 1))
+        # 显示器支架
+        pygame.draw.rect(surface, (55, 55, 65), (x + 6, 3, 2, 3))
+        # 显示器屏幕外框
+        pygame.draw.rect(surface, (35, 35, 45), (x + 3, 0, 8, 4))
+        # 显示器屏幕
+        pygame.draw.rect(surface, (70, 110, 170), (x + 4, 1, 6, 2))
+        # 屏幕上的文字行
+        surface.set_at((x + 5, 1), (90, 130, 190))
+        surface.set_at((x + 7, 1), (90, 130, 190))
+        surface.set_at((x + 6, 2), (90, 130, 190))
+        surface.set_at((x + 8, 2), (90, 130, 190))
+        # 键盘
+        pygame.draw.rect(surface, (75, 75, 85), (x + 4, 7, 5, 1))
+        # 鼠标
+        pygame.draw.rect(surface, (75, 75, 85), (x + 10, 7, 2, 1))
+        # 桌面阴影
+        pygame.draw.rect(surface, (100, 62, 28), (x, 13, 15, 1))
 
 
 def _fill_layer(layer, w, h, gid):

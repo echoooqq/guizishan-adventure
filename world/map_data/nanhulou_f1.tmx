@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<map version="1.5" orientation="orthogonal" renderorder="right-down" width="20" height="15" tilewidth="16" tileheight="16" infinite="0" nextobjectid="12" nextlayerid="7">
- <tileset firstgid="1" name="indoor_tileset" tilewidth="16" tileheight="16" tilecount="44" columns="44">
-  <image source="../../assets/tilesets/indoor_tileset.png" width="704" height="16" />
+<map version="1.5" orientation="orthogonal" renderorder="right-down" width="20" height="15" tilewidth="16" tileheight="16" infinite="0" nextobjectid="11" nextlayerid="7">
+ <tileset firstgid="1" name="indoor_tileset" tilewidth="16" tileheight="16" tilecount="46" columns="46">
+  <image source="../../assets/tilesets/indoor_tileset.png" width="736" height="16" />
   <tile id="4">
    <properties>
     <property name="solid" type="bool" value="true" />
@@ -157,6 +157,16 @@
     <property name="solid" type="bool" value="true" />
    </properties>
   </tile>
+  <tile id="44">
+   <properties>
+    <property name="solid" type="bool" value="true" />
+   </properties>
+  </tile>
+  <tile id="45">
+   <properties>
+    <property name="solid" type="bool" value="true" />
+   </properties>
+  </tile>
  </tileset>
  <layer id="1" name="ground" width="20" height="15">
   <data encoding="csv">
@@ -178,49 +188,42 @@
     <property name="transition_type" value="floor_change" />
    </properties>
   </object>
-  <object id="2" x="32" y="160" width="16" height="16" type="blackboard">
-   <properties>
-    <property name="interactive_type" value="examine" />
-    <property name="prompt_text" value="查看公告栏" />
-    <property name="display_name" value="公告栏" />
-   </properties>
-  </object>
-  <object id="3" x="272" y="160" width="16" height="16" type="computer">
+  <object id="2" x="272" y="160" width="16" height="16" type="computer">
    <properties>
     <property name="interactive_type" value="examine" />
     <property name="prompt_text" value="查看电脑" />
     <property name="display_name" value="查询终端" />
    </properties>
   </object>
-  <object id="4" x="32" y="16" width="16" height="32" type="bookshelf">
+  <object id="3" x="32" y="16" width="16" height="32" type="bookshelf">
    <properties>
     <property name="interactive_type" value="examine" />
     <property name="prompt_text" value="查看书架" />
     <property name="display_name" value="书架" />
    </properties>
   </object>
-  <object id="5" x="48" y="16" width="16" height="32" type="bookshelf">
+  <object id="4" x="48" y="16" width="16" height="32" type="bookshelf">
    <properties>
     <property name="interactive_type" value="examine" />
     <property name="prompt_text" value="查看书架" />
     <property name="display_name" value="书架" />
    </properties>
   </object>
-  <object id="6" x="64" y="16" width="16" height="32" type="bookshelf">
+  <object id="5" x="64" y="16" width="16" height="32" type="bookshelf">
    <properties>
     <property name="interactive_type" value="examine" />
     <property name="prompt_text" value="查看书架" />
     <property name="display_name" value="书架" />
    </properties>
   </object>
-  <object id="7" x="80" y="16" width="16" height="32" type="bookshelf">
+  <object id="6" x="80" y="16" width="16" height="32" type="bookshelf">
    <properties>
     <property name="interactive_type" value="examine" />
     <property name="prompt_text" value="查看书架" />
     <property name="display_name" value="书架" />
    </properties>
   </object>
-  <object id="8" x="96" y="16" width="16" height="32" type="bookshelf">
+  <object id="7" x="96" y="16" width="16" height="32" type="bookshelf">
    <properties>
     <property name="interactive_type" value="examine" />
     <property name="prompt_text" value="查看书架" />
@@ -234,7 +237,7 @@
 </data>
  </layer>
  <objectgroup id="5" name="triggers">
-  <object id="9" x="144" y="208" width="32" height="16" type="door_exit">
+  <object id="8" x="144" y="208" width="32" height="16" type="door_exit">
    <properties>
     <property name="target_map" value="nanhu_campus" />
     <property name="spawn_point" value="nanhulou_exit" />
@@ -242,12 +245,12 @@
     <property name="transition_type" value="indoor_exit" />
    </properties>
   </object>
-  <object id="10" x="144" y="176" width="32" height="32" type="spawn">
+  <object id="9" x="144" y="176" width="32" height="32" type="spawn">
    <properties>
     <property name="spawn_id" value="nanhulou_entrance" />
    </properties>
   </object>
-  <object id="11" x="256" y="32" width="32" height="32" type="spawn">
+  <object id="10" x="256" y="32" width="32" height="32" type="spawn">
    <properties>
     <property name="spawn_id" value="nanhulou_f1_stairs" />
    </properties>

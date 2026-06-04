@@ -86,7 +86,20 @@ GID_FOUNTAIN_SLOT_4 = 67  # 左下凹槽 - tile(1,4)
 GID_FOUNTAIN_SLOT_5 = 68  # 左侧凹槽 - tile(0,3)
 GID_FOUNTAIN_SLOT_6 = 69  # 左上凹槽 - tile(1,1)
 
-TILE_COUNT = 69
+# 6格宽2格高乘车站
+GID_BUS_ROOF_L = 70    # 顶棚左边缘
+GID_BUS_ROOF_M = 71    # 顶棚中间（有垂线，用于站牌上方）
+GID_BUS_ROOF_R = 72    # 顶棚右边缘
+GID_BUS_PILLAR_L = 73  # 左支柱
+GID_BUS_SIGN_L = 74    # 站牌左半
+GID_BUS_SIGN_C = 75    # 站牌中间
+GID_BUS_SIGN_R = 76    # 站牌右半
+GID_BUS_PILLAR_R = 77  # 右支柱
+GID_BUS_BENCH = 78     # 长椅
+GID_BUS_ROOF_M2 = 79   # 顶棚中间（无垂线，用于长椅上方）
+GID_TREE_OSMANTHUS_GLOW = 80  # 谜题桂花树（更大更密，与普通桂花树区分）
+
+TILE_COUNT = 80
 
 SOLID_GIDS = {
     GID_WALL_BRICK, GID_WALL_BRICK_TOP, GID_WALL_GRAY,
@@ -97,12 +110,15 @@ SOLID_GIDS = {
     GID_BUS_STOP, GID_HEDGE, GID_COLLISION,
     GID_FLOWER_GARDEN, GID_TREE_CLUSTER,
     GID_GATE_PILLAR, GID_GATE_BEAM, GID_GATE_SIGN,
+    GID_BUS_ROOF_L, GID_BUS_ROOF_M, GID_BUS_ROOF_M2, GID_BUS_ROOF_R,
+    GID_BUS_PILLAR_L, GID_BUS_SIGN_L, GID_BUS_SIGN_C, GID_BUS_SIGN_R, GID_BUS_PILLAR_R, GID_BUS_BENCH,
     GID_LIB_WALL, GID_LIB_WINDOW, GID_LIB_ROOF, GID_LIB_PILLAR, GID_LIB_AWNING, GID_LIB_SIGN, GID_LIB_SIGN_SIDE,
     GID_GYM_WALL, GID_GYM_WINDOW, GID_GYM_ROOF_CENTER, GID_GYM_ROOF_SIDE, GID_GYM_VENT, GID_GYM_SIGN,
     GID_DINING_WALL, GID_DINING_WINDOW, GID_DINING_ROOF, GID_DINING_AWNING, GID_DINING_CHIMNEY, GID_DINING_SIGN, GID_DINING_MENU,
     GID_NANHU_WALL, GID_NANHU_GLASS, GID_NANHU_ROOF, GID_NANHU_ROOF_RAIL, GID_NANHU_AC, GID_NANHU_SIGN,
     GID_FOUNTAIN_SLOT_0, GID_FOUNTAIN_SLOT_1, GID_FOUNTAIN_SLOT_2, GID_FOUNTAIN_SLOT_3,
     GID_FOUNTAIN_SLOT_4, GID_FOUNTAIN_SLOT_5, GID_FOUNTAIN_SLOT_6,
+    GID_TREE_OSMANTHUS_GLOW,
 }
 
 
@@ -246,6 +262,25 @@ def _draw_tile(surface, gid, x):
         for fx, fy in [(2, 0), (6, 0), (10, 0), (14, 2),
                        (1, 3), (13, 5), (2, 7), (12, 7)]:
             surface.set_at((x + fx, fy), (255, 240, 150))
+    elif gid == GID_TREE_OSMANTHUS_GLOW:
+        # 谜题桂花树：比普通桂花树更大更密，桂花更密集
+        surface.fill((0, 0, 0, 0), rect)
+        pygame.draw.rect(surface, (80, 50, 25), (x + 5, 9, 6, 7))  # 更粗树干
+        pygame.draw.ellipse(surface, (20, 120, 20), (x - 1, 0, 18, 16))  # 更大树冠
+        pygame.draw.ellipse(surface, (30, 140, 30), (x + 1, 2, 14, 12))  # 内层
+        pygame.draw.ellipse(surface, (40, 155, 40), (x + 3, 3, 10, 8))  # 高光
+        # 更密集的桂花
+        for fx, fy in [(2, 1), (4, 2), (6, 1), (8, 2), (10, 1), (12, 2), (14, 3),
+                       (3, 3), (5, 4), (7, 3), (9, 4), (11, 3), (13, 4),
+                       (2, 5), (4, 6), (6, 5), (8, 6), (10, 5), (12, 6), (14, 5),
+                       (3, 7), (5, 8), (7, 7), (9, 8), (11, 7), (13, 8),
+                       (4, 9), (6, 10), (8, 9), (10, 10), (12, 9)]:
+            surface.set_at((x + fx, fy), (255, 200, 0))
+        for fx, fy in [(3, 2), (7, 2), (11, 2), (5, 5), (9, 5), (13, 5),
+                       (4, 8), (8, 8), (12, 8), (6, 6), (10, 6)]:
+            surface.set_at((x + fx, fy), (255, 230, 100))
+        for fx, fy in [(1, 3), (5, 1), (9, 1), (13, 3), (2, 7), (10, 7), (14, 7)]:
+            surface.set_at((x + fx, fy), (255, 245, 170))
     elif gid == GID_TREE_GREEN:
         surface.fill((0, 0, 0, 0), rect)
         pygame.draw.rect(surface, (101, 67, 33), (x + 6, 9, 4, 7))
@@ -397,21 +432,169 @@ def _draw_tile(surface, gid, x):
         # 顶部尖端
         surface.set_at((x + 8, 1), (210, 205, 200))
     elif gid == GID_BUS_STOP:
-        # 放大版站台：更粗的站牌杆、更大的站牌、候车棚
+        # 旧版单格站台（保留但不再使用）
         surface.fill((0, 0, 0, 0), rect)
-        # 站牌杆（加粗到3px）
-        pygame.draw.rect(surface, (80, 80, 80), (x + 6, 4, 3, 10))
-        # 站牌（放大到12x7）
-        pygame.draw.rect(surface, (0, 100, 180), (x + 2, 0, 12, 7))
-        pygame.draw.rect(surface, (255, 255, 255), (x + 3, 1, 10, 5))
-        pygame.draw.rect(surface, (0, 100, 180), (x + 2, 0, 12, 7), 1)
-        # 候车棚顶
-        pygame.draw.rect(surface, (100, 100, 110), (x, 8, TILE_SIZE, 2))
-        # 棚柱
-        pygame.draw.rect(surface, (80, 80, 90), (x + 1, 10, 2, 5))
-        pygame.draw.rect(surface, (80, 80, 90), (x + 13, 10, 2, 5))
-        # 座椅
-        pygame.draw.rect(surface, (139, 90, 43), (x + 4, 12, 8, 2))
+        pygame.draw.rect(surface, (80, 80, 80), (x + 7, 3, 2, 11))
+        pygame.draw.rect(surface, (0, 100, 180), (x + 3, 1, 10, 5))
+        pygame.draw.rect(surface, (255, 255, 255), (x + 4, 2, 8, 3))
+        pygame.draw.rect(surface, (0, 100, 180), (x + 3, 1, 10, 5), 1)
+    elif gid == GID_BUS_ROOF_L:
+        # 6×2乘车站顶棚左边缘：赤陶色弧形顶+左悬挑+左支柱延伸
+        surface.fill((0, 0, 0, 0), rect)
+        # 主体顶棚（赤陶色，与校园砖墙色调呼应）
+        pygame.draw.rect(surface, (160, 85, 45), (x, 0, TILE_SIZE, 7))
+        pygame.draw.rect(surface, (180, 100, 55), (x + 1, 1, TILE_SIZE - 1, 2))  # 高光
+        # 瓦片纹理
+        for tx in range(0, TILE_SIZE, 4):
+            pygame.draw.line(surface, (140, 75, 38), (x + tx, 0), (x + tx, 7))
+        # 底边装饰线+阴影
+        pygame.draw.rect(surface, (130, 70, 35), (x, 7, TILE_SIZE, 1))
+        pygame.draw.rect(surface, (110, 60, 30), (x, 8, TILE_SIZE, 1))  # 阴影
+        # 左侧悬挑（顶棚向左延伸2px）
+        pygame.draw.rect(surface, (160, 85, 45), (x, 0, 2, 9))
+        pygame.draw.rect(surface, (140, 75, 38), (x, 9, 2, 1))
+        # 左支柱延伸段（从顶棚底部延伸到tile底边，与下排PILLAR_L对齐）
+        pygame.draw.rect(surface, (90, 60, 30), (x + 4, 9, 4, 7))
+        pygame.draw.rect(surface, (110, 75, 40), (x + 5, 9, 2, 7))  # 高光
+        pygame.draw.rect(surface, (70, 45, 20), (x + 4, 9, 4, 7), 1)  # 边框
+        # 支柱与顶棚连接的托架
+        pygame.draw.rect(surface, (120, 80, 40), (x + 2, 8, 8, 2))
+        pygame.draw.rect(surface, (100, 65, 30), (x + 4, 8, 4, 1))
+    elif gid == GID_BUS_ROOF_M:
+        # 6×2乘车站顶棚中间段 + 悬挂垂线（连接到下方站牌）
+        surface.fill((0, 0, 0, 0), rect)
+        pygame.draw.rect(surface, (160, 85, 45), (x, 0, TILE_SIZE, 7))
+        pygame.draw.rect(surface, (180, 100, 55), (x + 1, 1, TILE_SIZE - 2, 2))
+        for tx in range(0, TILE_SIZE, 4):
+            pygame.draw.line(surface, (140, 75, 38), (x + tx, 0), (x + tx, 7))
+        pygame.draw.rect(surface, (130, 70, 35), (x, 7, TILE_SIZE, 1))
+        pygame.draw.rect(surface, (110, 60, 30), (x, 8, TILE_SIZE, 1))
+        # 悬挂垂线（从顶棚底部延伸到tile底边，连接下方站牌的垂线）
+        pygame.draw.rect(surface, (60, 40, 20), (x + 7, 9, 2, 7))
+    elif gid == GID_BUS_ROOF_M2:
+        # 6×2乘车站顶棚中间段（无垂线，用于长椅上方）
+        surface.fill((0, 0, 0, 0), rect)
+        pygame.draw.rect(surface, (160, 85, 45), (x, 0, TILE_SIZE, 7))
+        pygame.draw.rect(surface, (180, 100, 55), (x + 1, 1, TILE_SIZE - 2, 2))
+        for tx in range(0, TILE_SIZE, 4):
+            pygame.draw.line(surface, (140, 75, 38), (x + tx, 0), (x + tx, 7))
+        pygame.draw.rect(surface, (130, 70, 35), (x, 7, TILE_SIZE, 1))
+        pygame.draw.rect(surface, (110, 60, 30), (x, 8, TILE_SIZE, 1))
+    elif gid == GID_BUS_ROOF_R:
+        # 6×2乘车站顶棚右边缘：赤陶色弧形顶+右悬挑+右支柱延伸
+        surface.fill((0, 0, 0, 0), rect)
+        # 主体顶棚
+        pygame.draw.rect(surface, (160, 85, 45), (x, 0, TILE_SIZE, 7))
+        pygame.draw.rect(surface, (180, 100, 55), (x + 1, 1, TILE_SIZE - 1, 2))
+        for tx in range(0, TILE_SIZE, 4):
+            pygame.draw.line(surface, (140, 75, 38), (x + tx, 0), (x + tx, 7))
+        pygame.draw.rect(surface, (130, 70, 35), (x, 7, TILE_SIZE, 1))
+        pygame.draw.rect(surface, (110, 60, 30), (x, 8, TILE_SIZE, 1))
+        # 右侧悬挑
+        pygame.draw.rect(surface, (160, 85, 45), (x + 14, 0, 2, 9))
+        pygame.draw.rect(surface, (140, 75, 38), (x + 14, 9, 2, 1))
+        # 右支柱延伸段（与下排PILLAR_R对齐）
+        pygame.draw.rect(surface, (90, 60, 30), (x + 8, 9, 4, 7))
+        pygame.draw.rect(surface, (110, 75, 40), (x + 9, 9, 2, 7))  # 高光
+        pygame.draw.rect(surface, (70, 45, 20), (x + 8, 9, 4, 7), 1)  # 边框
+        # 支柱与顶棚连接的托架
+        pygame.draw.rect(surface, (120, 80, 40), (x + 6, 8, 8, 2))
+        pygame.draw.rect(surface, (100, 65, 30), (x + 8, 8, 4, 1))
+    elif gid == GID_BUS_PILLAR_L:
+        # 左支柱：粗木柱+底座（柱子从顶部开始，与上排ROOF_L的延伸段衔接）
+        surface.fill((0, 0, 0, 0), rect)
+        # 粗木柱（4px宽，从y=0开始）
+        pygame.draw.rect(surface, (90, 60, 30), (x + 4, 0, 4, 13))
+        pygame.draw.rect(surface, (110, 75, 40), (x + 5, 0, 2, 13))  # 高光
+        pygame.draw.rect(surface, (70, 45, 20), (x + 4, 0, 4, 13), 1)  # 边框
+        # 底座
+        pygame.draw.rect(surface, (100, 70, 35), (x + 2, 13, 8, 2))
+        pygame.draw.rect(surface, (80, 55, 25), (x + 2, 13, 8, 1))
+        pygame.draw.rect(surface, (70, 45, 20), (x + 2, 13, 8, 2), 1)
+    elif gid == GID_BUS_SIGN_L:
+        # 站牌左半：悬挂在顶棚下方，有垂线连接
+        surface.fill((0, 0, 0, 0), rect)
+        # 悬挂垂线（深色，与顶棚形成对比）
+        pygame.draw.rect(surface, (60, 40, 20), (x + 7, 0, 2, 3))  # 垂线（深棕，明显可见）
+        pygame.draw.rect(surface, (80, 55, 30), (x + 6, 3, 4, 1))  # 连接托架
+        # 站牌主体（y=4开始）
+        pygame.draw.rect(surface, (245, 235, 215), (x, 4, TILE_SIZE, 9))
+        pygame.draw.rect(surface, (160, 85, 45), (x, 4, TILE_SIZE, 9), 1)
+        # 站牌顶部装饰条
+        pygame.draw.rect(surface, (160, 85, 45), (x, 4, TILE_SIZE, 2))
+        pygame.draw.rect(surface, (180, 100, 55), (x + 1, 4, TILE_SIZE - 2, 1))
+        # 站名文字线条
+        pygame.draw.rect(surface, (70, 45, 25), (x + 2, 7, 12, 1))
+        pygame.draw.rect(surface, (70, 45, 25), (x + 3, 9, 10, 1))
+        # 路线圆点
+        pygame.draw.circle(surface, (160, 85, 45), (x + 4, 11), 1)
+        pygame.draw.circle(surface, (160, 85, 45), (x + 8, 11), 1)
+    elif gid == GID_BUS_SIGN_C:
+        # 站牌中间：悬挂在顶棚下方，有垂线连接
+        surface.fill((0, 0, 0, 0), rect)
+        # 悬挂垂线
+        pygame.draw.rect(surface, (60, 40, 20), (x + 7, 0, 2, 3))
+        pygame.draw.rect(surface, (80, 55, 30), (x + 6, 3, 4, 1))
+        # 站牌主体
+        pygame.draw.rect(surface, (245, 235, 215), (x, 4, TILE_SIZE, 9))
+        pygame.draw.rect(surface, (160, 85, 45), (x, 4, 1, 9))
+        pygame.draw.rect(surface, (160, 85, 45), (x + 15, 4, 1, 9))
+        # 顶部装饰条
+        pygame.draw.rect(surface, (160, 85, 45), (x, 4, TILE_SIZE, 2))
+        pygame.draw.rect(surface, (180, 100, 55), (x + 1, 4, TILE_SIZE - 2, 1))
+        # 站名文字线条
+        pygame.draw.rect(surface, (70, 45, 25), (x + 2, 7, 12, 1))
+        pygame.draw.rect(surface, (70, 45, 25), (x + 3, 9, 10, 1))
+        # 路线信息
+        pygame.draw.rect(surface, (100, 70, 40), (x + 2, 11, 12, 1))
+        # 路线圆点
+        pygame.draw.circle(surface, (160, 85, 45), (x + 4, 11), 1)
+        pygame.draw.circle(surface, (160, 85, 45), (x + 8, 11), 1)
+        pygame.draw.circle(surface, (160, 85, 45), (x + 12, 11), 1)
+    elif gid == GID_BUS_SIGN_R:
+        # 站牌右半：悬挂在顶棚下方，有垂线连接
+        surface.fill((0, 0, 0, 0), rect)
+        # 悬挂垂线
+        pygame.draw.rect(surface, (60, 40, 20), (x + 7, 0, 2, 3))
+        pygame.draw.rect(surface, (80, 55, 30), (x + 6, 3, 4, 1))
+        # 站牌主体
+        pygame.draw.rect(surface, (245, 235, 215), (x, 4, TILE_SIZE, 9))
+        pygame.draw.rect(surface, (160, 85, 45), (x, 4, TILE_SIZE, 9), 1)
+        # 顶部装饰条
+        pygame.draw.rect(surface, (160, 85, 45), (x, 4, TILE_SIZE, 2))
+        pygame.draw.rect(surface, (180, 100, 55), (x + 1, 4, TILE_SIZE - 2, 1))
+        # 站名文字线条
+        pygame.draw.rect(surface, (70, 45, 25), (x + 2, 7, 12, 1))
+        pygame.draw.rect(surface, (70, 45, 25), (x + 3, 9, 10, 1))
+        # 路线圆点
+        pygame.draw.circle(surface, (160, 85, 45), (x + 4, 11), 1)
+        pygame.draw.circle(surface, (160, 85, 45), (x + 12, 11), 1)
+    elif gid == GID_BUS_PILLAR_R:
+        # 右支柱：粗木柱+底座（柱子从顶部开始，与上排ROOF_R的延伸段衔接）
+        surface.fill((0, 0, 0, 0), rect)
+        # 粗木柱（4px宽，从y=0开始）
+        pygame.draw.rect(surface, (90, 60, 30), (x + 8, 0, 4, 13))
+        pygame.draw.rect(surface, (110, 75, 40), (x + 9, 0, 2, 13))  # 高光
+        pygame.draw.rect(surface, (70, 45, 20), (x + 8, 0, 4, 13), 1)  # 边框
+        # 底座
+        pygame.draw.rect(surface, (100, 70, 35), (x + 6, 13, 8, 2))
+        pygame.draw.rect(surface, (80, 55, 25), (x + 6, 13, 8, 1))
+        pygame.draw.rect(surface, (70, 45, 20), (x + 6, 13, 8, 2), 1)
+    elif gid == GID_BUS_BENCH:
+        # 长椅：宽木椅+靠背+腿
+        surface.fill((0, 0, 0, 0), rect)
+        # 靠背
+        pygame.draw.rect(surface, (120, 75, 35), (x + 1, 4, 14, 2))
+        pygame.draw.rect(surface, (139, 90, 43), (x + 1, 4, 14, 1))  # 靠背高光
+        # 坐板
+        pygame.draw.rect(surface, (139, 90, 43), (x + 1, 7, 14, 3))
+        pygame.draw.rect(surface, (155, 105, 55), (x + 2, 7, 12, 1))  # 坐板高光
+        # 四条腿
+        pygame.draw.rect(surface, (101, 67, 33), (x + 1, 10, 2, 5))
+        pygame.draw.rect(surface, (101, 67, 33), (x + 13, 10, 2, 5))
+        # 靠背支撑柱
+        pygame.draw.rect(surface, (101, 67, 33), (x + 1, 3, 2, 2))
+        pygame.draw.rect(surface, (101, 67, 33), (x + 13, 3, 2, 2))
     elif gid == GID_HEDGE:
         surface.fill((0, 0, 0, 0), rect)
         pygame.draw.rect(surface, (34, 120, 0), (x, 2, TILE_SIZE, 12))
@@ -708,13 +891,13 @@ def design_map():
     _place_borders(structures, collision)
     _place_school_gate(ground, structures, collision, interactive_objects, trigger_objects)
     _place_guizhong_road(ground, structures, decorations, collision, interactive_objects)
-    _place_library(ground, structures, collision, interactive_objects, trigger_objects)
+    _place_library(ground, structures, decorations, collision, interactive_objects, trigger_objects)
     _place_boya_square(ground, structures, decorations, collision, interactive_objects, trigger_objects)
-    _place_gym(ground, structures, collision, interactive_objects, trigger_objects)
-    _place_dining_hall(ground, structures, collision, interactive_objects, trigger_objects)
+    _place_gym(ground, structures, decorations, collision, interactive_objects, trigger_objects)
+    _place_dining_hall(ground, structures, decorations, collision, interactive_objects, trigger_objects)
     _place_fountain_square(ground, structures, decorations, collision, interactive_objects, trigger_objects)
     _place_shuttle_station(ground, structures, decorations, collision, interactive_objects, trigger_objects)
-    _place_connecting_paths(ground)
+    _place_connecting_paths(ground, structures, decorations, collision)
     _place_nature_decor(ground, structures, decorations, collision, interactive_objects)
     _add_grass_variation(ground)
     _add_default_spawn(trigger_objects)
@@ -784,19 +967,6 @@ def _place_school_gate(ground, structures, collision, interactive_objects, trigg
                 structures[y][x] = GID_TREE_GREEN
                 collision[y][x] = GID_COLLISION
 
-    interactive_objects.append({
-        "x": (gx + 1) * TILE_SIZE,
-        "y": (gy + 1) * TILE_SIZE,
-        "width": 4 * TILE_SIZE,
-        "height": TILE_SIZE,
-        "type": "school_gate",
-        "properties": {
-            "interactive_type": "examine",
-            "display_name": "校门牌匾",
-            "desc": "华中师范大学——桂子山校区"
-        }
-    })
-
     trigger_objects.append({
         "x": (gx + 1) * TILE_SIZE,
         "y": (gy - 1) * TILE_SIZE,
@@ -828,53 +998,40 @@ def _place_guizhong_road(ground, structures, decorations, collision, interactive
         ground[38][x] = GID_PATH_DIRT
         ground[39][x] = GID_PATH_DIRT
 
-    for x in range(road_x_start + 3, road_x_end, 5):
+    # 桂中路北侧深棕色行（road_y_start - 1 = y=35）
+    # 普通桂花树：跳过旧机制前7棵(x=8~38)和中段谜题区(x=43~73)，保留其余
+    puzzle_tree_xs = {43, 48, 53, 58, 63, 68, 73}  # 谜题树位置
+    old_tree_xs = set(range(road_x_start + 3, road_x_end, 5))  # 原本所有北侧树x坐标
+    # 删除旧机制前7棵(x=8,13,18,23,28,33,38)和中段7棵
+    skip_xs = set(range(road_x_start + 3, road_x_start + 3 + 7 * 5, 5)) | puzzle_tree_xs
+    for x in sorted(old_tree_xs - skip_xs):
         structures[road_y_start - 1][x] = GID_TREE_OSMANTHUS
         collision[road_y_start - 1][x] = GID_COLLISION
-        interactive_objects.append({
-            "x": x * TILE_SIZE, "y": (road_y_start - 1) * TILE_SIZE,
-            "width": TILE_SIZE, "height": TILE_SIZE,
-            "type": "osmanthus_tree",
-            "properties": {"interactive_type": "examine", "display_name": "桂花树",
-                           "desc": "一棵散发着淡淡桂花香的树"}
-        })
 
+    # 放置7棵谜题桂花树（GID=80）
+    for x in sorted(puzzle_tree_xs):
+        structures[road_y_start - 1][x] = GID_TREE_OSMANTHUS_GLOW
+        collision[road_y_start - 1][x] = GID_COLLISION
+
+    # 在北侧深棕色行放置路灯（与桂花树错开）
+    for x in range(road_x_start + 5, road_x_end, 10):
+        if structures[road_y_start - 1][x] == 0:  # 不与树重叠
+            decorations[road_y_start - 1][x] = GID_LAMP
+            collision[road_y_start - 1][x] = GID_COLLISION
+
+    # 桂中路南侧深棕色行（road_y_end + 1）：放置路灯装饰 + 保留桂花树 tile（无互动）
     for x in range(road_x_start + 5, road_x_end, 5):
         structures[road_y_end + 1][x] = GID_TREE_OSMANTHUS
         collision[road_y_end + 1][x] = GID_COLLISION
-        interactive_objects.append({
-            "x": x * TILE_SIZE, "y": (road_y_end + 1) * TILE_SIZE,
-            "width": TILE_SIZE, "height": TILE_SIZE,
-            "type": "osmanthus_tree",
-            "properties": {"interactive_type": "examine", "display_name": "桂花树",
-                           "desc": "一棵散发着淡淡桂花香的树"}
-        })
-
+    # 在南侧深棕色行放置路灯（与桂花树错开）
     for x in range(road_x_start + 8, road_x_end, 10):
-        decorations[road_y_start - 1][x] = GID_LAMP
-        collision[road_y_start - 1][x] = GID_COLLISION
-        interactive_objects.append({
-            "x": x * TILE_SIZE, "y": (road_y_start - 1) * TILE_SIZE,
-            "width": TILE_SIZE, "height": TILE_SIZE,
-            "type": "lamp",
-            "properties": {"interactive_type": "examine", "display_name": "路灯",
-                           "desc": "夜晚会亮起的校园路灯"}
-        })
-
-    for x in range(road_x_start + 10, road_x_end, 10):
         decorations[road_y_end + 1][x] = GID_LAMP
         collision[road_y_end + 1][x] = GID_COLLISION
 
+    # 桂中路道路中间放置长椅
     for x in range(road_x_start + 15, road_x_end, 15):
         decorations[road_y_start][x] = GID_BENCH
         collision[road_y_start][x] = GID_COLLISION
-        interactive_objects.append({
-            "x": x * TILE_SIZE, "y": road_y_start * TILE_SIZE,
-            "width": TILE_SIZE, "height": TILE_SIZE,
-            "type": "bench",
-            "properties": {"interactive_type": "examine", "display_name": "长椅",
-                           "desc": "桂中路旁的休息长椅"}
-        })
 
 
 def _place_building(ground, structures, collision, bx, by, bw, bh,
@@ -976,7 +1133,7 @@ def _place_building(ground, structures, collision, bx, by, bw, bh,
     })
 
 
-def _place_library(ground, structures, collision, interactive_objects, trigger_objects):
+def _place_library(ground, structures, decorations, collision, interactive_objects, trigger_objects):
     bx, by, bw, bh = 13, 7, 14, 10
 
     # 填充图书馆墙壁
@@ -1059,6 +1216,15 @@ def _place_library(ground, structures, collision, interactive_objects, trigger_o
     })
     _add_exit_spawn(trigger_objects, "library_exit", bx + 6, by + bh + 1)
 
+    # 门前路径旁路灯装饰
+    lamp_y = by + bh + 2
+    if decorations[lamp_y][bx + 5] == GID_EMPTY and collision[lamp_y][bx + 5] == GID_EMPTY:
+        decorations[lamp_y][bx + 5] = GID_LAMP
+        collision[lamp_y][bx + 5] = GID_COLLISION
+    if decorations[lamp_y][bx + 9] == GID_EMPTY and collision[lamp_y][bx + 9] == GID_EMPTY:
+        decorations[lamp_y][bx + 9] = GID_LAMP
+        collision[lamp_y][bx + 9] = GID_COLLISION
+
 
 def _place_boya_square(ground, structures, decorations, collision, interactive_objects, trigger_objects):
     sx, sy, sw, sh = 76, 6, 20, 16
@@ -1080,29 +1246,27 @@ def _place_boya_square(ground, structures, decorations, collision, interactive_o
     collision[sc_y][sc_x] = GID_COLLISION
     collision[sc_y][sc_x + 1] = GID_COLLISION
 
-    interactive_objects.append({
-        "x": sc_x * TILE_SIZE, "y": sc_y * TILE_SIZE,
-        "width": TILE_SIZE * 2, "height": TILE_SIZE * 2,
-        "type": "sculpture",
-        "properties": {
-            "interactive_type": "examine",
-            "display_name": "博雅雕塑",
-            "desc": "广场中央的雕塑，底座刻着古老的铭文……"
-        }
-    })
-
     for dx in [3, 8, 14]:
         decorations[sy + 2][sx + dx] = GID_FLOWER_BED
         collision[sy + 2][sx + dx] = GID_COLLISION
         decorations[sy + sh - 3][sx + dx] = GID_FLOWER_BED
         collision[sy + sh - 3][sx + dx] = GID_COLLISION
 
+    # 广场周围路灯装饰
+    for lx in [sx + 1, sx + sw - 2]:
+        if decorations[sy + 1][lx] == GID_EMPTY and collision[sy + 1][lx] == GID_EMPTY:
+            decorations[sy + 1][lx] = GID_LAMP
+            collision[sy + 1][lx] = GID_COLLISION
+        if decorations[sy + sh - 2][lx] == GID_EMPTY and collision[sy + sh - 2][lx] == GID_EMPTY:
+            decorations[sy + sh - 2][lx] = GID_LAMP
+            collision[sy + sh - 2][lx] = GID_COLLISION
+
     for y in range(sy + sh, 36):
         for x in range(sx + sw // 2 - 1, sx + sw // 2 + 1):
             ground[y][x] = GID_PATH_STONE
 
 
-def _place_gym(ground, structures, collision, interactive_objects, trigger_objects):
+def _place_gym(ground, structures, decorations, collision, interactive_objects, trigger_objects):
     bx, by, bw, bh = 11, 49, 16, 12
 
     # 填充体育馆墙壁
@@ -1189,8 +1353,17 @@ def _place_gym(ground, structures, collision, interactive_objects, trigger_objec
     })
     _add_exit_spawn(trigger_objects, "gym_exit", bx + 7, by + bh + 1)
 
+    # 门前路径旁路灯装饰
+    lamp_y = by - 3
+    if decorations[lamp_y][bx + 5] == GID_EMPTY and collision[lamp_y][bx + 5] == GID_EMPTY:
+        decorations[lamp_y][bx + 5] = GID_LAMP
+        collision[lamp_y][bx + 5] = GID_COLLISION
+    if decorations[lamp_y][bx + 10] == GID_EMPTY and collision[lamp_y][bx + 10] == GID_EMPTY:
+        decorations[lamp_y][bx + 10] = GID_LAMP
+        collision[lamp_y][bx + 10] = GID_COLLISION
 
-def _place_dining_hall(ground, structures, collision, interactive_objects, trigger_objects):
+
+def _place_dining_hall(ground, structures, decorations, collision, interactive_objects, trigger_objects):
     bx, by, bw, bh = 89, 49, 12, 10
 
     # 填充食堂墙壁
@@ -1276,6 +1449,15 @@ def _place_dining_hall(ground, structures, collision, interactive_objects, trigg
     })
     _add_exit_spawn(trigger_objects, "dining_exit", bx + 5, by + bh + 1)
 
+    # 门前路径旁路灯装饰
+    lamp_y = by - 3
+    if decorations[lamp_y][bx + 3] == GID_EMPTY and collision[lamp_y][bx + 3] == GID_EMPTY:
+        decorations[lamp_y][bx + 3] = GID_LAMP
+        collision[lamp_y][bx + 3] = GID_COLLISION
+    if decorations[lamp_y][bx + 8] == GID_EMPTY and collision[lamp_y][bx + 8] == GID_EMPTY:
+        decorations[lamp_y][bx + 8] = GID_LAMP
+        collision[lamp_y][bx + 8] = GID_COLLISION
+
 
 def _place_fountain_square(ground, structures, decorations, collision, interactive_objects, trigger_objects):
     sx, sy, sw, sh = 51, 48, 18, 14
@@ -1302,22 +1484,20 @@ def _place_fountain_square(ground, structures, decorations, collision, interacti
         for dx in range(1, 5):
             collision[fy + dy][fx + dx] = GID_COLLISION
 
-    interactive_objects.append({
-        "x": fx * TILE_SIZE, "y": fy * TILE_SIZE,
-        "width": 6 * TILE_SIZE, "height": 6 * TILE_SIZE,
-        "type": "fountain",
-        "properties": {
-            "interactive_type": "examine",
-            "display_name": "喷泉",
-            "desc": "广场中央的古老喷泉，基座上有7个凹槽……"
-        }
-    })
-
     for dx in [2, 9, 14]:
         decorations[sy + 2][sx + dx] = GID_FLOWER_BED
         collision[sy + 2][sx + dx] = GID_COLLISION
         decorations[sy + sh - 3][sx + dx] = GID_FLOWER_BED
         collision[sy + sh - 3][sx + dx] = GID_COLLISION
+
+    # 广场周围路灯装饰
+    for lx in [sx + 1, sx + sw - 2]:
+        if decorations[sy + 1][lx] == GID_EMPTY and collision[sy + 1][lx] == GID_EMPTY:
+            decorations[sy + 1][lx] = GID_LAMP
+            collision[sy + 1][lx] = GID_COLLISION
+        if decorations[sy + sh - 2][lx] == GID_EMPTY and collision[sy + sh - 2][lx] == GID_EMPTY:
+            decorations[sy + sh - 2][lx] = GID_LAMP
+            collision[sy + sh - 2][lx] = GID_COLLISION
 
     for y in range(42, sy):
         for x in range(sx + sw // 2 - 1, sx + sw // 2 + 1):
@@ -1325,7 +1505,7 @@ def _place_fountain_square(ground, structures, decorations, collision, interacti
 
 
 def _place_shuttle_station(ground, structures, decorations, collision, interactive_objects, trigger_objects):
-    sx, sy, sw, sh = 54, 66, 12, 7
+    sx, sy, sw, sh = 54, 66, 14, 7
 
     for y in range(sy, sy + sh):
         for x in range(sx, sx + sw):
@@ -1338,25 +1518,27 @@ def _place_shuttle_station(ground, structures, decorations, collision, interacti
         ground[sy][x] = GID_PATH_DIRT
         ground[sy + sh - 1][x] = GID_PATH_DIRT
 
-    bus_x = sx + sw // 2
+    # 6格宽2格高乘车站，右移2格
+    bus_x = sx + sw // 2 - 3 + 2  # 居中后右移2格
     bus_y = sy + 1
-    structures[bus_y][bus_x] = GID_BUS_STOP
-    collision[bus_y][bus_x] = GID_COLLISION
-
-    interactive_objects.append({
-        "x": bus_x * TILE_SIZE, "y": bus_y * TILE_SIZE,
-        "width": TILE_SIZE, "height": TILE_SIZE,
-        "type": "bus_stop",
-        "properties": {
-            "interactive_type": "enter",
-            "display_name": "校区接驳站",
-            "prompt_text": "乘校车",
-            "desc": "前往南湖校区的校车",
-            "target_map": "nanhu_campus",
-            "spawn_point": "nanhu_entrance",
-            "transition_type": "campus_bus",
-        }
-    })
+    # 顶棚行（上排）：纯顶棚
+    structures[bus_y][bus_x] = GID_BUS_ROOF_L
+    structures[bus_y][bus_x + 1] = GID_BUS_ROOF_M
+    structures[bus_y][bus_x + 2] = GID_BUS_ROOF_M
+    structures[bus_y][bus_x + 3] = GID_BUS_ROOF_M
+    structures[bus_y][bus_x + 4] = GID_BUS_ROOF_M2  # 长椅上方，无垂线
+    structures[bus_y][bus_x + 5] = GID_BUS_ROOF_R
+    # 结构行（下排）：左支柱 + 三个站牌 + 长椅 + 右支柱
+    structures[bus_y + 1][bus_x] = GID_BUS_PILLAR_L
+    structures[bus_y + 1][bus_x + 1] = GID_BUS_SIGN_L   # 站牌左半（立地，顶部接顶棚）
+    structures[bus_y + 1][bus_x + 2] = GID_BUS_SIGN_C   # 站牌中间
+    structures[bus_y + 1][bus_x + 3] = GID_BUS_SIGN_R   # 站牌右半
+    structures[bus_y + 1][bus_x + 4] = GID_BUS_BENCH    # 长椅
+    structures[bus_y + 1][bus_x + 5] = GID_BUS_PILLAR_R
+    # 碰撞
+    for dx in range(6):
+        collision[bus_y][bus_x + dx] = GID_COLLISION
+        collision[bus_y + 1][bus_x + dx] = GID_COLLISION
 
     trigger_objects.append({
         "x": (sx + 2) * TILE_SIZE,
@@ -1385,8 +1567,14 @@ def _place_shuttle_station(ground, structures, decorations, collision, interacti
         decorations[sy + sh - 2][sx + dx] = GID_BENCH
         collision[sy + sh - 2][sx + dx] = GID_COLLISION
 
+    # 站台附近路灯装饰
+    for lx in [sx + 1, sx + sw - 2]:
+        if decorations[sy + 1][lx] == GID_EMPTY and collision[sy + 1][lx] == GID_EMPTY:
+            decorations[sy + 1][lx] = GID_LAMP
+            collision[sy + 1][lx] = GID_COLLISION
 
-def _place_connecting_paths(ground):
+
+def _place_connecting_paths(ground, structures, decorations, collision):
     for x in range(5, 105):
         if ground[35][x] == GID_GRASS:
             ground[35][x] = GID_PATH_DIRT
@@ -1435,6 +1623,34 @@ def _place_connecting_paths(ground):
         if ground[50][x] == GID_GRASS:
             ground[50][x] = GID_PATH_DIRT
 
+    # 连接路径旁路灯装饰
+    lamp_positions = [
+        # 上方水平路旁 (y=35)
+        (10, 34), (30, 34), (50, 34), (70, 34), (90, 34),
+        # 下方水平路旁 (y=42)
+        (10, 43), (30, 43), (50, 43), (70, 43), (90, 43),
+        # 图书馆纵向路旁 (x=18-19)
+        (17, 10), (17, 20), (17, 28),
+        (20, 10), (20, 20), (20, 28),
+        # 博雅广场纵向路旁 (x=85-86)
+        (84, 10), (84, 20), (84, 28),
+        (87, 10), (87, 20), (87, 28),
+        # 体育馆纵向路旁 (x=18-19, 下半)
+        (17, 45), (17, 55),
+        (20, 45), (20, 55),
+        # 食堂纵向路旁 (x=94-95, 下半)
+        (93, 45), (93, 55),
+        (96, 45), (96, 55),
+        # 喷泉广场纵向路旁 (x=59-60)
+        (58, 44), (58, 55),
+        (61, 44), (61, 55),
+    ]
+    for lx, ly in lamp_positions:
+        if 0 <= ly < MAP_HEIGHT and 0 <= lx < MAP_WIDTH:
+            if decorations[ly][lx] == GID_EMPTY and collision[ly][lx] == GID_EMPTY and structures[ly][lx] == GID_EMPTY:
+                decorations[ly][lx] = GID_LAMP
+                collision[ly][lx] = GID_COLLISION
+
 
 def _place_nature_decor(ground, structures, decorations, collision, interactive_objects):
     random.seed(123)
@@ -1463,19 +1679,12 @@ def _place_nature_decor(ground, structures, decorations, collision, interactive_
     for i, (tx, ty) in enumerate(tree_positions):
         if i % 3 == 0:
             structures[ty][tx] = GID_TREE_OSMANTHUS
-            interactive_objects.append({
-                "x": tx * TILE_SIZE, "y": ty * TILE_SIZE,
-                "width": TILE_SIZE, "height": TILE_SIZE,
-                "type": "osmanthus_tree",
-                "properties": {"interactive_type": "examine", "display_name": "桂花树",
-                               "desc": "校园里随处可见的桂花树"}
-            })
         else:
             structures[ty][tx] = GID_TREE_GREEN
         collision[ty][tx] = GID_COLLISION
 
     bush_positions = []
-    for _ in range(50):
+    for _ in range(70):
         bx = random.randint(4, MAP_WIDTH - 5)
         by = random.randint(4, MAP_HEIGHT - 5)
         if ground[by][bx] != GID_GRASS:
@@ -1552,7 +1761,7 @@ def _place_nature_decor(ground, structures, decorations, collision, interactive_
                 structures[cy + dy][cx + dx] = GID_TREE_CLUSTER
                 collision[cy + dy][cx + dx] = GID_COLLISION
 
-    for _ in range(18):
+    for _ in range(30):
         rx = random.randint(4, MAP_WIDTH - 5)
         ry = random.randint(4, MAP_HEIGHT - 5)
         if ground[ry][rx] == GID_GRASS and structures[ry][rx] == GID_EMPTY and decorations[ry][rx] == GID_EMPTY and collision[ry][rx] == GID_EMPTY:
@@ -1605,13 +1814,6 @@ def _place_nature_decor(ground, structures, decorations, collision, interactive_
             if ground[byy][bxx] == GID_GRASS and structures[byy][bxx] == GID_EMPTY:
                 decorations[byy][bxx] = GID_BENCH
                 collision[byy][bxx] = GID_COLLISION
-                interactive_objects.append({
-                    "x": bxx * TILE_SIZE, "y": byy * TILE_SIZE,
-                    "width": TILE_SIZE, "height": TILE_SIZE,
-                    "type": "bench",
-                    "properties": {"interactive_type": "examine", "display_name": "长椅",
-                                   "desc": "校园里的休息长椅"}
-                })
 
     flower_spots = [
         (15, 20), (25, 22), (65, 15), (90, 20),
@@ -1622,6 +1824,29 @@ def _place_nature_decor(ground, structures, decorations, collision, interactive_
             if ground[fyy][fxx] == GID_GRASS and structures[fyy][fxx] == GID_EMPTY and decorations[fyy][fxx] == GID_EMPTY:
                 decorations[fyy][fxx] = GID_FLOWER_BED
                 collision[fyy][fxx] = GID_COLLISION
+
+    # 主要路径旁路灯装饰
+    lamp_spots = [
+        # 图书馆路径旁
+        (16, 20), (21, 20),
+        # 体育馆路径旁
+        (16, 45), (21, 45),
+        # 食堂路径旁
+        (92, 45), (97, 45),
+        # 连接路径旁
+        (18, 10), (18, 20), (18, 28),
+        (85, 10), (85, 20), (85, 28),
+        (18, 45), (18, 55),
+        (94, 45), (94, 55),
+        (59, 44), (60, 44),
+        (30, 49), (50, 49),
+        (70, 49), (85, 49),
+    ]
+    for lxx, lyy in lamp_spots:
+        if 0 <= lyy < MAP_HEIGHT and 0 <= lxx < MAP_WIDTH:
+            if decorations[lyy][lxx] == GID_EMPTY and collision[lyy][lxx] == GID_EMPTY and structures[lyy][lxx] == GID_EMPTY:
+                decorations[lyy][lxx] = GID_LAMP
+                collision[lyy][lxx] = GID_COLLISION
 
 
 def _add_grass_variation(ground):

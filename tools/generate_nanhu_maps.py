@@ -77,8 +77,22 @@ GID_NANHU_DOOR = 59
 GID_NANHU_SIGN = 60
 GID_NANHU_AC = 61
 GID_NANHU_LOBBY_LIGHT = 62
+# 6格宽2格高乘车站（来自主校区tileset）
+GID_BUS_ROOF_L = 70
+GID_BUS_ROOF_M = 71
+GID_BUS_ROOF_R = 72
+GID_BUS_PILLAR_L = 73
+GID_BUS_SIGN_L = 74
+GID_BUS_SIGN_C = 75
+GID_BUS_SIGN_R = 76
+GID_BUS_PILLAR_R = 77
+GID_BUS_BENCH = 78
+GID_BUS_ROOF_M2 = 79   # 顶棚中间（无垂线，用于长椅上方）
 # 办公桌+电脑一体（来自室内tileset）
 GID_OFFICE_DESK = 44
+# 大办公桌左右半（来自室内tileset）
+GID_LARGE_DESK_L = 45
+GID_LARGE_DESK_R = 46
 
 SOLID_GIDS = {
     GID_WALL_BRICK, GID_WALL_BRICK_TOP, GID_WALL_GRAY,
@@ -89,6 +103,8 @@ SOLID_GIDS = {
     GID_BUS_STOP, GID_HEDGE, GID_COLLISION,
     GID_FLOWER_GARDEN, GID_TREE_CLUSTER,
     GID_GATE_PILLAR, GID_GATE_BEAM, GID_GATE_SIGN,
+    GID_BUS_ROOF_L, GID_BUS_ROOF_M, GID_BUS_ROOF_M2, GID_BUS_ROOF_R,
+    GID_BUS_PILLAR_L, GID_BUS_SIGN_L, GID_BUS_SIGN_C, GID_BUS_SIGN_R, GID_BUS_PILLAR_R, GID_BUS_BENCH,
     GID_LIB_WALL, GID_LIB_WINDOW, GID_LIB_ROOF, GID_LIB_PILLAR, GID_LIB_AWNING, GID_LIB_SIGN, GID_LIB_SIGN_SIDE,
     GID_GYM_WALL, GID_GYM_WINDOW, GID_GYM_ROOF_CENTER, GID_GYM_ROOF_SIDE, GID_GYM_VENT, GID_GYM_SIGN,
     GID_DINING_WALL, GID_DINING_WINDOW, GID_DINING_ROOF, GID_DINING_AWNING, GID_DINING_CHIMNEY, GID_DINING_SIGN, GID_DINING_MENU,
@@ -167,7 +183,7 @@ def design_nanhu_campus():
 
     _place_nanhu_borders(structures, collision)
     _place_nanhu_road(ground, structures, decorations, collision, interactive_objects)
-    _place_nanhulou(ground, structures, collision, interactive_objects, trigger_objects)
+    _place_nanhulou(ground, structures, decorations, collision, interactive_objects, trigger_objects)
     _place_nanhu_shuttle(ground, structures, decorations, collision, interactive_objects, trigger_objects)
     _place_nanhu_lake(ground, structures, decorations, collision, interactive_objects)
     _place_nanhu_garden(ground, structures, decorations, collision, interactive_objects)
@@ -218,27 +234,19 @@ def _place_nanhu_road(ground, structures, decorations, collision, interactive_ob
         structures[road_y_end + 1][x] = GID_TREE_OSMANTHUS
         collision[road_y_end + 1][x] = GID_COLLISION
 
+    # 道路北侧路灯（仅装饰+碰撞，互动由game_manager处理）
     for x in range(road_x_start + 8, road_x_end, 10):
         decorations[road_y_start - 1][x] = GID_LAMP
         collision[road_y_start - 1][x] = GID_COLLISION
-        interactive_objects.append({
-            "x": x * TILE_SIZE, "y": (road_y_start - 1) * TILE_SIZE,
-            "width": TILE_SIZE, "height": TILE_SIZE,
-            "type": "lamp",
-            "properties": {"interactive_type": "examine", "display_name": "路灯",
-                           "desc": "南湖校区的路灯"}
-        })
+
+    # 道路南侧路灯（仅装饰+碰撞）
+    for x in range(road_x_start + 3, road_x_end, 10):
+        decorations[road_y_end + 1][x] = GID_LAMP
+        collision[road_y_end + 1][x] = GID_COLLISION
 
     for x in range(road_x_start + 12, road_x_end, 12):
         decorations[road_y_start][x] = GID_BENCH
         collision[road_y_start][x] = GID_COLLISION
-        interactive_objects.append({
-            "x": x * TILE_SIZE, "y": road_y_start * TILE_SIZE,
-            "width": TILE_SIZE, "height": TILE_SIZE,
-            "type": "bench",
-            "properties": {"interactive_type": "examine", "display_name": "长椅",
-                           "desc": "南湖校区的休息长椅"}
-        })
 
     for y in range(3, road_y_start):
         if ground[y][20] == GID_GRASS:
@@ -253,7 +261,7 @@ def _place_nanhu_road(ground, structures, decorations, collision, interactive_ob
             ground[y][21] = GID_PATH_DIRT
 
 
-def _place_nanhulou(ground, structures, collision, interactive_objects, trigger_objects):
+def _place_nanhulou(ground, structures, decorations, collision, interactive_objects, trigger_objects):
     bx, by, bw, bh = 14, 4, 14, 8
 
     # 填充综合楼白色墙壁
@@ -333,9 +341,17 @@ def _place_nanhulou(ground, structures, collision, interactive_objects, trigger_
     })
     _add_exit_spawn(trigger_objects, "nanhulou_exit", door_x, by + bh + 1)
 
+    # 综合楼入口附近路灯装饰
+    lamp_positions = [(door_x - 3, by + bh + 1), (door_x + 4, by + bh + 1)]
+    for lx, ly in lamp_positions:
+        if 0 <= ly < MAP_HEIGHT and 0 <= lx < MAP_WIDTH:
+            if structures[ly][lx] == GID_EMPTY and decorations[ly][lx] == GID_EMPTY and collision[ly][lx] == GID_EMPTY:
+                decorations[ly][lx] = GID_LAMP
+                collision[ly][lx] = GID_COLLISION
+
 
 def _place_nanhu_shuttle(ground, structures, decorations, collision, interactive_objects, trigger_objects):
-    sx, sy, sw, sh = 14, 23, 12, 5
+    sx, sy, sw, sh = 14, 23, 14, 5
 
     for y in range(sy, sy + sh):
         for x in range(sx, sx + sw):
@@ -348,14 +364,31 @@ def _place_nanhu_shuttle(ground, structures, decorations, collision, interactive
         ground[sy][x] = GID_PATH_DIRT
         ground[sy + sh - 1][x] = GID_PATH_DIRT
 
-    bus_x = sx + sw // 2
+    # 6格宽2格高乘车站，右移2格
+    bus_x = sx + sw // 2 - 3 + 2
     bus_y = sy + 1
-    structures[bus_y][bus_x] = GID_BUS_STOP
-    collision[bus_y][bus_x] = GID_COLLISION
+    # 顶棚行（上排）：纯顶棚
+    structures[bus_y][bus_x] = GID_BUS_ROOF_L
+    structures[bus_y][bus_x + 1] = GID_BUS_ROOF_M
+    structures[bus_y][bus_x + 2] = GID_BUS_ROOF_M
+    structures[bus_y][bus_x + 3] = GID_BUS_ROOF_M
+    structures[bus_y][bus_x + 4] = GID_BUS_ROOF_M2  # 长椅上方，无垂线
+    structures[bus_y][bus_x + 5] = GID_BUS_ROOF_R
+    # 结构行（下排）：左支柱 + 三个站牌 + 长椅 + 右支柱
+    structures[bus_y + 1][bus_x] = GID_BUS_PILLAR_L
+    structures[bus_y + 1][bus_x + 1] = GID_BUS_SIGN_L   # 站牌左半（立地，顶部接顶棚）
+    structures[bus_y + 1][bus_x + 2] = GID_BUS_SIGN_C   # 站牌中间
+    structures[bus_y + 1][bus_x + 3] = GID_BUS_SIGN_R   # 站牌右半
+    structures[bus_y + 1][bus_x + 4] = GID_BUS_BENCH    # 长椅
+    structures[bus_y + 1][bus_x + 5] = GID_BUS_PILLAR_R
+    # 碰撞
+    for dx in range(6):
+        collision[bus_y][bus_x + dx] = GID_COLLISION
+        collision[bus_y + 1][bus_x + dx] = GID_COLLISION
 
     interactive_objects.append({
         "x": bus_x * TILE_SIZE, "y": bus_y * TILE_SIZE,
-        "width": TILE_SIZE, "height": TILE_SIZE,
+        "width": 6 * TILE_SIZE, "height": 2 * TILE_SIZE,
         "type": "bus_stop",
         "properties": {
             "interactive_type": "enter",
@@ -395,6 +428,14 @@ def _place_nanhu_shuttle(ground, structures, decorations, collision, interactive
     for dx in [3, 8]:
         decorations[sy + sh - 2][sx + dx] = GID_BENCH
         collision[sy + sh - 2][sx + dx] = GID_COLLISION
+
+    # 乘车站入口附近路灯装饰
+    lamp_positions = [(sx - 2, sy - 1), (sx + sw + 1, sy - 1)]
+    for lx, ly in lamp_positions:
+        if 0 <= ly < MAP_HEIGHT and 0 <= lx < MAP_WIDTH:
+            if structures[ly][lx] == GID_EMPTY and decorations[ly][lx] == GID_EMPTY and collision[ly][lx] == GID_EMPTY:
+                decorations[ly][lx] = GID_LAMP
+                collision[ly][lx] = GID_COLLISION
 
 
 def _place_nanhu_lake(ground, structures, decorations, collision, interactive_objects):
@@ -475,6 +516,21 @@ def _place_nanhu_garden(ground, structures, decorations, collision, interactive_
     decorations[gy + 1][gx + gw // 2] = GID_LAMP
     collision[gy + 1][gx + gw // 2] = GID_COLLISION
 
+    # 花园内更多装饰：灌木和花坛
+    for dx in [1, 6]:
+        if decorations[gy + 4][gx + dx] == GID_EMPTY_I and collision[gy + 4][gx + dx] == GID_EMPTY_I:
+            decorations[gy + 4][gx + dx] = GID_BUSH
+            collision[gy + 4][gx + dx] = GID_COLLISION
+    if decorations[gy + gh - 2][gx + gw // 2] == GID_EMPTY_I and collision[gy + gh - 2][gx + gw // 2] == GID_EMPTY_I:
+        decorations[gy + gh - 2][gx + gw // 2] = GID_FLOWER_BED
+        collision[gy + gh - 2][gx + gw // 2] = GID_COLLISION
+
+    # 花园内草坪石头
+    if decorations[gy + 3][gx + 3] == GID_EMPTY_I and collision[gy + 3][gx + 3] == GID_EMPTY_I:
+        decorations[gy + 3][gx + 3] = GID_LAWN_ROCK
+    if decorations[gy + gh - 4][gx + 4] == GID_EMPTY_I and collision[gy + gh - 4][gx + 4] == GID_EMPTY_I:
+        decorations[gy + gh - 4][gx + 4] = GID_LAWN_ROCK
+
 
 def _place_nanhu_nature(ground, structures, decorations, collision, interactive_objects):
     random.seed(256)
@@ -528,7 +584,7 @@ def _place_nanhu_nature(ground, structures, decorations, collision, interactive_
         decorations[by][bx] = GID_BUSH
         collision[by][bx] = GID_COLLISION
 
-    for _ in range(8):
+    for _ in range(15):
         rx = random.randint(3, MAP_WIDTH - 4)
         ry = random.randint(3, MAP_HEIGHT - 4)
         if ground[ry][rx] == GID_GRASS and structures[ry][rx] == GID_EMPTY and decorations[ry][rx] == GID_EMPTY and collision[ry][rx] == GID_EMPTY:
@@ -622,8 +678,10 @@ GID_SECRET_WALL_TOP = 40 # 密室墙壁顶部
 GID_SECRET_FLOOR = 41    # 密室碎石地面
 GID_SECRET_RUNE = 42     # 密室符文墙
 GID_SECRET_TORCH = 43    # 密室火把
+GID_LARGE_DESK_L = 45   # 大办公桌左半
+GID_LARGE_DESK_R = 46   # 大办公桌右半
 
-TILE_COUNT_I = 44
+TILE_COUNT_I = 46
 
 SOLID_GIDS_I = {
     GID_INDOOR_WALL, GID_INDOOR_WALL_TOP, GID_BOOKSHELF, GID_BOOKSHELF_TOP,
@@ -635,7 +693,7 @@ SOLID_GIDS_I = {
     GID_DINING_WALL, GID_DINING_WALL_TOP, GID_DINING_SERVING,
     GID_NANHU_WALL, GID_NANHU_WALL_TOP, GID_NANHU_ELEVATOR,
     GID_SECRET_WALL, GID_SECRET_WALL_TOP, GID_SECRET_RUNE, GID_SECRET_TORCH,
-    GID_OFFICE_DESK,
+    GID_OFFICE_DESK, GID_LARGE_DESK_L, GID_LARGE_DESK_R,
 }
 
 
@@ -729,17 +787,6 @@ def design_nanhulou_f1():
     })
 
     interactive_objects.append({
-        "x": 2 * TILE_SIZE, "y": 10 * TILE_SIZE,
-        "width": TILE_SIZE, "height": TILE_SIZE,
-        "type": "blackboard",
-        "properties": {
-            "interactive_type": "examine",
-            "prompt_text": "查看公告栏",
-            "display_name": "公告栏",
-        }
-    })
-
-    interactive_objects.append({
         "x": 17 * TILE_SIZE, "y": 10 * TILE_SIZE,
         "width": TILE_SIZE, "height": TILE_SIZE,
         "type": "computer",
@@ -790,11 +837,12 @@ def design_nanhulou_f2():
         structures[y][W - 1] = GID_NANHU_WALL
 
     # 右侧书架（贴墙，从第17列到第18列，含密道入口）
+    # 向下移动6格靠近墙体
     for x in range(W - 3, W - 1):
-        structures[1][x] = GID_BOOKSHELF_TOP
-        structures[2][x] = GID_BOOKSHELF
-        collision[1][x] = GID_COLLISION_I
-        collision[2][x] = GID_COLLISION_I
+        structures[7][x] = GID_BOOKSHELF_TOP
+        structures[8][x] = GID_BOOKSHELF
+        collision[7][x] = GID_COLLISION_I
+        collision[8][x] = GID_COLLISION_I
 
     # 电脑终端A-D：办公桌+电脑一体
     structures[5][3] = GID_OFFICE_DESK
@@ -806,15 +854,9 @@ def design_nanhulou_f2():
     structures[5][16] = GID_OFFICE_DESK
     collision[5][16] = GID_COLLISION_I
 
-    # 主控电脑区域：中央地毯+办公桌+电脑一体
-    ground[7][9] = GID_RUG
-    ground[7][10] = GID_RUG
-    ground[8][9] = GID_RUG
-    ground[8][10] = GID_RUG
-
-    # 主控电脑（2格宽办公桌）
-    structures[9][9] = GID_OFFICE_DESK
-    structures[9][10] = GID_OFFICE_DESK
+    # 主控电脑区域：中央大办公桌（2格宽，左右半无缝衔接）
+    structures[9][9] = GID_LARGE_DESK_L
+    structures[9][10] = GID_LARGE_DESK_R
     collision[9][9] = GID_COLLISION_I
     collision[9][10] = GID_COLLISION_I
 
@@ -901,8 +943,8 @@ def design_nanhulou_f2():
     })
 
     _add_spawn(trigger_objects, "nanhulou_f2_stairs", 3, 2)
-    # 从密室返回F2的出生点（右墙书架旁）
-    _add_spawn(trigger_objects, "nanhulou_f2_secret_return", W - 4, 3)
+    # 从密室返回F2的出生点（右墙书架旁，与书架同行）
+    _add_spawn(trigger_objects, "nanhulou_f2_secret_return", W - 4, 9)
 
     return W, H, ground, structures, decorations, collision, interactive_objects, trigger_objects
 
@@ -1146,7 +1188,7 @@ if __name__ == "__main__":
     ground, terrain, structures, decorations, collision, objs, triggers = design_nanhu_campus()
     create_tmx(MAP_WIDTH, MAP_HEIGHT, ground, terrain, structures, decorations, collision,
                objs, triggers,
-               "main_campus_tileset", outdoor_tileset_rel, 69, SOLID_GIDS,
+               "main_campus_tileset", outdoor_tileset_rel, 79, SOLID_GIDS,
                os.path.join(map_dir, "nanhu_campus.tmx"), has_terrain=True)
 
     print("\n--- Nanhu Building F1 ---")

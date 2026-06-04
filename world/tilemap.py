@@ -96,6 +96,9 @@ class TileMap:
 
         for obj in layer:
             props = dict(obj.properties) if obj.properties else {}
+            # 将对象 type 属性存入 properties，便于后续通过 properties.get("type") 查找
+            if obj.type:
+                props["type"] = obj.type
             interactive_type = props.get("interactive_type", "examine")
             obj_instance = InteractiveObject(
                 x=obj.x, y=obj.y,
