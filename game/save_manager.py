@@ -43,6 +43,7 @@ class SaveData:
         self.save_time = ""
         self.version = SAVE_VERSION
         self.play_time = 0.0
+        self.audio_settings = {}
 
     def to_dict(self):
         return {
@@ -62,6 +63,7 @@ class SaveData:
             "tutorial_step": self.tutorial_step,
             "tutorial_completed": self.tutorial_completed,
             "explored_areas": self.explored_areas,
+            "audio_settings": self.audio_settings,
         }
 
     @staticmethod
@@ -94,6 +96,7 @@ class SaveData:
             sd.tutorial_step = 9 if old_shown else 0
             sd.tutorial_completed = old_shown
         sd.explored_areas = data.get("explored_areas", {})
+        sd.audio_settings = data.get("audio_settings", {})
         return sd
 
 
@@ -262,6 +265,9 @@ class SaveManager:
         # 已探索区域（从小地图模块获取）
         sd.explored_areas = game_manager.minimap.get_explored_data()
 
+        # 音频设置
+        sd.audio_settings = game_manager.audio_manager.to_dict()
+
         return sd
 
     def apply_save_data(self, save_data, game_manager):
@@ -303,6 +309,10 @@ class SaveManager:
         # 恢复已探索区域到小地图模块
         game_manager.minimap.load_explored_data(save_data.explored_areas)
         game_manager.minimap.invalidate_cache()
+
+        # 恢复音频设置
+        if save_data.audio_settings:
+            game_manager.audio_manager.from_dict_data(save_data.audio_settings)
 
         # 更新摄像机
         from config import PLAYER_HEIGHT

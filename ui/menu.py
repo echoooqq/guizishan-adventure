@@ -20,11 +20,15 @@ from config import (
 )
 from ui.dialog_box import create_border_surface, draw_nine_slice
 
+# 从quest_log导入共享颜色
+QUEST_SOLVED_COLOR = (100, 220, 100)
+
 
 # 菜单项定义
 PAUSE_MENU_ITEMS = [
     ("continue", "继续游戏"),
     ("inventory", "背包"),
+    ("quest_log", "任务日志"),
     ("map", "校园地图"),
     ("save", "存档"),
     ("load", "读档"),
@@ -54,6 +58,22 @@ SETTINGS_MENU_ITEMS = [
     ("window_size", "窗口大小"),
     ("controls", "操作说明"),
     ("back", "返回"),
+]
+
+# 音量调节子菜单项
+VOLUME_MENU_ITEMS = [
+    ("master_volume", "主音量"),
+    ("bgm_volume", "背景音乐"),
+    ("sfx_volume", "音效"),
+    ("back", "返回"),
+]
+
+# 窗口大小选项
+WINDOW_SIZE_OPTIONS = [
+    (960, 540, "960×540（默认）"),
+    (1280, 720, "1280×720"),
+    (1440, 810, "1440×810"),
+    (1920, 1080, "1920×1080"),
 ]
 
 # 标题画面读档菜单项
@@ -86,13 +106,23 @@ class Menu:
         self._small_font = pygame.font.Font(FONT_PATH, 8)
 
         self.active = False
-        self.current_menu = "pause"  # pause / save / load / settings / title_load / confirm_load
+        self.current_menu = "pause"  # pause / save / load / settings / title_load / confirm_load / volume / window_size
         self.selected_index = 0
         self._save_infos = []
         self._save_message = ""
         self._save_message_timer = 0.0
         self._pending_load_slot = None  # 等待确认读档的槽位ID
         self._confirm_choice = 0     # 确认对话框选项：0=确认, 1=取消
+
+        # 音量设置（0.0-1.0）
+        self._master_volume = 1.0
+        self._bgm_volume = 0.5
+        self._sfx_volume = 0.7
+        self._adjusting_slider = False  # 是否正在拖动滑块
+
+        # 窗口大小选择
+        self._window_size_index = 0  # 当前选中的窗口大小索引
+        self._current_window_size = (960, 540)  # 当前窗口大小
 
         # 边框素材
         self._border_image = create_border_surface(
@@ -140,6 +170,10 @@ class Menu:
                     return "continue"
                 elif self.current_menu == "title_load":
                     return "cancel_title_load"
+                elif self.current_menu in ("volume", "window_size"):
+                    self.current_menu = "settings"
+                    self.selected_index = 0
+                    return None
                 else:
                     self.current_menu = "pause"
                     self.selected_index = 0
@@ -151,6 +185,20 @@ class Menu:
                 self._move_selection(1)
             elif event.key in (pygame.K_f, pygame.K_SPACE, pygame.K_RETURN):
                 return self._confirm_selection()
+            elif event.key == pygame.K_LEFT:
+                # 音量调节：减小音量
+                if self.current_menu == "volume":
+                    return self._adjust_volume(-0.05)
+                # 窗口大小：上一个选项
+                elif self.current_menu == "window_size":
+                    return self._change_window_size(-1)
+            elif event.key == pygame.K_RIGHT:
+                # 音量调节：增大音量
+                if self.current_menu == "volume":
+                    return self._adjust_volume(0.05)
+                # 窗口大小：下一个选项
+                elif self.current_menu == "window_size":
+                    return self._change_window_size(1)
 
         return None
 
@@ -242,6 +290,16 @@ class Menu:
             self.selected_index = 0
             return "open_settings"
 
+        if action == "volume":
+            self.current_menu = "volume"
+            self.selected_index = 0
+            return "open_volume"
+
+        if action == "window_size":
+            self.current_menu = "window_size"
+            self.selected_index = 0
+            return "open_window_size"
+
         # 读档菜单中的槽位选择
         if action.startswith("load_"):
             slot_id = self._action_to_slot_id(action)
@@ -250,6 +308,15 @@ class Menu:
                 self.current_menu = "confirm_load"
                 self._confirm_choice = 0
                 return None  # 进入确认对话框
+
+        # 窗口大小选择
+        if action.startswith("size_"):
+            idx = int(action.split("_")[1])
+            if idx < len(WINDOW_SIZE_OPTIONS):
+                w, h, _ = WINDOW_SIZE_OPTIONS[idx]
+                self._window_size_index = idx
+                self._current_window_size = (w, h)
+                return ("window_size_change", w, h)
 
         return action
 
@@ -277,6 +344,11 @@ class Menu:
             return TITLE_LOAD_MENU_ITEMS
         elif self.current_menu == "settings":
             return SETTINGS_MENU_ITEMS
+        elif self.current_menu == "volume":
+            return VOLUME_MENU_ITEMS
+        elif self.current_menu == "window_size":
+            # 窗口大小菜单项动态生成
+            return [(f"size_{i}", opt[2]) for i, opt in enumerate(WINDOW_SIZE_OPTIONS)] + [("back", "返回")]
         return []
 
     def set_save_infos(self, save_infos):
@@ -287,6 +359,52 @@ class Menu:
         """设置存档操作提示消息"""
         self._save_message = message
         self._save_message_timer = 2.0
+
+    def set_volumes(self, master, bgm, sfx):
+        """设置音量值（从音频管理器同步）"""
+        self._master_volume = master
+        self._bgm_volume = bgm
+        self._sfx_volume = sfx
+
+    def get_volumes(self):
+        """获取音量值"""
+        return self._master_volume, self._bgm_volume, self._sfx_volume
+
+    def set_window_size(self, width, height):
+        """设置当前窗口大小"""
+        self._current_window_size = (width, height)
+        # 查找匹配的索引
+        for i, (w, h, _) in enumerate(WINDOW_SIZE_OPTIONS):
+            if w == width and h == height:
+                self._window_size_index = i
+                break
+
+    def _adjust_volume(self, delta):
+        """调整音量，返回音量变更动作"""
+        items = VOLUME_MENU_ITEMS
+        if self.selected_index < len(items):
+            action = items[self.selected_index][0]
+            if action == "master_volume":
+                self._master_volume = max(0.0, min(1.0, self._master_volume + delta))
+                return ("volume_change", "master", self._master_volume)
+            elif action == "bgm_volume":
+                self._bgm_volume = max(0.0, min(1.0, self._bgm_volume + delta))
+                return ("volume_change", "bgm", self._bgm_volume)
+            elif action == "sfx_volume":
+                self._sfx_volume = max(0.0, min(1.0, self._sfx_volume + delta))
+                return ("volume_change", "sfx", self._sfx_volume)
+        return None
+
+    def _change_window_size(self, direction):
+        """切换窗口大小选项"""
+        new_index = self._window_size_index + direction
+        new_index = max(0, min(len(WINDOW_SIZE_OPTIONS) - 1, new_index))
+        if new_index != self._window_size_index:
+            self._window_size_index = new_index
+            w, h, _ = WINDOW_SIZE_OPTIONS[new_index]
+            self._current_window_size = (w, h)
+            return ("window_size_change", w, h)
+        return None
 
     def get_save_slot_id(self):
         """获取当前选中的存档槽位ID（存档菜单用）"""
@@ -318,6 +436,10 @@ class Menu:
             self._draw_load_menu(surface, "继续游戏")
         elif self.current_menu == "settings":
             self._draw_settings_menu(surface)
+        elif self.current_menu == "volume":
+            self._draw_volume_menu(surface)
+        elif self.current_menu == "window_size":
+            self._draw_window_size_menu(surface)
         elif self.current_menu == "confirm_load":
             self._draw_confirm_load(surface)
 
@@ -584,6 +706,7 @@ class Menu:
                 "Shift：冲刺",
                 "F/空格：互动",
                 "Tab/I：背包",
+                "J：任务日志",
                 "M：地图",
                 "Esc：菜单",
             ]
@@ -595,3 +718,145 @@ class Menu:
                 )
                 surface.blit(ctrl_text, ctrl_rect)
                 cy += 10
+
+    def _draw_volume_menu(self, surface):
+        """绘制音量调节菜单"""
+        title = self.title_font.render("音量调节", True, MENU_TITLE_COLOR)
+        title_rect = title.get_rect(
+            centerx=INTERNAL_WIDTH // 2,
+            centery=INTERNAL_HEIGHT // 2 - 70,
+        )
+        surface.blit(title, title_rect)
+
+        items = VOLUME_MENU_ITEMS
+        start_y = INTERNAL_HEIGHT // 2 - 40
+        item_height = 20
+        item_spacing = 6
+
+        volumes = {
+            "master_volume": self._master_volume,
+            "bgm_volume": self._bgm_volume,
+            "sfx_volume": self._sfx_volume,
+        }
+
+        for i, (action, label) in enumerate(items):
+            y = start_y + i * (item_height + item_spacing)
+            is_selected = (i == self.selected_index)
+
+            if is_selected:
+                bg_rect = pygame.Rect(
+                    INTERNAL_WIDTH // 2 - 80, y - 1,
+                    160, item_height + 2,
+                )
+                bg_surf = pygame.Surface(
+                    (bg_rect.width, bg_rect.height), pygame.SRCALPHA
+                )
+                bg_surf.fill(MENU_ITEM_HOVER_BG)
+                surface.blit(bg_surf, bg_rect.topleft)
+
+            if is_selected:
+                self._draw_indicator(surface, INTERNAL_WIDTH // 2 - 86, y, MENU_TITLE_COLOR)
+
+            # 标签
+            color = MENU_ITEM_HOVER_COLOR if is_selected else MENU_ITEM_COLOR
+            text = self.font.render(label, True, color)
+            surface.blit(text, (INTERNAL_WIDTH // 2 - 70, y + 2))
+
+            # 滑块（仅音量项）
+            if action in volumes:
+                volume = volumes[action]
+                slider_x = INTERNAL_WIDTH // 2 - 10
+                slider_y = y + 8
+                slider_w = 70
+                slider_h = 4
+
+                # 滑块背景
+                slider_bg = pygame.Surface((slider_w, slider_h), pygame.SRCALPHA)
+                slider_bg.fill((40, 40, 60))
+                surface.blit(slider_bg, (slider_x, slider_y))
+
+                # 滑块填充
+                fill_w = int(slider_w * volume)
+                if fill_w > 0:
+                    fill_color = (100, 200, 100) if volume > 0.3 else (220, 60, 60)
+                    pygame.draw.rect(surface, fill_color, (slider_x, slider_y, fill_w, slider_h))
+
+                # 滑块边框
+                pygame.draw.rect(surface, (80, 80, 120), (slider_x, slider_y, slider_w, slider_h), 1)
+
+                # 滑块手柄
+                handle_x = slider_x + fill_w
+                pygame.draw.rect(surface, MENU_TITLE_COLOR, (handle_x - 2, slider_y - 2, 5, slider_h + 4))
+
+                # 百分比文字
+                pct_text = self._small_font.render(f"{int(volume * 100)}%", True, SAVE_INFO_COLOR)
+                surface.blit(pct_text, (slider_x + slider_w + 4, y + 4))
+
+            # 操作提示
+            if is_selected and action in volumes:
+                hint = self._small_font.render("←→调节", True, (120, 120, 150))
+                surface.blit(hint, (INTERNAL_WIDTH // 2 - 70, y + 14))
+
+    def _draw_window_size_menu(self, surface):
+        """绘制窗口大小选择菜单"""
+        title = self.title_font.render("窗口大小", True, MENU_TITLE_COLOR)
+        title_rect = title.get_rect(
+            centerx=INTERNAL_WIDTH // 2,
+            centery=INTERNAL_HEIGHT // 2 - 70,
+        )
+        surface.blit(title, title_rect)
+
+        items = self._get_current_items()
+        start_y = INTERNAL_HEIGHT // 2 - 40
+        item_height = 16
+        item_spacing = 2
+
+        for i, (action, label) in enumerate(items):
+            y = start_y + i * (item_height + item_spacing)
+            is_selected = (i == self.selected_index)
+
+            # 检查是否为当前窗口大小
+            is_current = False
+            if action.startswith("size_"):
+                idx = int(action.split("_")[1])
+                if idx < len(WINDOW_SIZE_OPTIONS):
+                    w, h, _ = WINDOW_SIZE_OPTIONS[idx]
+                    is_current = (w == self._current_window_size[0] and h == self._current_window_size[1])
+
+            if is_selected:
+                bg_rect = pygame.Rect(
+                    INTERNAL_WIDTH // 2 - 70, y - 1,
+                    140, item_height + 2,
+                )
+                bg_surf = pygame.Surface(
+                    (bg_rect.width, bg_rect.height), pygame.SRCALPHA
+                )
+                bg_surf.fill(MENU_ITEM_HOVER_BG)
+                surface.blit(bg_surf, bg_rect.topleft)
+
+            if is_selected:
+                self._draw_indicator(surface, INTERNAL_WIDTH // 2 - 76, y, MENU_TITLE_COLOR)
+
+            # 标签
+            color = MENU_ITEM_HOVER_COLOR if is_selected else MENU_ITEM_COLOR
+            text = self.font.render(label, True, color)
+            text_rect = text.get_rect(
+                centerx=INTERNAL_WIDTH // 2, centery=y + item_height // 2,
+            )
+            surface.blit(text, text_rect)
+
+            # 当前选中标记（程序化绘制勾号，避免字体不支持✓）
+            if is_current:
+                cx = INTERNAL_WIDTH // 2 + 62
+                cy = y + 5
+                pygame.draw.lines(surface, QUEST_SOLVED_COLOR, False, [
+                    (cx, cy + 3), (cx + 2, cy + 5), (cx + 6, cy),
+                ], 1)
+
+        # 操作提示
+        hint = self._small_font.render("←→切换  F/回车确认", True, (120, 120, 150))
+        hint_rect = hint.get_rect(
+            centerx=INTERNAL_WIDTH // 2,
+            centery=start_y + len(items) * (item_height + item_spacing) + 10,
+        )
+        surface.blit(hint, hint_rect)

@@ -10,4 +10,5 @@ class GameState(Enum):
     MAP_VIEW = auto()
     DIALOG = auto()
     PUZZLE = auto()
+    QUEST_LOG = auto()
     OUTRO = auto()

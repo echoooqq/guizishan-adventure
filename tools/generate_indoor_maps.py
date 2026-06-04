@@ -148,10 +148,24 @@ def _draw_tile(surface, gid, x):
         pygame.draw.line(surface, (80, 50, 25), (x + 1, 9), (x + 15, 9))
     elif gid == GID_TABLE:
         surface.fill((180, 140, 90), rect)
-        pygame.draw.rect(surface, (139, 90, 43), (x + 2, 4, 12, 8))
-        pygame.draw.rect(surface, (120, 75, 35), (x + 2, 3, 12, 2))
-        pygame.draw.rect(surface, (101, 67, 33), (x + 3, 12, 2, 3))
-        pygame.draw.rect(surface, (101, 67, 33), (x + 11, 12, 2, 3))
+        # 桌面（与 dining_table 精灵配色一致）
+        pygame.draw.rect(surface, (160, 110, 60), (x + 2, 4, 12, 4))
+        pygame.draw.rect(surface, (180, 130, 70), (x + 3, 4, 10, 3))
+        # 桌面高光线
+        pygame.draw.line(surface, (200, 150, 80), (x + 4, 5), (x + 12, 5))
+        # 桌腿
+        pygame.draw.rect(surface, (130, 90, 45), (x + 3, 8, 2, 7))
+        pygame.draw.rect(surface, (130, 90, 45), (x + 11, 8, 2, 7))
+        # 桌腿内侧高光
+        surface.set_at((x + 4, 9), (150, 105, 55))
+        surface.set_at((x + 12, 9), (150, 105, 55))
+        # 桌上餐具：盘子
+        surface.set_at((x + 6, 5), (200, 200, 200))
+        surface.set_at((x + 7, 5), (200, 200, 200))
+        surface.set_at((x + 6, 4), (220, 220, 220))
+        # 桌上餐具：杯子
+        surface.set_at((x + 10, 5), (180, 180, 180))
+        surface.set_at((x + 10, 4), (200, 200, 220))
     elif gid == GID_CHAIR:
         surface.fill((180, 140, 90), rect)
         pygame.draw.rect(surface, (120, 80, 40), (x + 4, 6, 8, 6))

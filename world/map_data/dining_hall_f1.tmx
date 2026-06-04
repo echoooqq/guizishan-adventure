@@ -185,6 +185,7 @@
     <property name="interactive_type" value="examine" />
     <property name="prompt_text" value="搜索餐桌" />
     <property name="display_name" value="一楼餐桌" />
+    <property name="sprite_key" value="dining_table" />
    </properties>
   </object>
   <object id="4" x="208" y="48" width="32" height="16" type="table">
@@ -192,6 +193,7 @@
     <property name="interactive_type" value="examine" />
     <property name="prompt_text" value="搜索餐桌" />
     <property name="display_name" value="一楼餐桌" />
+    <property name="sprite_key" value="dining_table" />
    </properties>
   </object>
  </objectgroup>

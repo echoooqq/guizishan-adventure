@@ -25,6 +25,7 @@ from game.game_state import GameState
 from game.camera import Camera
 from game.clock import GameClock
 from game.save_manager import SaveManager
+from game.audio_manager import AudioManager
 from player.player import Player
 from player.inventory import Inventory, get_item_data
 from world.tilemap import TileMap
@@ -34,6 +35,7 @@ from ui.inventory_ui import InventoryUI
 from ui.hud import HUD
 from ui.minimap import Minimap
 from ui.menu import Menu
+from ui.quest_log import QuestLog
 from puzzle.puzzle_manager import PuzzleManager, PuzzleState
 from puzzle.guizhong_puzzle import GuizhongPuzzle
 from puzzle.nanhulou_puzzle import NanhulouPuzzle
@@ -131,6 +133,8 @@ class GameManager:
         self.hud = HUD()
         self.minimap = Minimap()
         self.menu = Menu()
+        self.quest_log = QuestLog()
+        self.audio_manager = AudioManager()
         self.save_manager = SaveManager()
         self._dialogues_cache = {}
         self._nearby_interactable = None
@@ -256,6 +260,11 @@ class GameManager:
         self._update_npc_visibility()
 
     def _start_transition(self, transition_type, target_map, spawn_point):
+        # 播放过渡音效
+        if transition_type == TransitionType.CAMPUS_BUS:
+            self.audio_manager.play_sfx("door_open")
+        else:
+            self.audio_manager.play_sfx("door_open")
         bus_label = ""
         if transition_type == TransitionType.CAMPUS_BUS:
             if target_map in NANHU_MAPS:
@@ -1337,6 +1346,8 @@ class GameManager:
         puzzle = self._active_puzzle
         self._active_puzzle = None
         self.state = GameState.PLAYING
+        # 播放谜题完成音效
+        self.audio_manager.play_sfx("puzzle_solve")
         # 解谜后自动存档
         self._auto_save()
 
@@ -1552,6 +1563,9 @@ class GameManager:
                     self._open_inventory()
                 elif event.key == pygame.K_m:
                     self.state = GameState.MAP_VIEW
+                elif event.key == pygame.K_j:
+                    self.quest_log.open()
+                    self.state = GameState.QUEST_LOG
 
         elif self.state == GameState.INTRO:
             if event.type == pygame.KEYDOWN:
@@ -1616,6 +1630,39 @@ class GameManager:
             elif menu_action == "open_settings":
                 pass
 
+            elif menu_action == "open_volume":
+                # 同步音量到菜单
+                self.menu.set_volumes(
+                    self.audio_manager.get_master_volume(),
+                    self.audio_manager.get_bgm_volume(),
+                    self.audio_manager.get_sfx_volume(),
+                )
+
+            elif menu_action == "open_window_size":
+                # 同步当前窗口大小到菜单
+                self.menu.set_window_size(SCREEN_WIDTH, SCREEN_HEIGHT)
+
+            elif menu_action == "quest_log":
+                self.menu.close()
+                self.quest_log.open()
+                self.state = GameState.QUEST_LOG
+
+            elif isinstance(menu_action, tuple):
+                if menu_action[0] == "volume_change":
+                    # 音量变更
+                    vol_type = menu_action[1]
+                    vol_value = menu_action[2]
+                    if vol_type == "master":
+                        self.audio_manager.set_master_volume(vol_value)
+                    elif vol_type == "bgm":
+                        self.audio_manager.set_bgm_volume(vol_value)
+                    elif vol_type == "sfx":
+                        self.audio_manager.set_sfx_volume(vol_value)
+                elif menu_action[0] == "window_size_change":
+                    # 窗口大小变更
+                    new_w, new_h = menu_action[1], menu_action[2]
+                    self._resize_window(new_w, new_h)
+
             elif menu_action == "quit_title":
                 self.save_manager.auto_save(self)
                 self.menu.close()
@@ -1640,6 +1687,12 @@ class GameManager:
                     # 教程步骤推进：关闭地图后进入菜单教学
                     if self._tutorial_step == TUTORIAL_MAP:
                         self._advance_tutorial(TUTORIAL_MENU)
+
+        elif self.state == GameState.QUEST_LOG:
+            quest_action = self.quest_log.handle_event(event)
+            if quest_action == "close":
+                self.quest_log.close()
+                self.state = GameState.PLAYING
 
         self.ui_manager.process_events(event)
 
@@ -1741,6 +1794,9 @@ class GameManager:
                 item_data = get_item_data(item_id)
                 item_name = item_data.get("name", item_id) if item_data else item_id
                 if self.player.inventory.add_item(item_id):
+                    # 播放拾取音效
+                    sfx_name = "badge_get" if (item_data and item_data.get("category") == "key_item") else "pickup"
+                    self.audio_manager.play_sfx(sfx_name)
                     if obj:
                         obj.interacted = True
                     pickup_text = f"拾取了{item_name}！"
@@ -1880,6 +1936,7 @@ class GameManager:
         dt = min(dt, 0.05)
 
         self.ui_manager.update(dt)
+        self.audio_manager.update(dt)
 
         self.transition_manager.update(dt)
 
@@ -1891,6 +1948,9 @@ class GameManager:
             self.save_manager.update_play_time(dt)
 
         if self.state == GameState.TITLE:
+            # 标题画面BGM
+            if self.audio_manager.get_current_bgm_scene() != "title":
+                self.audio_manager.play_bgm("title")
             self.blink_timer += dt
             if self.blink_timer >= 0.8:
                 self.blink_timer -= 0.8
@@ -1954,6 +2014,11 @@ class GameManager:
             self.minimap.mark_explored(self.current_map_id, player_tile_x, player_tile_y)
             self.minimap.update(dt)
 
+            # 更新BGM（根据地图和时段切换）
+            is_night = self.game_clock.is_night()
+            bgm_key = self.audio_manager.get_scene_bgm_key(self.current_map_id, is_night)
+            self.audio_manager.play_bgm(bgm_key)
+
             if not self._realm_triggered and self.current_map_id == "main_campus":
                 if not self.game_clock.is_realm_active():
                     self._check_realm_trigger()
@@ -2015,6 +2080,9 @@ class GameManager:
 
         elif self.state == GameState.PAUSED:
             self.menu.update(dt)
+
+        elif self.state == GameState.QUEST_LOG:
+            self.quest_log.update(dt)
 
         elif self.state == GameState.PUZZLE:
             if self._active_puzzle:
@@ -2111,6 +2179,9 @@ class GameManager:
                 self._active_puzzle.draw(self.internal_surface)
         elif self.state == GameState.MAP_VIEW:
             self._draw_map_view()
+        elif self.state == GameState.QUEST_LOG:
+            self._draw_game()
+            self.quest_log.draw(self.internal_surface, self.puzzle_manager, self.player.inventory)
 
         self.transition_manager.draw(self.internal_surface)
 
@@ -2692,6 +2763,7 @@ class GameManager:
 
     def _title_menu_select(self):
         """标题画面菜单选择"""
+        self.audio_manager.play_sfx("ui_confirm")
         selected = self._title_menu_items[self._title_menu_index]
         if selected == "开始游戏":
             self._start_intro()
@@ -2707,6 +2779,7 @@ class GameManager:
 
     def _start_intro(self):
         """开始开场动画"""
+        self.audio_manager.play_bgm("intro")
         self.state = GameState.INTRO
         self._intro_phase = 0
         self._intro_timer = 0.0
@@ -2720,7 +2793,7 @@ class GameManager:
 
         if self._intro_phase == 0:
             # 阶段0：黑屏 + 开场文字淡入
-            self._intro_text_alpha = min(255, int(self._intro_timer * 120))
+            self._intro_text_alpha = min(255, int(self._intro_timer * 200))
             if self._intro_timer > 3.5:
                 self._intro_phase = 1
                 self._intro_timer = 0.0
@@ -2805,7 +2878,7 @@ class GameManager:
         ]
         y_offset = INTERNAL_HEIGHT // 2 - 15
         for i, text in enumerate(texts):
-            alpha = max(0, min(255, self._intro_text_alpha - i * 50))
+            alpha = max(0, min(255, self._intro_text_alpha - i * 30))
             text_surf = self.info_font.render(text, True, COLOR_WHITE)
             text_surf.set_alpha(alpha)
             text_rect = text_surf.get_rect(
@@ -2866,12 +2939,54 @@ class GameManager:
             (cx - 50, 85), (cx + 55, 75), (cx - 75, 165),
             (cx + 70, 155), (cx - 45, 205), (cx + 50, 195),
             (cx - 5, 130), (cx + 8, 180), (cx - 10, 220),
+            # 远侧树苗根部附近
+            (35, 95), (445, 90), (95, 225),
+            # 灌木丛附近
+            (55, 135), (425, 145), (cx - 60, 115), (cx + 65, 120),
         ]
         for lx, ly in leaf_positions:
             if 0 <= lx < INTERNAL_WIDTH and 0 <= ly < INTERNAL_HEIGHT:
                 surf.set_at((lx, ly), (180, 150, 80))
                 if lx + 1 < INTERNAL_WIDTH:
                     surf.set_at((lx + 1, ly), (165, 135, 70))
+
+        # 草地深色斑块（远侧空旷区域，模拟树荫/湿润地面）
+        dark_patches = [
+            (50, 120, 20, 12), (400, 130, 18, 10),
+            (80, 200, 15, 8), (420, 210, 16, 9),
+            (30, 60, 12, 8), (450, 55, 14, 7),
+        ]
+        for px, py, pw, ph in dark_patches:
+            patch_s = pygame.Surface((pw, ph), pygame.SRCALPHA)
+            pygame.draw.ellipse(patch_s, (55, 95, 42, 60), (0, 0, pw, ph))
+            surf.blit(patch_s, (px, py))
+
+        # 蜿蜒小径（从主路左侧 y≈160 向左延伸的碎石小径）
+        path_points = [
+            (road_left - 5, 160), (road_left - 15, 158),
+            (road_left - 28, 162), (road_left - 40, 157),
+            (road_left - 52, 160), (road_left - 60, 155),
+        ]
+        for k in range(len(path_points) - 1):
+            pygame.draw.line(surf, (150, 140, 115), path_points[k], path_points[k + 1], 2)
+        # 碎石点缀
+        for k in range(len(path_points)):
+            px, py = path_points[k]
+            for di in range(3):
+                dx = px + ((k * 5 + di * 7) % 7 - 3)
+                dy = py + ((k * 3 + di * 11) % 5 - 2)
+                if 0 <= dx < INTERNAL_WIDTH and 0 <= dy < INTERNAL_HEIGHT:
+                    surf.set_at((dx, dy), (140, 130, 105))
+
+        # 远侧野花带（x≈30~80 和 x≈400~450 的 y≈180~220 区域）
+        wild_flower_positions = [
+            (35, 185), (50, 190), (65, 195), (45, 205), (55, 215), (70, 210),
+            (405, 188), (420, 193), (435, 198), (415, 208), (430, 218), (445, 205),
+        ]
+        for wfx, wfy in wild_flower_positions:
+            if 0 <= wfx < INTERNAL_WIDTH and 0 <= wfy < INTERNAL_HEIGHT:
+                wfc = flower_positions_wild = [(255, 240, 200), (255, 220, 150), (240, 255, 220)][(wfx + wfy) % 3]
+                surf.set_at((wfx, wfy), wfc)
 
         # ============================================================
         # 2. 道路：砖石纹理 + 路缘石
@@ -3000,6 +3115,10 @@ class GameManager:
             # 道路近处大树
             (cx - 52, 195, 1.0, 4),  # 大树E：左侧近处
             (cx + 58, 205, 1.0, 1),  # 大树F：右侧近处，y偏移
+            # 远侧桂花树苗（填充画面远左/远右空白）
+            (40, 90, 0.5, 6),        # 树苗G：左远侧
+            (440, 85, 0.5, 7),       # 树苗H：右远侧
+            (100, 220, 0.5, 8),      # 树苗I：左下角
         ]
 
         tree_sprite = self._load_intro_sprite("osmanthus_tree.png")
@@ -3052,8 +3171,33 @@ class GameManager:
                 pygame.draw.circle(surf, bush_c1, (tx + int(8 * scale), ty), max(2, int(4 * scale)))
                 pygame.draw.circle(surf, bush_c2, (tx + int(6 * scale), ty - 1), max(2, int(3 * scale)))
 
+        # 独立灌木丛簇（填充树间间隙和远侧空旷区）
+        bush_clusters = [
+            # (x, y, 大小) — 树间间隙
+            (cx - 60, 110, 5),   # 左侧树A与树C之间
+            (cx + 65, 115, 4),   # 右侧树B与树D之间
+            # 远侧大灌木
+            (60, 130, 7),        # 远左侧
+            (420, 140, 6),       # 远右侧
+            # 画面底部点缀
+            (cx - 90, 230, 4),   # 左下
+            (cx + 95, 240, 3),   # 右下
+            # 校门到树A/B之间
+            (cx - 45, 55, 4),    # 校门左侧
+            (cx + 48, 52, 3),    # 校门右侧
+        ]
+        for bx, by, br in bush_clusters:
+            pygame.draw.circle(surf, (42, 100, 38), (bx, by), br)
+            pygame.draw.circle(surf, (50, 115, 44), (bx - 1, by - 1), max(1, br - 2))
+            # 灌木上的小花点
+            for fi in range(3):
+                ffx = bx + ((fi * 5 + bx) % (br * 2) - br)
+                ffy = by + ((fi * 3 + by) % (br * 2) - br)
+                if 0 <= ffx < INTERNAL_WIDTH and 0 <= ffy < INTERNAL_HEIGHT:
+                    surf.set_at((ffx, ffy), (255, 230, 100))
+
         # ============================================================
-        # 6. 环境装饰：路灯 / 石凳 / 指示牌 / 矮篱笆
+        # 6. 环境装饰：路灯 / 石凳 / 指示牌 / 矮篱笆 / 宣传栏 / 垃圾桶 / 自行车 / 石灯笼 / 校门花丛
         # ============================================================
 
         # 路灯 ×2（道路两侧 y≈120）
@@ -3100,6 +3244,68 @@ class GameManager:
         # 篱笆横栏
         pygame.draw.line(surf, (100, 85, 50), (road_left - 6, 84), (road_left - 4, 108), 1)
         pygame.draw.line(surf, (100, 85, 50), (road_right + 4, 84), (road_right + 6, 108), 1)
+
+        # 宣传栏（左侧 x≈100, y≈55，校门旁常见设施）
+        bb_x, bb_y = 100, 55
+        # 竖杆
+        pygame.draw.line(surf, (90, 80, 70), (bb_x + 2, bb_y + 16), (bb_x + 2, bb_y), 1)
+        pygame.draw.line(surf, (90, 80, 70), (bb_x + 12, bb_y + 16), (bb_x + 12, bb_y), 1)
+        # 面板
+        pygame.draw.rect(surf, (180, 175, 160), (bb_x, bb_y, 14, 12))
+        pygame.draw.rect(surf, (140, 130, 110), (bb_x, bb_y, 14, 12), 1)
+        # 面板上的横线（模拟文字）
+        for li in range(3):
+            ly = bb_y + 3 + li * 3
+            pygame.draw.line(surf, (120, 115, 100), (bb_x + 2, ly), (bb_x + 11, ly), 1)
+
+        # 垃圾桶（右侧 x≈350, y≈180）
+        trash_x, trash_y = 350, 180
+        # 桶身
+        pygame.draw.rect(surf, (80, 100, 80), (trash_x, trash_y, 6, 6))
+        pygame.draw.rect(surf, (60, 80, 60), (trash_x, trash_y, 6, 6), 1)
+        # 桶盖
+        pygame.draw.rect(surf, (90, 110, 90), (trash_x - 1, trash_y - 1, 8, 2))
+
+        # 自行车（左侧 x≈170, y≈230，像素风）
+        bike_x, bike_y = 170, 230
+        # 后轮
+        pygame.draw.circle(surf, (60, 60, 60), (bike_x, bike_y), 4, 1)
+        # 前轮
+        pygame.draw.circle(surf, (60, 60, 60), (bike_x + 10, bike_y), 4, 1)
+        # 车架（三角）
+        pygame.draw.line(surf, (150, 50, 50), (bike_x, bike_y), (bike_x + 5, bike_y - 5), 1)
+        pygame.draw.line(surf, (150, 50, 50), (bike_x + 5, bike_y - 5), (bike_x + 10, bike_y), 1)
+        pygame.draw.line(surf, (150, 50, 50), (bike_x + 5, bike_y - 5), (bike_x + 3, bike_y), 1)
+        # 车把
+        pygame.draw.line(surf, (150, 50, 50), (bike_x + 9, bike_y - 5), (bike_x + 11, bike_y - 4), 1)
+        # 座垫
+        pygame.draw.rect(surf, (80, 40, 40), (bike_x + 4, bike_y - 7, 3, 1))
+
+        # 石灯笼（右侧 x≈380, y≈70，中式校园园林风格）
+        lantern_x, lantern_y = 380, 70
+        # 底座
+        pygame.draw.rect(surf, (160, 155, 145), (lantern_x - 2, lantern_y + 6, 8, 3))
+        # 灯杆
+        pygame.draw.rect(surf, (150, 145, 135), (lantern_x, lantern_y, 4, 8))
+        # 灯室
+        pygame.draw.rect(surf, (170, 165, 150), (lantern_x - 3, lantern_y - 4, 10, 6))
+        pygame.draw.rect(surf, (140, 135, 120), (lantern_x - 3, lantern_y - 4, 10, 6), 1)
+        # 灯室内的微弱光
+        lantern_glow = pygame.Surface((8, 4), pygame.SRCALPHA)
+        lantern_glow.fill((255, 230, 160, 20))
+        surf.blit(lantern_glow, (lantern_x - 1, lantern_y - 3))
+        # 灯顶
+        pygame.draw.polygon(surf, (140, 130, 115), [
+            (lantern_x - 4, lantern_y - 4), (lantern_x + 4, lantern_y - 4),
+            (lantern_x, lantern_y - 8)
+        ])
+
+        # 校门两侧桂花花丛（低矮，3-4个黄色小圆点聚集）
+        for fc_x, fc_y in [(cx - 48, gate_y + 28), (cx + 40, gate_y + 27)]:
+            for fi in range(4):
+                ffx = fc_x + (fi % 2) * 3
+                ffy = fc_y + (fi // 2) * 2
+                pygame.draw.circle(surf, (255, 220, 80), (ffx, ffy), 1)
 
         # ============================================================
         # 7. 桂花飘落粒子（增加数量）
@@ -3214,8 +3420,8 @@ class GameManager:
             self.internal_surface.blit(hint_surf, (0, 0))
 
         # 旁白文字
-        if progress > 0.3:
-            text_alpha = min(255, int((progress - 0.3) * 300))
+        if progress > 0.15:
+            text_alpha = min(255, int((progress - 0.15) * 350))
             hint_text = self.info_font.render("不知为何，你感到一阵莫名的悸动……", True, (200, 230, 200))
             hint_text.set_alpha(text_alpha)
             hint_rect = hint_text.get_rect(
@@ -3490,8 +3696,27 @@ class GameManager:
             )
             self.internal_surface.blit(hint, hint_rect)
 
+    def _resize_window(self, new_width, new_height):
+        """调整窗口大小"""
+        global SCREEN_WIDTH, SCREEN_HEIGHT
+        self.screen = pygame.display.set_mode((new_width, new_height))
+        # 更新config模块的全局变量
+        import config
+        config.SCREEN_WIDTH = new_width
+        config.SCREEN_HEIGHT = new_height
+        SCREEN_WIDTH = new_width
+        SCREEN_HEIGHT = new_height
+        # 更新缩放比例
+        config.SCALE_X = new_width / INTERNAL_WIDTH
+        config.SCALE_Y = new_height / INTERNAL_HEIGHT
+        # 更新pygame_gui管理器
+        self.ui_manager.set_window_resolution((new_width, new_height))
+        # 更新菜单中的窗口大小
+        self.menu.set_window_size(new_width, new_height)
+
     def _return_to_title(self):
         """返回标题画面"""
+        self.audio_manager.stop_bgm()
         self.state = GameState.TITLE
         self._title_menu_active = False
         self._title_menu_index = 0
