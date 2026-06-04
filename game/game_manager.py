@@ -626,7 +626,7 @@ class GameManager:
         self.interactive_objects.append(computer)
 
         bookshelf = InteractiveObject(
-            x=spawn_x + 8, y=spawn_y - 16,
+            x=272, y=32,
             width=16, height=16,
             interactive_type="examine",
             properties={
@@ -644,7 +644,7 @@ class GameManager:
         from entities.interactive_object import InteractiveObject
 
         entrance = InteractiveObject(
-            x=spawn_x + 8, y=spawn_y - 16,
+            x=272, y=32,
             width=16, height=16,
             interactive_type="mechanism",
             properties={
@@ -2051,7 +2051,7 @@ class GameManager:
                     1.0,
                 )
                 self._nanhulou_bookshelf_obj.x = (
-                    self._nanhulou_bookshelf_base_x + 32.0 * progress
+                    self._nanhulou_bookshelf_base_x - 32.0 * progress
                 )
                 if progress >= 1.0:
                     self._nanhulou_bookshelf_animating = False

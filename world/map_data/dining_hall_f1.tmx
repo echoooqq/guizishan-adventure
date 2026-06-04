@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <map version="1.5" orientation="orthogonal" renderorder="right-down" width="22" height="16" tilewidth="16" tileheight="16" infinite="0" nextobjectid="8" nextlayerid="7">
- <tileset firstgid="1" name="indoor_tileset" tilewidth="16" tileheight="16" tilecount="43" columns="43">
-  <image source="../../assets/tilesets/indoor_tileset.png" width="688" height="16" />
+ <tileset firstgid="1" name="indoor_tileset" tilewidth="16" tileheight="16" tilecount="44" columns="44">
+  <image source="../../assets/tilesets/indoor_tileset.png" width="704" height="16" />
   <tile id="4">
    <properties>
     <property name="solid" type="bool" value="true" />
@@ -152,6 +152,11 @@
     <property name="solid" type="bool" value="true" />
    </properties>
   </tile>
+  <tile id="43">
+   <properties>
+    <property name="solid" type="bool" value="true" />
+   </properties>
+  </tile>
  </tileset>
  <layer id="1" name="ground" width="22" height="16">
   <data encoding="csv">
@@ -185,7 +190,6 @@
     <property name="interactive_type" value="examine" />
     <property name="prompt_text" value="搜索餐桌" />
     <property name="display_name" value="一楼餐桌" />
-    <property name="sprite_key" value="dining_table" />
    </properties>
   </object>
   <object id="4" x="208" y="48" width="32" height="16" type="table">
@@ -193,7 +197,6 @@
     <property name="interactive_type" value="examine" />
     <property name="prompt_text" value="搜索餐桌" />
     <property name="display_name" value="一楼餐桌" />
-    <property name="sprite_key" value="dining_table" />
    </properties>
   </object>
  </objectgroup>

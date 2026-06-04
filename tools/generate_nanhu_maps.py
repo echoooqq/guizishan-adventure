@@ -77,6 +77,8 @@ GID_NANHU_DOOR = 59
 GID_NANHU_SIGN = 60
 GID_NANHU_AC = 61
 GID_NANHU_LOBBY_LIGHT = 62
+# 办公桌+电脑一体（来自室内tileset）
+GID_OFFICE_DESK = 44
 
 SOLID_GIDS = {
     GID_WALL_BRICK, GID_WALL_BRICK_TOP, GID_WALL_GRAY,
@@ -621,7 +623,7 @@ GID_SECRET_FLOOR = 41    # 密室碎石地面
 GID_SECRET_RUNE = 42     # 密室符文墙
 GID_SECRET_TORCH = 43    # 密室火把
 
-TILE_COUNT_I = 43
+TILE_COUNT_I = 44
 
 SOLID_GIDS_I = {
     GID_INDOOR_WALL, GID_INDOOR_WALL_TOP, GID_BOOKSHELF, GID_BOOKSHELF_TOP,
@@ -633,6 +635,7 @@ SOLID_GIDS_I = {
     GID_DINING_WALL, GID_DINING_WALL_TOP, GID_DINING_SERVING,
     GID_NANHU_WALL, GID_NANHU_WALL_TOP, GID_NANHU_ELEVATOR,
     GID_SECRET_WALL, GID_SECRET_WALL_TOP, GID_SECRET_RUNE, GID_SECRET_TORCH,
+    GID_OFFICE_DESK,
 }
 
 
@@ -786,54 +789,40 @@ def design_nanhulou_f2():
         structures[y][0] = GID_NANHU_WALL
         structures[y][W - 1] = GID_NANHU_WALL
 
-    for x in range(2, 6):
+    # 右侧书架（贴墙，从第17列到第18列，含密道入口）
+    for x in range(W - 3, W - 1):
         structures[1][x] = GID_BOOKSHELF_TOP
         structures[2][x] = GID_BOOKSHELF
         collision[1][x] = GID_COLLISION_I
         collision[2][x] = GID_COLLISION_I
 
-    for x in range(14, 18):
-        structures[1][x] = GID_BOOKSHELF_TOP
-        structures[2][x] = GID_BOOKSHELF
-        collision[1][x] = GID_COLLISION_I
-        collision[2][x] = GID_COLLISION_I
+    # 电脑终端A-D：办公桌+电脑一体
+    structures[5][3] = GID_OFFICE_DESK
+    collision[5][3] = GID_COLLISION_I
+    structures[5][6] = GID_OFFICE_DESK
+    collision[5][6] = GID_COLLISION_I
+    structures[5][13] = GID_OFFICE_DESK
+    collision[5][13] = GID_COLLISION_I
+    structures[5][16] = GID_OFFICE_DESK
+    collision[5][16] = GID_COLLISION_I
 
-    structures[5][4] = GID_TABLE
-    structures[5][5] = GID_TABLE
-    collision[5][4] = GID_COLLISION_I
-    collision[5][5] = GID_COLLISION_I
-    structures[4][4] = GID_CHAIR
-    structures[4][5] = GID_CHAIR
-    collision[4][4] = GID_COLLISION_I
-    collision[4][5] = GID_COLLISION_I
-
-    structures[5][14] = GID_TABLE
-    structures[5][15] = GID_TABLE
-    collision[5][14] = GID_COLLISION_I
-    collision[5][15] = GID_COLLISION_I
-
-    structures[8][3] = GID_COMPUTER
-    collision[8][3] = GID_COLLISION_I
-    structures[8][7] = GID_COMPUTER
-    collision[8][7] = GID_COLLISION_I
-    structures[8][12] = GID_COMPUTER
-    collision[8][12] = GID_COLLISION_I
-    structures[8][16] = GID_COMPUTER
-    collision[8][16] = GID_COLLISION_I
-
-    structures[11][9] = GID_COMPUTER
-    collision[11][9] = GID_COLLISION_I
-    structures[11][10] = GID_COMPUTER
-    collision[11][10] = GID_COLLISION_I
-
+    # 主控电脑区域：中央地毯+办公桌+电脑一体
     ground[7][9] = GID_RUG
     ground[7][10] = GID_RUG
     ground[8][9] = GID_RUG
     ground[8][10] = GID_RUG
 
+    # 主控电脑（2格宽办公桌）
+    structures[9][9] = GID_OFFICE_DESK
+    structures[9][10] = GID_OFFICE_DESK
+    collision[9][9] = GID_COLLISION_I
+    collision[9][10] = GID_COLLISION_I
+
+    # 花盆
     structures[3][9] = GID_PLANT_INDOOR
     collision[3][9] = GID_COLLISION_I
 
+    # 楼梯
     structures[1][2] = GID_STAIRS_DOWN
     collision[1][2] = GID_EMPTY_I
     for sy in range(1, 3):
@@ -857,7 +846,7 @@ def design_nanhulou_f2():
     })
 
     interactive_objects.append({
-        "x": 3 * TILE_SIZE, "y": 8 * TILE_SIZE,
+        "x": 3 * TILE_SIZE, "y": 5 * TILE_SIZE,
         "width": TILE_SIZE, "height": TILE_SIZE,
         "type": "computer",
         "properties": {
@@ -868,7 +857,7 @@ def design_nanhulou_f2():
     })
 
     interactive_objects.append({
-        "x": 7 * TILE_SIZE, "y": 8 * TILE_SIZE,
+        "x": 6 * TILE_SIZE, "y": 5 * TILE_SIZE,
         "width": TILE_SIZE, "height": TILE_SIZE,
         "type": "computer",
         "properties": {
@@ -879,7 +868,7 @@ def design_nanhulou_f2():
     })
 
     interactive_objects.append({
-        "x": 12 * TILE_SIZE, "y": 8 * TILE_SIZE,
+        "x": 13 * TILE_SIZE, "y": 5 * TILE_SIZE,
         "width": TILE_SIZE, "height": TILE_SIZE,
         "type": "computer",
         "properties": {
@@ -890,7 +879,7 @@ def design_nanhulou_f2():
     })
 
     interactive_objects.append({
-        "x": 16 * TILE_SIZE, "y": 8 * TILE_SIZE,
+        "x": 16 * TILE_SIZE, "y": 5 * TILE_SIZE,
         "width": TILE_SIZE, "height": TILE_SIZE,
         "type": "computer",
         "properties": {
@@ -901,7 +890,7 @@ def design_nanhulou_f2():
     })
 
     interactive_objects.append({
-        "x": 9 * TILE_SIZE, "y": 11 * TILE_SIZE,
+        "x": 9 * TILE_SIZE, "y": 9 * TILE_SIZE,
         "width": 2 * TILE_SIZE, "height": TILE_SIZE,
         "type": "computer",
         "properties": {
@@ -912,6 +901,8 @@ def design_nanhulou_f2():
     })
 
     _add_spawn(trigger_objects, "nanhulou_f2_stairs", 3, 2)
+    # 从密室返回F2的出生点（右墙书架旁）
+    _add_spawn(trigger_objects, "nanhulou_f2_secret_return", W - 4, 3)
 
     return W, H, ground, structures, decorations, collision, interactive_objects, trigger_objects
 
@@ -954,7 +945,7 @@ def design_nanhulou_secret():
     structures[3][15] = GID_SECRET_TORCH
     collision[3][15] = GID_COLLISION_I
 
-    # 基座（用符文墙代替）
+    # 基座（用符文墙代替，仅视觉装饰，互动由game_manager代码创建）
     structures[3][7] = GID_SECRET_RUNE
     structures[3][8] = GID_SECRET_RUNE
     collision[3][7] = GID_COLLISION_I
@@ -964,19 +955,6 @@ def design_nanhulou_secret():
     collision[5][3] = GID_COLLISION_I
     structures[5][12] = GID_PLANT_INDOOR
     collision[5][12] = GID_COLLISION_I
-
-    interactive_objects.append({
-        "x": 7 * TILE_SIZE, "y": 2 * TILE_SIZE,
-        "width": 2 * TILE_SIZE, "height": TILE_SIZE,
-        "type": "badge_pedestal",
-        "properties": {
-            "interactive_type": "pickup",
-            "prompt_text": "拾取徽章碎片",
-            "item_id": "badge_2",
-            "pickup_text": "在密室的基座上，你发现了桂花徽章碎片·贰！",
-            "display_name": "发光基座",
-        }
-    })
 
     structures[H - 2][1] = GID_DOOR_INDOOR
     collision[H - 2][1] = GID_EMPTY_I
@@ -1168,7 +1146,7 @@ if __name__ == "__main__":
     ground, terrain, structures, decorations, collision, objs, triggers = design_nanhu_campus()
     create_tmx(MAP_WIDTH, MAP_HEIGHT, ground, terrain, structures, decorations, collision,
                objs, triggers,
-               "main_campus_tileset", outdoor_tileset_rel, 62, SOLID_GIDS,
+               "main_campus_tileset", outdoor_tileset_rel, 69, SOLID_GIDS,
                os.path.join(map_dir, "nanhu_campus.tmx"), has_terrain=True)
 
     print("\n--- Nanhu Building F1 ---")

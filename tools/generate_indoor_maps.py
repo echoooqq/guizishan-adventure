@@ -56,8 +56,9 @@ GID_SECRET_WALL_TOP = 40 # 密室墙壁顶部
 GID_SECRET_FLOOR = 41    # 密室碎石地面
 GID_SECRET_RUNE = 42     # 密室符文墙
 GID_SECRET_TORCH = 43    # 密室火把
+GID_OFFICE_DESK = 44     # 办公桌+电脑一体
 
-TILE_COUNT = 43
+TILE_COUNT = 44
 
 SOLID_GIDS = {
     GID_INDOOR_WALL, GID_INDOOR_WALL_TOP, GID_BOOKSHELF, GID_BOOKSHELF_TOP,
@@ -69,12 +70,13 @@ SOLID_GIDS = {
     GID_DINING_WALL, GID_DINING_WALL_TOP, GID_DINING_SERVING,
     GID_NANHU_WALL, GID_NANHU_WALL_TOP, GID_NANHU_ELEVATOR,
     GID_SECRET_WALL, GID_SECRET_WALL_TOP, GID_SECRET_RUNE, GID_SECRET_TORCH,
+    GID_OFFICE_DESK,
 }
 
 
 def create_tileset(output_path):
     pygame.init()
-    surface = pygame.Surface((TILE_COUNT * TILE_SIZE, TILE_SIZE))
+    surface = pygame.Surface((TILE_COUNT * TILE_SIZE, TILE_SIZE), pygame.SRCALPHA)
 
     for i in range(1, TILE_COUNT + 1):
         x = (i - 1) * TILE_SIZE
@@ -209,10 +211,17 @@ def _draw_tile(surface, gid, x):
         pygame.draw.line(surface, (220, 180, 120), (x + 8, 0), (x + 8, TILE_SIZE))
         pygame.draw.arc(surface, (220, 180, 120), (x, 0, TILE_SIZE, TILE_SIZE), 0, 3.14, 1)
     elif gid == GID_HOOP:
-        # 使用墙壁背景色，让精灵覆盖显示
-        surface.fill((240, 240, 245), rect)
-        pygame.draw.rect(surface, (220, 220, 225), (x, 0, TILE_SIZE, 3))
-        pygame.draw.rect(surface, (40, 80, 160), (x, 5, TILE_SIZE, 2))
+        # 篮球框：篮板+篮筐+篮网
+        surface.fill((0, 0, 0, 0), rect)
+        # 篮板（白色矩形）
+        pygame.draw.rect(surface, (240, 240, 245), (x + 3, 0, 10, 8))
+        pygame.draw.rect(surface, (200, 200, 210), (x + 3, 0, 10, 8), 1)
+        # 篮筐（红色圆环）
+        pygame.draw.rect(surface, (200, 60, 30), (x + 4, 8, 8, 2))
+        # 篮网（白色线条）
+        for nx in range(5, 11, 2):
+            pygame.draw.line(surface, (230, 230, 230), (x + nx, 10), (x + nx, 14))
+        pygame.draw.line(surface, (230, 230, 230), (x + 5, 14), (x + 9, 14))
     elif gid == GID_SCOREBOARD:
         # 使用墙壁背景色，让精灵覆盖显示
         surface.fill((240, 240, 245), rect)
@@ -259,8 +268,11 @@ def _draw_tile(surface, gid, x):
         for dx, dy in [(3, 4), (7, 6), (11, 3), (5, 9)]:
             surface.set_at((x + dx, dy), (200, 200, 200))
     elif gid == GID_PLANT_INDOOR:
-        surface.fill((180, 140, 90), rect)
+        # 透明背景，适配任何地面颜色
+        surface.fill((0, 0, 0, 0), rect)
+        # 花盆
         pygame.draw.rect(surface, (160, 100, 50), (x + 5, 10, 6, 5))
+        # 植物冠
         pygame.draw.circle(surface, (34, 139, 34), (x + 8, 7), 5)
         pygame.draw.circle(surface, (50, 160, 50), (x + 6, 6), 3)
         pygame.draw.circle(surface, (0, 120, 0), (x + 10, 8), 2)
@@ -429,6 +441,29 @@ def _draw_tile(surface, gid, x):
         warm_glow = pygame.Surface((6, 6), pygame.SRCALPHA)
         warm_glow.fill((255, 200, 50, 40))
         surface.blit(warm_glow, (x + 5, 0))
+    elif gid == GID_OFFICE_DESK:
+        # 办公桌+电脑一体：L型桌面+抽屉柜+显示器+键盘
+        surface.fill((0, 0, 0, 0), rect)
+        # 桌面（L型）
+        pygame.draw.rect(surface, (110, 75, 40), (x + 1, 5, 14, 3))
+        pygame.draw.rect(surface, (110, 75, 40), (x + 1, 5, 4, 8))
+        # 桌面高光
+        pygame.draw.rect(surface, (130, 90, 50), (x + 2, 6, 12, 1))
+        # 抽屉柜（左侧）
+        pygame.draw.rect(surface, (90, 60, 30), (x + 2, 8, 3, 5))
+        pygame.draw.rect(surface, (80, 50, 25), (x + 2, 8, 3, 5), 1)
+        # 抽屉拉手
+        pygame.draw.rect(surface, (160, 140, 100), (x + 3, 9, 1, 1))
+        pygame.draw.rect(surface, (160, 140, 100), (x + 3, 11, 1, 1))
+        # 显示器底座
+        pygame.draw.rect(surface, (60, 60, 70), (x + 8, 6, 4, 1))
+        # 显示器支架
+        pygame.draw.rect(surface, (60, 60, 70), (x + 9, 3, 2, 3))
+        # 显示器屏幕
+        pygame.draw.rect(surface, (40, 40, 50), (x + 7, 0, 6, 4))
+        pygame.draw.rect(surface, (100, 140, 200), (x + 8, 1, 4, 2))
+        # 键盘
+        pygame.draw.rect(surface, (80, 80, 90), (x + 8, 7, 4, 1))
 
 
 def _fill_layer(layer, w, h, gid):

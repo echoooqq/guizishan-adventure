@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<map version="1.5" orientation="orthogonal" renderorder="right-down" width="20" height="15" tilewidth="16" tileheight="16" infinite="0" nextobjectid="8" nextlayerid="7">
- <tileset firstgid="1" name="indoor_tileset" tilewidth="16" tileheight="16" tilecount="43" columns="43">
-  <image source="../../assets/tilesets/indoor_tileset.png" width="688" height="16" />
+<map version="1.5" orientation="orthogonal" renderorder="right-down" width="20" height="15" tilewidth="16" tileheight="16" infinite="0" nextobjectid="9" nextlayerid="7">
+ <tileset firstgid="1" name="indoor_tileset" tilewidth="16" tileheight="16" tilecount="44" columns="44">
+  <image source="../../assets/tilesets/indoor_tileset.png" width="704" height="16" />
   <tile id="4">
    <properties>
     <property name="solid" type="bool" value="true" />
@@ -152,6 +152,11 @@
     <property name="solid" type="bool" value="true" />
    </properties>
   </tile>
+  <tile id="43">
+   <properties>
+    <property name="solid" type="bool" value="true" />
+   </properties>
+  </tile>
  </tileset>
  <layer id="1" name="ground" width="20" height="15">
   <data encoding="csv">
@@ -160,7 +165,7 @@
  </layer>
  <layer id="2" name="structures" width="20" height="15">
   <data encoding="csv">
-36,36,36,36,36,36,36,36,36,36,36,36,36,36,36,36,36,36,36,36,36,0,13,0,0,8,0,0,0,0,0,0,0,0,8,8,8,8,0,36,35,0,0,0,0,7,0,0,0,0,0,0,0,0,7,7,7,7,0,35,35,0,0,0,0,0,0,0,0,24,0,0,0,0,0,0,0,0,0,35,35,0,0,0,10,10,0,0,0,0,0,0,0,0,0,0,0,0,0,35,35,0,0,0,9,9,0,0,0,0,0,0,0,0,9,9,0,0,0,35,35,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,35,35,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,35,35,0,0,18,0,0,0,18,0,0,0,0,18,0,0,0,18,0,0,35,35,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,35,35,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,35,35,0,0,0,0,0,0,0,0,18,18,0,0,0,0,0,0,0,0,35,35,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,35,35,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,35,36,36,36,36,36,36,36,36,36,36,36,36,36,36,36,36,36,36,36,36
+36,36,36,36,36,36,36,36,36,36,36,36,36,36,36,36,36,36,36,36,36,0,13,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,8,36,35,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,7,35,35,0,0,0,0,0,0,0,0,24,0,0,0,0,0,0,0,0,0,35,35,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,35,35,0,0,44,0,0,44,0,0,0,0,0,0,44,0,0,44,0,0,35,35,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,35,35,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,35,35,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,35,35,0,0,0,0,0,0,0,0,44,44,0,0,0,0,0,0,0,0,35,35,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,35,35,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,35,35,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,35,35,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,35,36,36,36,36,36,36,36,36,36,36,36,36,36,36,36,36,36,36,36,36
 </data>
  </layer>
  <objectgroup id="3" name="objects">
@@ -173,35 +178,35 @@
     <property name="transition_type" value="floor_change" />
    </properties>
   </object>
-  <object id="2" x="48" y="128" width="16" height="16" type="computer">
+  <object id="2" x="48" y="80" width="16" height="16" type="computer">
    <properties>
     <property name="interactive_type" value="examine" />
     <property name="prompt_text" value="查看电脑" />
     <property name="display_name" value="电脑终端A" />
    </properties>
   </object>
-  <object id="3" x="112" y="128" width="16" height="16" type="computer">
+  <object id="3" x="96" y="80" width="16" height="16" type="computer">
    <properties>
     <property name="interactive_type" value="examine" />
     <property name="prompt_text" value="查看电脑" />
     <property name="display_name" value="电脑终端B" />
    </properties>
   </object>
-  <object id="4" x="192" y="128" width="16" height="16" type="computer">
+  <object id="4" x="208" y="80" width="16" height="16" type="computer">
    <properties>
     <property name="interactive_type" value="examine" />
     <property name="prompt_text" value="查看电脑" />
     <property name="display_name" value="电脑终端C" />
    </properties>
   </object>
-  <object id="5" x="256" y="128" width="16" height="16" type="computer">
+  <object id="5" x="256" y="80" width="16" height="16" type="computer">
    <properties>
     <property name="interactive_type" value="examine" />
     <property name="prompt_text" value="查看电脑" />
     <property name="display_name" value="电脑终端D" />
    </properties>
   </object>
-  <object id="6" x="144" y="176" width="32" height="16" type="computer">
+  <object id="6" x="144" y="144" width="32" height="16" type="computer">
    <properties>
     <property name="interactive_type" value="examine" />
     <property name="prompt_text" value="查看主终端" />
@@ -211,13 +216,18 @@
  </objectgroup>
  <layer id="4" name="collision" width="20" height="15" visible="0">
   <data encoding="csv">
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20,0,0,0,0,0,0,0,0,20,20,20,20,0,0,0,0,0,0,0,20,0,0,0,0,0,0,0,0,20,20,20,20,0,0,0,0,0,0,0,0,0,0,0,20,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20,20,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20,20,0,0,0,0,0,0,0,0,20,20,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20,0,0,0,20,0,0,0,0,20,0,0,0,20,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20,20,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20,20,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20,20,0,0,0,0,0,0,0,0,0,0,20,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20,0,0,20,0,0,0,0,0,0,20,0,0,20,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20,20,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
  <objectgroup id="5" name="triggers">
   <object id="7" x="48" y="32" width="32" height="32" type="spawn">
    <properties>
     <property name="spawn_id" value="nanhulou_f2_stairs" />
+   </properties>
+  </object>
+  <object id="8" x="256" y="48" width="32" height="32" type="spawn">
+   <properties>
+    <property name="spawn_id" value="nanhulou_f2_secret_return" />
    </properties>
   </object>
  </objectgroup>

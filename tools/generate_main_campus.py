@@ -271,13 +271,18 @@ def _draw_tile(surface, gid, x):
         pygame.draw.circle(surface, (255, 255, 200), (x + 8, 3), 2)
         pygame.draw.rect(surface, (60, 60, 60), (x + 6, 13, 4, 2))
     elif gid == GID_BENCH:
+        # 加长版长椅：坐板和靠背延伸到14px宽
         surface.fill((0, 0, 0, 0), rect)
-        pygame.draw.rect(surface, (139, 90, 43), (x + 2, 5, 12, 3))
-        pygame.draw.rect(surface, (120, 75, 35), (x + 2, 4, 12, 2))
-        pygame.draw.rect(surface, (101, 67, 33), (x + 2, 8, 2, 5))
-        pygame.draw.rect(surface, (101, 67, 33), (x + 12, 8, 2, 5))
-        pygame.draw.rect(surface, (101, 67, 33), (x + 2, 3, 2, 2))
-        pygame.draw.rect(surface, (101, 67, 33), (x + 12, 3, 2, 2))
+        # 坐板
+        pygame.draw.rect(surface, (139, 90, 43), (x + 1, 6, 14, 3))
+        # 靠背
+        pygame.draw.rect(surface, (120, 75, 35), (x + 1, 4, 14, 2))
+        # 四条腿
+        pygame.draw.rect(surface, (101, 67, 33), (x + 1, 9, 2, 5))
+        pygame.draw.rect(surface, (101, 67, 33), (x + 13, 9, 2, 5))
+        # 靠背支撑柱
+        pygame.draw.rect(surface, (101, 67, 33), (x + 1, 3, 2, 2))
+        pygame.draw.rect(surface, (101, 67, 33), (x + 13, 3, 2, 2))
     elif gid == GID_FENCE:
         surface.fill((0, 0, 0, 0), rect)
         for fx in range(0, TILE_SIZE, 4):
@@ -392,11 +397,21 @@ def _draw_tile(surface, gid, x):
         # 顶部尖端
         surface.set_at((x + 8, 1), (210, 205, 200))
     elif gid == GID_BUS_STOP:
+        # 放大版站台：更粗的站牌杆、更大的站牌、候车棚
         surface.fill((0, 0, 0, 0), rect)
-        pygame.draw.rect(surface, (80, 80, 80), (x + 7, 3, 2, 11))
-        pygame.draw.rect(surface, (0, 100, 180), (x + 3, 1, 10, 5))
-        pygame.draw.rect(surface, (255, 255, 255), (x + 4, 2, 8, 3))
-        pygame.draw.rect(surface, (0, 100, 180), (x + 3, 1, 10, 5), 1)
+        # 站牌杆（加粗到3px）
+        pygame.draw.rect(surface, (80, 80, 80), (x + 6, 4, 3, 10))
+        # 站牌（放大到12x7）
+        pygame.draw.rect(surface, (0, 100, 180), (x + 2, 0, 12, 7))
+        pygame.draw.rect(surface, (255, 255, 255), (x + 3, 1, 10, 5))
+        pygame.draw.rect(surface, (0, 100, 180), (x + 2, 0, 12, 7), 1)
+        # 候车棚顶
+        pygame.draw.rect(surface, (100, 100, 110), (x, 8, TILE_SIZE, 2))
+        # 棚柱
+        pygame.draw.rect(surface, (80, 80, 90), (x + 1, 10, 2, 5))
+        pygame.draw.rect(surface, (80, 80, 90), (x + 13, 10, 2, 5))
+        # 座椅
+        pygame.draw.rect(surface, (139, 90, 43), (x + 4, 12, 8, 2))
     elif gid == GID_HEDGE:
         surface.fill((0, 0, 0, 0), rect)
         pygame.draw.rect(surface, (34, 120, 0), (x, 2, TILE_SIZE, 12))

@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <map version="1.5" orientation="orthogonal" renderorder="right-down" width="40" height="30" tilewidth="16" tileheight="16" infinite="0" nextobjectid="23" nextlayerid="8">
- <tileset firstgid="1" name="main_campus_tileset" tilewidth="16" tileheight="16" tilecount="62" columns="62">
-  <image source="../../assets/tilesets/main_campus_tileset.png" width="992" height="16" />
+ <tileset firstgid="1" name="main_campus_tileset" tilewidth="16" tileheight="16" tilecount="69" columns="69">
+  <image source="../../assets/tilesets/main_campus_tileset.png" width="1104" height="16" />
   <tile id="4">
    <properties>
     <property name="solid" type="bool" value="true" />
