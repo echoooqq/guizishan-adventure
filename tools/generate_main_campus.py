@@ -108,7 +108,7 @@ SOLID_GIDS = {
 
 def _draw_fountain_base_tile(surface, x, rect):
     """绘制喷泉底座 tile 的基础外观（不含凹槽）"""
-    surface.fill((76, 153, 0), rect)
+    surface.fill((0, 0, 0, 0), rect)
     pygame.draw.ellipse(surface, (120, 118, 115), (x + 0, 1, 16, 14))
     pygame.draw.ellipse(surface, (160, 158, 155), (x + 1, 2, 14, 12))
     pygame.draw.ellipse(surface, (145, 143, 140), (x + 2, 3, 12, 10))
@@ -144,7 +144,7 @@ def _draw_slot_marker(surface, sx, sy):
 
 def create_tileset(output_path):
     pygame.init()
-    surface = pygame.Surface((TILE_COUNT * TILE_SIZE, TILE_SIZE))
+    surface = pygame.Surface((TILE_COUNT * TILE_SIZE, TILE_SIZE), pygame.SRCALPHA)
 
     for i in range(1, TILE_COUNT + 1):
         x = (i - 1) * TILE_SIZE
@@ -231,7 +231,7 @@ def _draw_tile(surface, gid, x):
         pygame.draw.line(surface, (100, 149, 237), (x + 9, 10), (x + 14, 10))
         pygame.draw.line(surface, (80, 130, 210), (x + 4, 12), (x + 8, 12))
     elif gid == GID_TREE_OSMANTHUS:
-        surface.fill((76, 153, 0), rect)
+        surface.fill((0, 0, 0, 0), rect)
         pygame.draw.rect(surface, (101, 67, 33), (x + 6, 10, 4, 6))
         pygame.draw.circle(surface, (34, 139, 34), (x + 8, 6), 7)
         pygame.draw.circle(surface, (44, 155, 44), (x + 5, 4), 5)
@@ -247,13 +247,13 @@ def _draw_tile(surface, gid, x):
                        (1, 3), (13, 5), (2, 7), (12, 7)]:
             surface.set_at((x + fx, fy), (255, 240, 150))
     elif gid == GID_TREE_GREEN:
-        surface.fill((76, 153, 0), rect)
+        surface.fill((0, 0, 0, 0), rect)
         pygame.draw.rect(surface, (101, 67, 33), (x + 6, 9, 4, 7))
         pygame.draw.circle(surface, (34, 139, 34), (x + 8, 6), 6)
         pygame.draw.circle(surface, (0, 100, 0), (x + 5, 4), 3)
         pygame.draw.circle(surface, (50, 160, 50), (x + 10, 5), 2)
     elif gid == GID_BUSH:
-        surface.fill((76, 153, 0), rect)
+        surface.fill((0, 0, 0, 0), rect)
         pygame.draw.ellipse(surface, (34, 139, 34), (x + 1, 4, 14, 10))
         pygame.draw.ellipse(surface, (0, 100, 0), (x + 2, 5, 6, 5))
         pygame.draw.ellipse(surface, (50, 160, 50), (x + 8, 6, 5, 4))
@@ -265,13 +265,13 @@ def _draw_tile(surface, gid, x):
                           (10, 10, (255, 255, 100)), (3, 12, (100, 100, 255))]:
             pygame.draw.circle(surface, c, (x + fx, fy), 2)
     elif gid == GID_LAMP:
-        surface.fill((76, 153, 0), rect)
+        surface.fill((0, 0, 0, 0), rect)
         pygame.draw.rect(surface, (80, 80, 80), (x + 7, 4, 2, 10))
         pygame.draw.circle(surface, (255, 255, 150), (x + 8, 3), 3)
         pygame.draw.circle(surface, (255, 255, 200), (x + 8, 3), 2)
         pygame.draw.rect(surface, (60, 60, 60), (x + 6, 13, 4, 2))
     elif gid == GID_BENCH:
-        surface.fill((76, 153, 0), rect)
+        surface.fill((0, 0, 0, 0), rect)
         pygame.draw.rect(surface, (139, 90, 43), (x + 2, 5, 12, 3))
         pygame.draw.rect(surface, (120, 75, 35), (x + 2, 4, 12, 2))
         pygame.draw.rect(surface, (101, 67, 33), (x + 2, 8, 2, 5))
@@ -279,13 +279,13 @@ def _draw_tile(surface, gid, x):
         pygame.draw.rect(surface, (101, 67, 33), (x + 2, 3, 2, 2))
         pygame.draw.rect(surface, (101, 67, 33), (x + 12, 3, 2, 2))
     elif gid == GID_FENCE:
-        surface.fill((76, 153, 0), rect)
+        surface.fill((0, 0, 0, 0), rect)
         for fx in range(0, TILE_SIZE, 4):
             pygame.draw.rect(surface, (80, 80, 80), (x + fx + 1, 3, 2, 10))
         pygame.draw.rect(surface, (100, 100, 100), (x, 5, TILE_SIZE, 2))
         pygame.draw.rect(surface, (100, 100, 100), (x, 10, TILE_SIZE, 2))
     elif gid == GID_FOUNTAIN_BASE:
-        surface.fill((76, 153, 0), rect)
+        surface.fill((0, 0, 0, 0), rect)
         # 多层石质底座（外深内浅渐变，营造立体感）
         pygame.draw.ellipse(surface, (120, 118, 115), (x + 0, 1, 16, 14))  # 最外层阴影
         pygame.draw.ellipse(surface, (160, 158, 155), (x + 1, 2, 14, 12))  # 底座主体
@@ -305,7 +305,7 @@ def _draw_tile(surface, gid, x):
         surface.set_at((x + 6, 6), (120, 180, 245))
         surface.set_at((x + 9, 8), (100, 165, 235))
     elif gid == GID_FOUNTAIN_WATER:
-        surface.fill((76, 153, 0), rect)
+        surface.fill((0, 0, 0, 0), rect)
         # 底座（同 BASE）
         pygame.draw.ellipse(surface, (120, 118, 115), (x + 0, 1, 16, 14))
         pygame.draw.ellipse(surface, (160, 158, 155), (x + 1, 2, 14, 12))
@@ -370,27 +370,41 @@ def _draw_tile(surface, gid, x):
         _draw_fountain_base_tile(surface, x, rect)
         _draw_slot_marker(surface, x + 2, 11)
     elif gid == GID_SCULPTURE:
-        surface.fill((76, 153, 0), rect)
-        pygame.draw.rect(surface, (140, 140, 140), (x + 4, 10, 8, 5))
-        pygame.draw.rect(surface, (160, 160, 160), (x + 3, 9, 10, 2))
-        pygame.draw.polygon(surface, (180, 180, 180), [
-            (x + 8, 2), (x + 5, 9), (x + 11, 9)
-        ])
-        pygame.draw.circle(surface, (200, 200, 200), (x + 8, 2), 2)
+        surface.fill((0, 0, 0, 0), rect)
+        # 底座（3层石阶，由下到上逐渐收窄）
+        pygame.draw.rect(surface, (130, 125, 120), (x + 1, 13, 14, 3))  # 最下层
+        pygame.draw.rect(surface, (150, 145, 140), (x + 2, 12, 12, 1))  # 中层
+        pygame.draw.rect(surface, (160, 155, 150), (x + 3, 11, 10, 1))  # 上层
+        # 底座高光与阴影
+        pygame.draw.line(surface, (170, 165, 160), (x + 2, 13), (x + 14, 13))
+        pygame.draw.line(surface, (110, 105, 100), (x + 1, 15), (x + 14, 15))
+        # 柱身（从底座向上延伸）
+        pygame.draw.rect(surface, (170, 165, 160), (x + 5, 5, 6, 6))
+        pygame.draw.rect(surface, (180, 175, 170), (x + 6, 5, 4, 6))
+        # 柱身纹理
+        pygame.draw.line(surface, (155, 150, 145), (x + 5, 7), (x + 10, 7))
+        pygame.draw.line(surface, (155, 150, 145), (x + 5, 9), (x + 10, 9))
+        # 顶部装饰（球形）
+        pygame.draw.circle(surface, (190, 185, 180), (x + 8, 4), 3)
+        pygame.draw.circle(surface, (200, 195, 190), (x + 7, 3), 2)
+        # 球体高光
+        surface.set_at((x + 7, 2), (220, 215, 210))
+        # 顶部尖端
+        surface.set_at((x + 8, 1), (210, 205, 200))
     elif gid == GID_BUS_STOP:
-        surface.fill((76, 153, 0), rect)
+        surface.fill((0, 0, 0, 0), rect)
         pygame.draw.rect(surface, (80, 80, 80), (x + 7, 3, 2, 11))
         pygame.draw.rect(surface, (0, 100, 180), (x + 3, 1, 10, 5))
         pygame.draw.rect(surface, (255, 255, 255), (x + 4, 2, 8, 3))
         pygame.draw.rect(surface, (0, 100, 180), (x + 3, 1, 10, 5), 1)
     elif gid == GID_HEDGE:
-        surface.fill((76, 153, 0), rect)
+        surface.fill((0, 0, 0, 0), rect)
         pygame.draw.rect(surface, (34, 120, 0), (x, 2, TILE_SIZE, 12))
         pygame.draw.rect(surface, (50, 140, 20), (x, 3, TILE_SIZE, 10))
         for hx in range(0, TILE_SIZE, 3):
             pygame.draw.rect(surface, (40, 130, 10), (x + hx, 2, 2, 1))
     elif gid == GID_COLLISION:
-        surface.fill((76, 153, 0), rect)
+        surface.fill((0, 0, 0, 0), rect)
         overlay = pygame.Surface((TILE_SIZE, TILE_SIZE), pygame.SRCALPHA)
         overlay.fill((255, 0, 0, 60))
         surface.blit(overlay, (x, 0))
@@ -407,7 +421,7 @@ def _draw_tile(surface, gid, x):
         for fx, fy in [(4, 5), (9, 4), (6, 10), (11, 8)]:
             surface.set_at((x + fx, fy), (40, 80, 10))
     elif gid == GID_TREE_CLUSTER:
-        surface.fill((76, 153, 0), rect)
+        surface.fill((0, 0, 0, 0), rect)
         pygame.draw.rect(surface, (80, 55, 25), (x + 2, 8, 3, 7))
         pygame.draw.rect(surface, (80, 55, 25), (x + 11, 9, 3, 6))
         pygame.draw.circle(surface, (34, 139, 34), (x + 3, 5), 4)
@@ -417,13 +431,13 @@ def _draw_tile(surface, gid, x):
         pygame.draw.circle(surface, (40, 120, 20), (x + 8, 4), 5)
         pygame.draw.circle(surface, (30, 110, 15), (x + 7, 3), 3)
     elif gid == GID_LAWN_ROCK:
-        surface.fill((76, 153, 0), rect)
+        surface.fill((0, 0, 0, 0), rect)
         pygame.draw.ellipse(surface, (140, 140, 130), (x + 3, 6, 10, 8))
         pygame.draw.ellipse(surface, (160, 160, 150), (x + 4, 7, 8, 5))
         pygame.draw.ellipse(surface, (120, 120, 110), (x + 5, 8, 4, 3))
         surface.set_at((x + 7, 7), (180, 180, 170))
     elif gid == GID_GATE_PILLAR:
-        surface.fill((76, 153, 0), rect)
+        surface.fill((0, 0, 0, 0), rect)
         pygame.draw.rect(surface, (180, 175, 165), (x + 3, 0, 10, 16))
         pygame.draw.rect(surface, (200, 195, 185), (x + 4, 0, 4, 16))
         pygame.draw.rect(surface, (160, 155, 145), (x + 11, 0, 2, 16))
@@ -434,7 +448,7 @@ def _draw_tile(surface, gid, x):
         pygame.draw.rect(surface, (140, 135, 125), (x + 2, 0, 12, 1))
         pygame.draw.rect(surface, (140, 135, 125), (x + 2, 15, 12, 1))
     elif gid == GID_GATE_BEAM:
-        surface.fill((76, 153, 0), rect)
+        surface.fill((0, 0, 0, 0), rect)
         pygame.draw.rect(surface, (140, 30, 25), (x, 4, 16, 8))
         pygame.draw.rect(surface, (160, 40, 35), (x, 4, 16, 2))
         pygame.draw.rect(surface, (120, 25, 20), (x, 10, 16, 2))
@@ -445,7 +459,7 @@ def _draw_tile(surface, gid, x):
         pygame.draw.rect(surface, (170, 150, 50), (x + 6, 6, 1, 4))
         pygame.draw.rect(surface, (170, 150, 50), (x + 9, 6, 1, 4))
     elif gid == GID_GATE_SIGN:
-        surface.fill((76, 153, 0), rect)
+        surface.fill((0, 0, 0, 0), rect)
         pygame.draw.rect(surface, (140, 30, 25), (x, 2, 16, 12))
         pygame.draw.rect(surface, (160, 40, 35), (x, 2, 16, 2))
         pygame.draw.rect(surface, (120, 25, 20), (x, 12, 16, 2))

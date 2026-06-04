@@ -37,7 +37,8 @@ class SaveData:
         self.visited_nanhu = False
         self.realm_triggered = False
         self.realm_first_night_shown = False
-        self.tutorial_shown = False
+        self.tutorial_step = 0
+        self.tutorial_completed = False
         self.explored_areas = {}
         self.save_time = ""
         self.version = SAVE_VERSION
@@ -58,7 +59,8 @@ class SaveData:
             "visited_nanhu": self.visited_nanhu,
             "realm_triggered": self.realm_triggered,
             "realm_first_night_shown": self.realm_first_night_shown,
-            "tutorial_shown": self.tutorial_shown,
+            "tutorial_step": self.tutorial_step,
+            "tutorial_completed": self.tutorial_completed,
             "explored_areas": self.explored_areas,
         }
 
@@ -78,7 +80,19 @@ class SaveData:
         sd.visited_nanhu = data.get("visited_nanhu", False)
         sd.realm_triggered = data.get("realm_triggered", False)
         sd.realm_first_night_shown = data.get("realm_first_night_shown", False)
-        sd.tutorial_shown = data.get("tutorial_shown", False)
+        # 兼容旧存档：tutorial_shown=True → tutorial_completed=True, tutorial_step=9
+        if "tutorial_step" in data:
+            step = data.get("tutorial_step", 0)
+            # 兼容v1存档（TUTORIAL_DONE=8）→ v2（TUTORIAL_DONE=9）
+            if step == 8 and not data.get("tutorial_completed", False):
+                # 旧版8=TUTORIAL_DONE，新版9=TUTORIAL_DONE
+                step = 9
+            sd.tutorial_step = step
+            sd.tutorial_completed = data.get("tutorial_completed", step >= 9)
+        else:
+            old_shown = data.get("tutorial_shown", False)
+            sd.tutorial_step = 9 if old_shown else 0
+            sd.tutorial_completed = old_shown
         sd.explored_areas = data.get("explored_areas", {})
         return sd
 
@@ -242,7 +256,8 @@ class SaveManager:
         sd.visited_nanhu = game_manager._visited_nanhu
         sd.realm_triggered = game_manager._realm_triggered
         sd.realm_first_night_shown = game_manager._realm_first_night_shown
-        sd.tutorial_shown = game_manager._tutorial_shown
+        sd.tutorial_step = game_manager._tutorial_step
+        sd.tutorial_completed = game_manager._tutorial_completed
 
         # 已探索区域（从小地图模块获取）
         sd.explored_areas = game_manager.minimap.get_explored_data()
@@ -280,7 +295,8 @@ class SaveManager:
         game_manager._visited_nanhu = save_data.visited_nanhu
         game_manager._realm_triggered = save_data.realm_triggered
         game_manager._realm_first_night_shown = save_data.realm_first_night_shown
-        game_manager._tutorial_shown = save_data.tutorial_shown
+        game_manager._tutorial_step = save_data.tutorial_step
+        game_manager._tutorial_completed = save_data.tutorial_completed
         # 从谜题状态推导徽章收集进度
         game_manager._all_badges_collected = game_manager.puzzle_manager.is_fountain_unlocked()
 

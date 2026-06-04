@@ -195,18 +195,15 @@ def _draw_tile(surface, gid, x):
         pygame.draw.line(surface, (220, 180, 120), (x + 8, 0), (x + 8, TILE_SIZE))
         pygame.draw.arc(surface, (220, 180, 120), (x, 0, TILE_SIZE, TILE_SIZE), 0, 3.14, 1)
     elif gid == GID_HOOP:
-        surface.fill((200, 160, 100), rect)
-        pygame.draw.rect(surface, (100, 100, 100), (x + 14, 0, 2, 10))
-        pygame.draw.rect(surface, (120, 120, 120), (x + 10, 0, 6, 2))
-        pygame.draw.rect(surface, (200, 80, 30), (x + 8, 2, 6, 4), 1)
-        pygame.draw.line(surface, (200, 80, 30), (x + 8, 6), (x + 14, 6))
+        # 使用墙壁背景色，让精灵覆盖显示
+        surface.fill((240, 240, 245), rect)
+        pygame.draw.rect(surface, (220, 220, 225), (x, 0, TILE_SIZE, 3))
+        pygame.draw.rect(surface, (40, 80, 160), (x, 5, TILE_SIZE, 2))
     elif gid == GID_SCOREBOARD:
-        surface.fill((200, 160, 100), rect)
-        pygame.draw.rect(surface, (60, 60, 60), (x + 1, 1, 14, 14))
-        pygame.draw.rect(surface, (80, 80, 80), (x + 1, 1, 14, 14), 1)
-        pygame.draw.rect(surface, (200, 50, 50), (x + 2, 2, 5, 6))
-        pygame.draw.rect(surface, (50, 50, 200), (x + 9, 2, 5, 6))
-        pygame.draw.rect(surface, (180, 180, 50), (x + 4, 9, 8, 4))
+        # 使用墙壁背景色，让精灵覆盖显示
+        surface.fill((240, 240, 245), rect)
+        pygame.draw.rect(surface, (220, 220, 225), (x, 0, TILE_SIZE, 3))
+        pygame.draw.rect(surface, (40, 80, 160), (x, 5, TILE_SIZE, 2))
     elif gid == GID_COMPUTER:
         surface.fill((180, 140, 90), rect)
         pygame.draw.rect(surface, (60, 60, 60), (x + 2, 1, 12, 9))

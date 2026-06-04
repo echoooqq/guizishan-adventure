@@ -63,6 +63,18 @@ INDOOR_MAPS = {"library_f1", "library_f2", "gym", "dining_hall_f1", "dining_hall
 
 NANHU_MAPS = {"nanhu_campus", "nanhulou_f1", "nanhulou_f2", "nanhulou_secret"}
 
+# 教程步骤
+TUTORIAL_NONE = 0
+TUTORIAL_INTRO = 1       # 教程开场动画
+TUTORIAL_INTERACT = 2    # 教F键与NPC对话
+TUTORIAL_MOVE = 3        # 教WASD移动
+TUTORIAL_PICKUP = 4      # 教F键拾取道具
+TUTORIAL_INVENTORY = 5   # 教Tab打开背包
+TUTORIAL_MAP = 6         # 教M打开地图
+TUTORIAL_MENU = 7        # 教Esc暂停菜单
+TUTORIAL_SPRINT = 8      # 教Shift冲刺
+TUTORIAL_DONE = 9
+
 
 class GameManager:
     def __init__(self, screen):
@@ -168,7 +180,15 @@ class GameManager:
         self._realm_hint_timer = 0.0
         self._realm_hint_duration = 5.0
         self._realm_hint_active = False
-        self._tutorial_shown = False
+        self._tutorial_step = TUTORIAL_NONE
+        self._tutorial_prompt_text = ""
+        self._tutorial_prompt_timer = 0.0
+        self._tutorial_initial_y = 0.0
+        self._tutorial_explore_timer = 0.0
+        self._tutorial_completed = False  # 教程是否已全部完成
+        self._tutorial_pickup_done = False  # 教程拾取步骤标记
+        self._tutorial_intro_timer = 0.0  # 教程开场动画计时器
+        self._tutorial_intro_duration = 2.0  # 教程开场动画总时长（秒）
         self._all_badges_collected = False
         self._guardian_npc = None
         self._pending_fountain_hint = False
@@ -260,7 +280,7 @@ class GameManager:
         spawn_x, spawn_y = self.tile_map.get_spawn_position()
 
         passing_student = NPC(
-            x=spawn_x + 48, y=spawn_y,
+            x=spawn_x + 20, y=spawn_y,
             npc_id="passing_student",
             dialogue_id="passing_student",
             properties={
@@ -271,11 +291,8 @@ class GameManager:
         )
         passing_student.on_interact = lambda npc_self: {
             "type": "dialog",
-            "dialogue_data": {
-                "default": [
-                    {"speaker": "路过的学生", "text": "听说图书馆最近在搞读书活动，往西北方向走就能看到。"},
-                ]
-            },
+            "dialogue_data": self._get_passing_student_dialog(),
+            "start_key": "tutorial_greet" if self._tutorial_step == TUTORIAL_INTERACT else "default",
         }
         self.npcs.append(passing_student)
 
@@ -1207,8 +1224,8 @@ class GameManager:
         self.npcs.append(pe_teacher)
 
         shooting_station = InteractiveObject(
-            x=spawn_x - 32, y=spawn_y - 32,
-            width=24, height=32,
+            x=spawn_x - 32, y=spawn_y - 48,
+            width=24, height=48,
             interactive_type="mechanism",
             properties={
                 "prompt_text": "投篮",
@@ -1249,6 +1266,11 @@ class GameManager:
         if cabinet_obj is not None:
             gm_ref = self
 
+            # 更新器材柜尺寸以匹配新精灵(32x32)
+            cabinet_obj.y = cabinet_obj.y + cabinet_obj.height - 32
+            cabinet_obj.width = 32
+            cabinet_obj.height = 32
+
             def on_cabinet_interact(obj):
                 if gm_ref.player.inventory.has_item("scoreboard_note"):
                     return {"type": "dialog", "dialogue_data": {
@@ -1271,10 +1293,17 @@ class GameManager:
             cabinet_obj.interactive_type = "mechanism"
             cabinet_obj.properties["prompt_text"] = "查看器材柜"
             cabinet_obj.properties["sprite_key"] = "equipment_cabinet"
+            cabinet_obj.sprite_key = "equipment_cabinet"
+            cabinet_obj._sprite = None
             self._gym_equipment_cabinet_obj = cabinet_obj
 
         if scoreboard_obj is not None:
             gm_ref = self
+
+            # 更新记分牌尺寸以匹配新精灵(32x28)
+            scoreboard_obj.y = scoreboard_obj.y + scoreboard_obj.height - 28
+            scoreboard_obj.width = 32
+            scoreboard_obj.height = 28
 
             def on_scoreboard_interact(obj):
                 if gm_ref.puzzle_manager.get_state("gym") == PuzzleState.SOLVED:
@@ -1298,6 +1327,8 @@ class GameManager:
             scoreboard_obj.interactive_type = "mechanism"
             scoreboard_obj.properties["prompt_text"] = "拨动记分牌"
             scoreboard_obj.properties["sprite_key"] = "scoreboard"
+            scoreboard_obj.sprite_key = "scoreboard"
+            scoreboard_obj._sprite = None
             self._gym_scoreboard_obj = scoreboard_obj
 
         self.puzzle_manager.discover("gym")
@@ -1470,6 +1501,9 @@ class GameManager:
                     )
                 else:
                     self.state = GameState.PLAYING
+                    # 教程步骤推进：关闭背包后进入地图教学
+                    if self._tutorial_step == TUTORIAL_INVENTORY:
+                        self._advance_tutorial(TUTORIAL_MAP)
             self.ui_manager.process_events(event)
             return
 
@@ -1555,6 +1589,9 @@ class GameManager:
                 else:
                     self.menu.close()
                     self.state = GameState.PLAYING
+                    # 教程步骤推进：关闭暂停菜单后进入冲刺教学
+                    if self._tutorial_step == TUTORIAL_MENU:
+                        self._advance_tutorial(TUTORIAL_SPRINT)
 
             elif menu_action == "cancel_title_load":
                 self.menu.close()
@@ -1600,6 +1637,9 @@ class GameManager:
             if event.type == pygame.KEYDOWN:
                 if event.key in (pygame.K_m, pygame.K_ESCAPE, pygame.K_TAB):
                     self.state = GameState.PLAYING
+                    # 教程步骤推进：关闭地图后进入菜单教学
+                    if self._tutorial_step == TUTORIAL_MAP:
+                        self._advance_tutorial(TUTORIAL_MENU)
 
         self.ui_manager.process_events(event)
 
@@ -1707,6 +1747,9 @@ class GameManager:
                     # 拾取关键道具时自动存档
                     if item_data and item_data.get("category") == "key_item":
                         self._auto_save()
+                    # 教程步骤推进：拾取水壶后进入背包教学
+                    if self._tutorial_step == TUTORIAL_PICKUP and item_id == "water_bottle":
+                        self._tutorial_pickup_done = True
                 else:
                     pickup_text = "背包已满，无法拾取！"
             else:
@@ -1813,6 +1856,13 @@ class GameManager:
                     self.state = GameState.PUZZLE
                 return
         self.state = GameState.PLAYING
+        # 教程步骤推进：NPC对话结束后进入移动教学
+        if self._tutorial_step == TUTORIAL_INTERACT:
+            self._advance_tutorial(TUTORIAL_MOVE)
+        # 教程步骤推进：拾取水壶对话结束后进入背包教学
+        elif self._tutorial_step == TUTORIAL_PICKUP and getattr(self, '_tutorial_pickup_done', False):
+            self._tutorial_pickup_done = False
+            self._advance_tutorial(TUTORIAL_INVENTORY)
         # 对话结束后检测是否集齐6枚徽章
         self._check_all_badges_collected()
         # 如果有待处理的守护者引导对话，现在触发
@@ -1863,10 +1913,13 @@ class GameManager:
             self.game_clock.update(dt)
             self._update_npc_visibility()
 
-            if not self._tutorial_shown:
-                self._tutorial_shown = True
-                self._show_tutorial()
+            if self._tutorial_step == TUTORIAL_NONE and not self._tutorial_completed:
+                # 首次进入PLAYING状态，启动教程
+                self._start_tutorial()
                 return
+
+            if self._tutorial_step > TUTORIAL_NONE and self._tutorial_step <= TUTORIAL_DONE:
+                self._update_tutorial(dt)
 
             if self._realm_animating:
                 self._realm_anim_timer += dt
@@ -2038,6 +2091,7 @@ class GameManager:
         elif self.state == GameState.PLAYING:
             self._draw_game()
             self._draw_interaction_prompts()
+            self._draw_tutorial_prompt()
         elif self.state == GameState.PAUSED:
             if self.menu.current_menu == "title_load":
                 # 标题画面的读档菜单：显示标题背景+菜单
@@ -2233,6 +2287,80 @@ class GameManager:
         self.internal_surface.blit(bg_surf, bg_rect.topleft)
         self.internal_surface.blit(text_surf, text_rect)
 
+    def _draw_tutorial_prompt(self):
+        """绘制教程提示框或开场动画"""
+        if self._tutorial_step == TUTORIAL_INTRO:
+            self._draw_tutorial_intro()
+            return
+
+        if not self._tutorial_prompt_text:
+            return
+
+        # 脉冲动画：alpha在170-210间微变
+        pulse = int(20 * math.sin(pygame.time.get_ticks() / 300.0))
+        alpha = 190 + pulse
+
+        text_surf = self.info_font.render(self._tutorial_prompt_text, True, (255, 255, 255))
+        # 提示框位置：底部偏上，留出足够空间
+        box_w = text_surf.get_width() + 24  # 左右各12像素内边距
+        box_h = text_surf.get_height() + 10  # 上下各5像素内边距
+        box_x = (INTERNAL_WIDTH - box_w) // 2
+        box_y = INTERNAL_HEIGHT - box_h - 20  # 距底部20像素
+
+        bg_surf = pygame.Surface((box_w, box_h), pygame.SRCALPHA)
+        # 圆角矩形背景
+        pygame.draw.rect(bg_surf, (20, 20, 40, alpha), bg_surf.get_rect(), border_radius=4)
+        # 金色边框（圆角）
+        border_color = (255, 220, 100, min(255, alpha + 40))
+        pygame.draw.rect(bg_surf, border_color, bg_surf.get_rect(), width=1, border_radius=4)
+        self.internal_surface.blit(bg_surf, (box_x, box_y))
+
+        # 文字居中
+        text_rect = text_surf.get_rect(center=(box_x + box_w // 2, box_y + box_h // 2))
+        self.internal_surface.blit(text_surf, text_rect)
+
+        # 顶部小三角指示箭头（向下），提示玩家注意
+        arrow_x = box_x + box_w // 2
+        arrow_y = box_y + box_h
+        arrow_pulse = int(3 * math.sin(pygame.time.get_ticks() / 200.0))
+        arrow_color = (255, 220, 100, min(255, alpha + 40))
+        arrow_surf = pygame.Surface((10, 6), pygame.SRCALPHA)
+        pygame.draw.polygon(arrow_surf, arrow_color, [
+            (0, 0), (5, 5 + arrow_pulse), (10, 0)
+        ])
+        self.internal_surface.blit(arrow_surf, (arrow_x - 5, arrow_y))
+
+    def _draw_tutorial_intro(self):
+        """绘制教程开场动画：居中显示"操作教程"标题，淡入淡出"""
+        t = self._tutorial_intro_timer
+        duration = self._tutorial_intro_duration
+
+        # 淡入(0~0.5s) → 停留(0.5~1.5s) → 淡出(1.5~2.0s)
+        if t < 0.5:
+            alpha = int(255 * (t / 0.5))
+        elif t < 1.5:
+            alpha = 255
+        else:
+            alpha = int(255 * (1.0 - (t - 1.5) / 0.5))
+        alpha = max(0, min(255, alpha))
+
+        # 半透明全屏遮罩
+        overlay = pygame.Surface((INTERNAL_WIDTH, INTERNAL_HEIGHT), pygame.SRCALPHA)
+        overlay.fill((0, 0, 0, min(150, alpha)))
+        self.internal_surface.blit(overlay, (0, 0))
+
+        # 主标题"操作教程"
+        title_text = self.title_font.render("操作教程", True, (255, 220, 100))
+        title_text.set_alpha(alpha)
+        title_rect = title_text.get_rect(centerx=INTERNAL_WIDTH // 2, centery=INTERNAL_HEIGHT // 2 - 8)
+        self.internal_surface.blit(title_text, title_rect)
+
+        # 副标题"请跟随提示学习基本操作"
+        sub_text = self.info_font.render("请跟随提示学习基本操作", True, (200, 200, 210))
+        sub_text.set_alpha(alpha)
+        sub_rect = sub_text.get_rect(centerx=INTERNAL_WIDTH // 2, centery=INTERNAL_HEIGHT // 2 + 14)
+        self.internal_surface.blit(sub_text, sub_rect)
+
     def _draw_day_night_overlay(self):
         overlay_color = self.game_clock.get_overlay_color()
         if overlay_color[3] == 0:
@@ -2314,6 +2442,11 @@ class GameManager:
         self._realm_triggered = True
         self._realm_animating = True
         self._realm_anim_timer = 0.0
+        # 秘境触发时强制完成教程，避免提示冲突
+        if self._tutorial_step > TUTORIAL_NONE and self._tutorial_step < TUTORIAL_DONE:
+            self._tutorial_step = TUTORIAL_DONE
+            self._tutorial_prompt_text = ""
+            self._tutorial_completed = True
 
     def _on_realm_anim_complete(self):
         self.game_clock.activate_realm()
@@ -2337,24 +2470,92 @@ class GameManager:
         self._realm_hint_active = True
         self._realm_hint_timer = 0.0
 
-    def _show_tutorial(self):
-        self.state = GameState.DIALOG
-        tutorial_data = {
+    def _start_tutorial(self):
+        """启动交互式教程，先播放开场动画"""
+        self._tutorial_step = TUTORIAL_INTRO
+        self._tutorial_intro_timer = 0.0
+        self._tutorial_prompt_text = ""  # 开场动画期间不显示步骤提示
+        self._tutorial_initial_y = self.player.y
+
+    def _get_passing_student_dialog(self):
+        """获取路过的学生的对话数据（从JSON加载）"""
+        tutorial_data = self._load_dialogue("tutorial")
+        if tutorial_data:
+            return tutorial_data
+        # 降级：硬编码默认对话
+        return {
+            "tutorial_greet": [
+                {"speaker": "路过的学生", "text": "嘿，新同学！你也刚到吧？"},
+                {"speaker": "路过的学生", "text": "开学报到点在桂中路那边，往北走就到了。"},
+            ],
             "default": [
-                {"speaker": "", "text": "欢迎来到桂子山！这里有一些基本操作提示："},
-                {"speaker": "", "text": "WASD 或 方向键：移动角色"},
-                {"speaker": "", "text": "按住 Shift：冲刺（消耗体力）"},
-                {"speaker": "", "text": "靠近物体或NPC时，按 F 键互动"},
-                {"speaker": "", "text": "按 Esc 键暂停游戏"},
-                {"speaker": "", "text": "探索校园，解开谜题，收集七枚徽章碎片吧！"},
-            ]
+                {"speaker": "路过的学生", "text": "报到点在桂中路，往北走就到了。"},
+            ],
         }
-        self.dialog_box.start(
-            tutorial_data,
-            start_key="default",
-            on_complete=self._on_dialog_complete,
-            game_state=self._get_dialog_game_state(),
-        )
+
+    def _advance_tutorial(self, next_step, prompt_key=None):
+        """推进教程到下一步，并更新提示文本"""
+        self._tutorial_step = next_step
+        self._tutorial_prompt_timer = 0.0
+        if prompt_key is None:
+            # 步骤到提示键的映射
+            key_map = {
+                TUTORIAL_INTERACT: "interact",
+                TUTORIAL_MOVE: "move",
+                TUTORIAL_PICKUP: "pickup",
+                TUTORIAL_INVENTORY: "inventory",
+                TUTORIAL_MAP: "map",
+                TUTORIAL_MENU: "menu",
+                TUTORIAL_SPRINT: "sprint",
+                TUTORIAL_DONE: "explore",
+            }
+            prompt_key = key_map.get(next_step)
+        if prompt_key:
+            tutorial_data = self._load_dialogue("tutorial")
+            if tutorial_data and "prompts" in tutorial_data:
+                self._tutorial_prompt_text = tutorial_data["prompts"].get(prompt_key, "")
+            else:
+                # 降级默认文本
+                defaults = {
+                    "interact": "按 F 键与旁边的人对话",
+                    "move": "用 WASD 或方向键移动，去拾取附近的水壶吧",
+                    "pickup": "靠近水壶后，按 F 键拾取",
+                    "inventory": "按 Tab 键打开背包，查看拾取的物品",
+                    "map": "按 M 键查看校园地图",
+                    "menu": "按 Esc 键可以暂停游戏",
+                    "sprint": "按住 Shift 可以冲刺，注意消耗体力",
+                    "explore": "开学报到点在桂中路，往北走吧",
+                }
+                self._tutorial_prompt_text = defaults.get(prompt_key, "")
+        else:
+            self._tutorial_prompt_text = ""
+
+    def _update_tutorial(self, dt):
+        """每帧更新教程状态，检测步骤推进条件"""
+        if self._tutorial_step == TUTORIAL_INTRO:
+            # 教程开场动画：2秒后进入第一步
+            self._tutorial_intro_timer += dt
+            if self._tutorial_intro_timer >= self._tutorial_intro_duration:
+                self._advance_tutorial(TUTORIAL_INTERACT)
+
+        elif self._tutorial_step == TUTORIAL_MOVE:
+            # 检测玩家是否向北移动了足够远（至少1个tile）
+            if self.player.y < self._tutorial_initial_y - TILE_SIZE:
+                self._advance_tutorial(TUTORIAL_PICKUP)
+
+        elif self._tutorial_step == TUTORIAL_SPRINT:
+            self._tutorial_prompt_timer += dt
+            keys = pygame.key.get_pressed()
+            if keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT] or self._tutorial_prompt_timer > 3.0:
+                self._advance_tutorial(TUTORIAL_DONE)
+
+        elif self._tutorial_step == TUTORIAL_DONE:
+            # 自由探索引导提示，5秒后自动消失
+            self._tutorial_explore_timer += dt
+            if self._tutorial_explore_timer > 5.0:
+                self._tutorial_prompt_text = ""
+                self._tutorial_step = TUTORIAL_NONE
+                self._tutorial_completed = True
 
     def _show_first_night_hint(self):
         self.state = GameState.DIALOG
@@ -2371,16 +2572,64 @@ class GameManager:
         progress = self._realm_anim_timer / self._realm_anim_duration
         anim_surf = pygame.Surface((INTERNAL_WIDTH, INTERNAL_HEIGHT), pygame.SRCALPHA)
 
-        if progress < 0.33:
-            green_alpha = int(180 * (progress / 0.33))
-            anim_surf.fill((60, 180, 80, green_alpha))
-        elif progress < 0.5:
-            white_alpha = int(255 * ((progress - 0.33) / 0.17))
+        # 桂花金色
+        GOLD_COLOR = (220, 180, 60)
+
+        if progress < 0.10:
+            # 阶段1：画面快速压暗（黑色 alpha 0→200）
+            black_alpha = int(200 * (progress / 0.10))
+            anim_surf.fill((0, 0, 0, black_alpha))
+        elif progress < 0.40:
+            # 阶段2：黑暗中金色涟漪从玩家位置向外扩散
+            # 保持暗场背景
+            anim_surf.fill((0, 0, 0, 200))
+
+            ripple_progress = (progress - 0.10) / 0.30  # 0→1
+            # 计算玩家在屏幕上的中心坐标
+            player_screen_x = self.player.x - self.camera.x + self.player.width / 2
+            player_screen_y = self.player.y - self.camera.y + self.player.height / 2
+            cx = int(player_screen_x)
+            cy = int(player_screen_y)
+
+            # 最大半径：覆盖对角线
+            max_radius = int(math.sqrt(INTERNAL_WIDTH ** 2 + INTERNAL_HEIGHT ** 2))
+
+            # 绘制3层涟漪，依次延迟扩散
+            for i in range(3):
+                delay = i * 0.18  # 每层延迟
+                layer_progress = max(0.0, ripple_progress - delay)
+                if layer_progress <= 0:
+                    continue
+                # 涟漪半径随进度扩大
+                radius = int(max_radius * min(1.0, layer_progress / 0.7))
+                # 涟漪alpha：先增后减
+                if layer_progress < 0.3:
+                    alpha = int(120 * (layer_progress / 0.3))
+                else:
+                    alpha = int(120 * max(0, 1.0 - (layer_progress - 0.3) / 0.7))
+                if alpha <= 0 or radius <= 0:
+                    continue
+
+                # 绘制涟漪圆环（描边而非填充，更有波纹感）
+                ring_width = max(2, int(8 * (1.0 - layer_progress * 0.5)))
+                ring_surf = pygame.Surface((radius * 2, radius * 2), pygame.SRCALPHA)
+                pygame.draw.circle(ring_surf, (*GOLD_COLOR, alpha), (radius, radius), radius, ring_width)
+                # 涟漪内部填充极淡金色
+                inner_alpha = max(0, alpha // 4)
+                if inner_alpha > 0:
+                    pygame.draw.circle(ring_surf, (*GOLD_COLOR, inner_alpha), (radius, radius), max(0, radius - ring_width))
+                anim_surf.blit(ring_surf, (cx - radius, cy - radius))
+
+        elif progress < 0.55:
+            # 阶段3：白色闪屏（alpha 0→255）
+            white_alpha = int(255 * ((progress - 0.40) / 0.15))
             anim_surf.fill((255, 255, 255, white_alpha))
-        elif progress < 0.75:
-            white_alpha = int(255 * (1 - (progress - 0.5) / 0.25))
+        elif progress < 0.80:
+            # 阶段4：白色渐出（alpha 255→0）
+            white_alpha = int(255 * (1.0 - (progress - 0.55) / 0.25))
             anim_surf.fill((255, 255, 255, white_alpha))
         else:
+            # 阶段5：无叠加
             pass
 
         self.internal_surface.blit(anim_surf, (0, 0))
@@ -2565,90 +2814,320 @@ class GameManager:
             self.internal_surface.blit(text_surf, text_rect)
 
     def _draw_intro_campus_scene(self):
-        """绘制开场动画中的俯视角校门场景"""
+        """绘制开场动画中的俯视角校门场景（美化版）"""
         surf = self.internal_surface
-        cx = INTERNAL_WIDTH // 2
+        cx = INTERNAL_WIDTH // 2  # 240
 
-        # === 地面：草地 ===
+        # ============================================================
+        # 1. 地面：多层草地 + 花坛带 + 小花簇 + 落叶
+        # ============================================================
+        # 基础草地色
         surf.fill((72, 112, 56))
 
-        # 草地纹理变化
+        # 多层草地纹理：3种深浅交替，模拟真实草坪色差
         for y in range(0, INTERNAL_HEIGHT, 4):
             for x in range(0, INTERNAL_WIDTH, 8):
                 seed = (x * 7 + y * 13) % 37
-                if seed < 8:
-                    shade = (68 + seed, 108 + seed, 52 + seed)
-                    pygame.draw.rect(surf, shade, (x, y, 8, 4))
+                if seed < 5:
+                    shade = (65 + seed, 105 + seed, 48 + seed)
+                elif seed < 10:
+                    shade = (75 + seed, 118 + seed, 58 + seed)
+                else:
+                    continue
+                pygame.draw.rect(surf, shade, (x, y, 8, 4))
 
-        # === 道路（从画面下方延伸到上方，角色沿此路走进） ===
+        # 道路两侧花坛带（浅绿+深绿条纹，宽4px）
         road_w = 36
-        road_color = (170, 155, 130)
-        road_edge = (140, 125, 100)
-        # 主道路
-        pygame.draw.rect(surf, road_color, (cx - road_w // 2, 0, road_w, INTERNAL_HEIGHT))
-        # 道路边线
-        pygame.draw.line(surf, road_edge, (cx - road_w // 2, 0), (cx - road_w // 2, INTERNAL_HEIGHT), 1)
-        pygame.draw.line(surf, road_edge, (cx + road_w // 2, 0), (cx + road_w // 2, INTERNAL_HEIGHT), 1)
-        # 道路中线（虚线）
-        for y in range(0, INTERNAL_HEIGHT, 12):
-            pygame.draw.rect(surf, (190, 175, 150), (cx - 1, y, 2, 6))
+        road_left = cx - road_w // 2
+        road_right = cx + road_w // 2
+        for y in range(0, INTERNAL_HEIGHT, 2):
+            for bx in range(road_left - 4, road_left):
+                c = (60, 125, 50) if (bx + y) % 4 < 2 else (50, 110, 40)
+                surf.set_at((bx, y), c)
+            for bx in range(road_right, road_right + 4):
+                c = (60, 125, 50) if (bx + y) % 4 < 2 else (50, 110, 40)
+                surf.set_at((bx, y), c)
 
-        # === 校门牌坊（画面上方） ===
+        # 零星小花簇（白/黄/粉色点缀在草地上，避开道路和花坛带）
+        flower_colors = [(255, 255, 240), (255, 230, 100), (255, 200, 200)]
+        for i in range(30):
+            fx = (i * 97 + 31) % INTERNAL_WIDTH
+            fy = (i * 71 + 17) % INTERNAL_HEIGHT
+            # 跳过道路区域和花坛带
+            if road_left - 5 <= fx <= road_right + 5:
+                continue
+            fc = flower_colors[i % 3]
+            surf.set_at((fx, fy), fc)
+            if fx + 1 < INTERNAL_WIDTH:
+                surf.set_at((fx + 1, fy), fc)
+
+        # 地面落叶（树根附近和道路上的枯黄小点）
+        leaf_positions = [
+            (cx - 50, 85), (cx + 55, 75), (cx - 75, 165),
+            (cx + 70, 155), (cx - 45, 205), (cx + 50, 195),
+            (cx - 5, 130), (cx + 8, 180), (cx - 10, 220),
+        ]
+        for lx, ly in leaf_positions:
+            if 0 <= lx < INTERNAL_WIDTH and 0 <= ly < INTERNAL_HEIGHT:
+                surf.set_at((lx, ly), (180, 150, 80))
+                if lx + 1 < INTERNAL_WIDTH:
+                    surf.set_at((lx + 1, ly), (165, 135, 70))
+
+        # ============================================================
+        # 2. 道路：砖石纹理 + 路缘石
+        # ============================================================
+        # 主道路底色
+        pygame.draw.rect(surf, (170, 155, 130), (road_left, 0, road_w, INTERNAL_HEIGHT))
+
+        # 砖石纹理：交替色块模拟砖石铺路
+        for y in range(0, INTERNAL_HEIGHT, 6):
+            offset = 4 if (y // 6) % 2 == 0 else 0  # 交错排列
+            for x in range(road_left, road_right, 8):
+                bx = x + offset
+                if bx >= road_right:
+                    break
+                seed = (bx * 3 + y * 7) % 11
+                if seed < 3:
+                    c = (175, 160, 135)
+                elif seed < 6:
+                    c = (165, 150, 125)
+                else:
+                    c = (170, 155, 130)
+                bw = min(8, road_right - bx)
+                pygame.draw.rect(surf, c, (bx, y, bw, 6))
+            # 砖缝线
+            pygame.draw.line(surf, (150, 135, 110), (road_left, y + 5), (road_right, y + 5), 1)
+
+        # 路缘石（浅灰色，2px宽）
+        curb_color = (160, 155, 145)
+        curb_shadow = (130, 125, 115)
+        pygame.draw.rect(surf, curb_shadow, (road_left - 2, 0, 2, INTERNAL_HEIGHT))
+        pygame.draw.rect(surf, curb_color, (road_left - 1, 0, 1, INTERNAL_HEIGHT))
+        pygame.draw.rect(surf, curb_shadow, (road_right, 0, 2, INTERNAL_HEIGHT))
+        pygame.draw.rect(surf, curb_color, (road_right + 1, 0, 1, INTERNAL_HEIGHT))
+
+        # ============================================================
+        # 3. 远景树影（校门后方，暗示校园深处）
+        # ============================================================
+        far_trees = [(cx - 70, 15, 5), (cx + 80, 10, 4), (cx - 20, 8, 3)]
+        for ftx, fty, ftr in far_trees:
+            # 远景树影：偏暗偏蓝的绿色
+            pygame.draw.circle(surf, (45, 85, 40), (ftx, fty), ftr)
+            pygame.draw.circle(surf, (50, 95, 45), (ftx - 1, fty - 1), ftr - 1)
+
+        # ============================================================
+        # 4. 校门牌坊（中式造型） + 花坛
+        # ============================================================
         gate_y = 40
+
+        # 牌坊阴影
+        shadow_surf = pygame.Surface((70, 34), pygame.SRCALPHA)
+        pygame.draw.rect(shadow_surf, (0, 0, 0, 30), (2, 2, 66, 30))
+        surf.blit(shadow_surf, (cx - 35, gate_y + 2))
+
+        # 柱础（底部加宽）
+        pygame.draw.rect(surf, (155, 145, 125), (cx - 31, gate_y + 25, 12, 5))
+        pygame.draw.rect(surf, (155, 145, 125), (cx + 19, gate_y + 25, 12, 5))
         # 左柱
-        pygame.draw.rect(surf, (170, 160, 140), (cx - 28, gate_y, 8, 30))
+        pygame.draw.rect(surf, (175, 165, 145), (cx - 28, gate_y, 8, 30))
         pygame.draw.rect(surf, (150, 140, 120), (cx - 28, gate_y, 8, 30), 1)
         # 右柱
-        pygame.draw.rect(surf, (170, 160, 140), (cx + 20, gate_y, 8, 30))
+        pygame.draw.rect(surf, (175, 165, 145), (cx + 20, gate_y, 8, 30))
         pygame.draw.rect(surf, (150, 140, 120), (cx + 20, gate_y, 8, 30), 1)
-        # 横梁
-        pygame.draw.rect(surf, (155, 140, 115), (cx - 30, gate_y - 4, 60, 6))
-        pygame.draw.rect(surf, (135, 120, 95), (cx - 30, gate_y - 4, 60, 6), 1)
-        # 顶部装饰
-        pygame.draw.rect(surf, (145, 130, 105), (cx - 32, gate_y - 8, 64, 5))
-        # 校名（简化为文字）
-        name_surf = self.info_font.render("桂子山", True, (200, 180, 140))
-        name_rect = name_surf.get_rect(centerx=cx, centery=gate_y + 12)
+
+        # 下横梁
+        pygame.draw.rect(surf, (160, 145, 120), (cx - 30, gate_y + 2, 60, 5))
+        pygame.draw.rect(surf, (140, 125, 100), (cx - 30, gate_y + 2, 60, 5), 1)
+
+        # 上横梁
+        pygame.draw.rect(surf, (155, 140, 115), (cx - 32, gate_y - 4, 64, 6))
+        pygame.draw.rect(surf, (135, 120, 95), (cx - 32, gate_y - 4, 64, 6), 1)
+
+        # 顶层横梁（更宽，翘角效果）
+        pygame.draw.rect(surf, (145, 130, 105), (cx - 34, gate_y - 10, 68, 5))
+        # 左翘角
+        pygame.draw.polygon(surf, (140, 125, 100), [
+            (cx - 34, gate_y - 10), (cx - 38, gate_y - 14), (cx - 34, gate_y - 8)
+        ])
+        # 右翘角
+        pygame.draw.polygon(surf, (140, 125, 100), [
+            (cx + 34, gate_y - 10), (cx + 38, gate_y - 14), (cx + 34, gate_y - 8)
+        ])
+
+        # 顶部装饰脊
+        pygame.draw.rect(surf, (135, 120, 95), (cx - 30, gate_y - 14, 60, 3))
+        # 脊端小翘角
+        pygame.draw.polygon(surf, (130, 115, 90), [
+            (cx - 30, gate_y - 14), (cx - 33, gate_y - 17), (cx - 28, gate_y - 12)
+        ])
+        pygame.draw.polygon(surf, (130, 115, 90), [
+            (cx + 30, gate_y - 14), (cx + 33, gate_y - 17), (cx + 28, gate_y - 12)
+        ])
+
+        # 匾额框
+        plaque_rect = pygame.Rect(cx - 16, gate_y - 2, 32, 12)
+        pygame.draw.rect(surf, (120, 90, 50), plaque_rect)
+        pygame.draw.rect(surf, (180, 150, 90), plaque_rect, 1)
+        # 校名
+        name_surf = self.info_font.render("桂子山", True, (220, 195, 140))
+        name_rect = name_surf.get_rect(center=plaque_rect.center)
         surf.blit(name_surf, name_rect)
 
-        # === 桂花树（使用精灵或手绘） ===
-        tree_positions = [
-            (cx - 60, 80), (cx + 60, 80),   # 校门两侧
-            (cx - 80, 160), (cx + 80, 160),  # 道路两侧远处
-            (cx - 55, 200), (cx + 55, 200),  # 道路两侧近处
-        ]
-        # 尝试加载桂花树精灵
-        tree_sprite = self._load_intro_sprite("osmanthus_tree.png")
-        tree_glow_sprite = self._load_intro_sprite("osmanthus_tree_glow.png")
+        # 校门两侧花坛
+        for ft_x in [cx - 50, cx + 38]:
+            # 花坛外框
+            pygame.draw.rect(surf, (140, 120, 90), (ft_x, gate_y + 18, 12, 8))
+            pygame.draw.rect(surf, (120, 100, 70), (ft_x, gate_y + 18, 12, 8), 1)
+            # 花坛内泥土+花
+            pygame.draw.rect(surf, (90, 70, 40), (ft_x + 1, gate_y + 19, 10, 6))
+            for fi in range(4):
+                ffx = ft_x + 2 + fi * 2
+                ffy = gate_y + 18
+                fc = [(255, 200, 200), (255, 255, 200), (255, 200, 200), (255, 230, 150)][fi]
+                surf.set_at((ffx, ffy), fc)
 
-        for i, (tx, ty) in enumerate(tree_positions):
+        # ============================================================
+        # 5. 树木 + 树根灌木 + 树下阴影
+        # ============================================================
+        # 树木定义：(x, y, scale, 冠色偏移) — 4大树+2小树，位置自然化
+        tree_defs = [
+            # 校门两侧大树
+            (cx - 58, 75, 1.0, 0),   # 大树A：左侧，校门旁
+            (cx + 62, 72, 1.0, 3),   # 大树B：右侧，校门旁，y略偏
+            # 道路中段小树（远景感）
+            (cx - 82, 145, 0.7, 5),  # 小树C：左侧远处
+            (cx + 78, 150, 0.7, 2),  # 小树D：右侧远处，y略偏
+            # 道路近处大树
+            (cx - 52, 195, 1.0, 4),  # 大树E：左侧近处
+            (cx + 58, 205, 1.0, 1),  # 大树F：右侧近处，y偏移
+        ]
+
+        tree_sprite = self._load_intro_sprite("osmanthus_tree.png")
+
+        for i, (tx, ty, scale, color_off) in enumerate(tree_defs):
+            # 树下阴影（半透明椭圆）
+            shadow_w = int(18 * scale)
+            shadow_h = int(6 * scale)
+            shadow_s = pygame.Surface((shadow_w, shadow_h), pygame.SRCALPHA)
+            pygame.draw.ellipse(shadow_s, (0, 0, 0, 35), (0, 0, shadow_w, shadow_h))
+            surf.blit(shadow_s, (tx - shadow_w // 2, ty - shadow_h // 2 + 2))
+
             if tree_sprite is not None:
-                # 使用精灵
-                sprite_w = tree_sprite.get_width()
-                sprite_h = tree_sprite.get_height()
-                # 底部对齐到树根位置
-                surf.blit(tree_sprite, (tx - sprite_w // 2, ty - sprite_h))
+                # 使用精灵：按scale缩放
+                sw = tree_sprite.get_width()
+                sh = tree_sprite.get_height()
+                new_w = max(1, int(sw * scale))
+                new_h = max(1, int(sh * scale))
+                scaled = pygame.transform.scale(tree_sprite, (new_w, new_h))
+                surf.blit(scaled, (tx - new_w // 2, ty - new_h))
             else:
-                # 降级：手绘桂花树
+                # 降级：手绘桂花树（按scale缩放，颜色差异化）
+                s = scale
+                trunk_c = (100 - color_off * 2, 70 - color_off, 30)
+                crown_c1 = (55 + color_off * 2, 130 + color_off, 45)
+                crown_c2 = (65 + color_off * 2, 145 + color_off, 55)
                 # 树干
-                pygame.draw.rect(surf, (100, 70, 30), (tx - 2, ty - 20, 4, 20))
-                # 树冠
-                pygame.draw.circle(surf, (55, 130, 45), (tx, ty - 25), 11)
-                pygame.draw.circle(surf, (65, 145, 55), (tx - 3, ty - 22), 8)
-                pygame.draw.circle(surf, (65, 145, 55), (tx + 3, ty - 22), 8)
+                tw = max(1, int(4 * s))
+                th = max(1, int(20 * s))
+                pygame.draw.rect(surf, trunk_c, (tx - tw // 2, ty - th, tw, th))
+                # 树冠（多个圆叠加，形状随i微调）
+                cr = max(2, int(11 * s))
+                pygame.draw.circle(surf, crown_c1, (tx, ty - int(25 * s)), cr)
+                pygame.draw.circle(surf, crown_c2, (tx - int(3 * s), ty - int(22 * s)), max(2, int(8 * s)))
+                pygame.draw.circle(surf, crown_c2, (tx + int(3 * s), ty - int(22 * s)), max(2, int(8 * s)))
                 # 桂花点
                 for j in range(6):
-                    fx = tx + ((j * 7 + 3 + i * 5) % 19 - 9)
-                    fy = ty - 25 + ((j * 11 + 5 + i * 3) % 19 - 9)
-                    pygame.draw.circle(surf, (255, 220, 80), (fx, fy), 1)
+                    ffx = tx + int(((j * 7 + 3 + i * 5) % 19 - 9) * s)
+                    ffy = ty - int(25 * s) + int(((j * 11 + 5 + i * 3) % 19 - 9) * s)
+                    pygame.draw.circle(surf, (255, 220, 80), (ffx, ffy), 1)
 
-        # === 桂花飘落粒子 ===
+            # 树根灌木（仅大树）
+            if scale >= 0.9:
+                bush_c1 = (45, 105, 40)
+                bush_c2 = (55, 120, 48)
+                # 左侧灌木
+                pygame.draw.circle(surf, bush_c1, (tx - int(8 * scale), ty - 1), max(2, int(4 * scale)))
+                pygame.draw.circle(surf, bush_c2, (tx - int(6 * scale), ty - 2), max(2, int(3 * scale)))
+                # 右侧灌木
+                pygame.draw.circle(surf, bush_c1, (tx + int(8 * scale), ty), max(2, int(4 * scale)))
+                pygame.draw.circle(surf, bush_c2, (tx + int(6 * scale), ty - 1), max(2, int(3 * scale)))
+
+        # ============================================================
+        # 6. 环境装饰：路灯 / 石凳 / 指示牌 / 矮篱笆
+        # ============================================================
+
+        # 路灯 ×2（道路两侧 y≈120）
+        for lx, ly in [(road_left - 8, 120), (road_right + 6, 118)]:
+            # 灯杆
+            pygame.draw.line(surf, (100, 100, 100), (lx + 1, ly), (lx + 1, ly - 14), 1)
+            # 灯罩
+            pygame.draw.rect(surf, (180, 170, 130), (lx - 1, ly - 16, 5, 3))
+            # 灯光微弱辉光
+            glow_s = pygame.Surface((10, 10), pygame.SRCALPHA)
+            pygame.draw.circle(glow_s, (255, 240, 180, 25), (5, 5), 5)
+            surf.blit(glow_s, (lx - 4, ly - 20))
+
+        # 石凳 ×1（道路左侧 y≈170）
+        bench_x, bench_y = road_left - 16, 170
+        # 凳面
+        pygame.draw.rect(surf, (150, 140, 130), (bench_x, bench_y, 10, 3))
+        # 凳腿
+        pygame.draw.rect(surf, (120, 110, 100), (bench_x + 1, bench_y + 3, 2, 2))
+        pygame.draw.rect(surf, (120, 110, 100), (bench_x + 7, bench_y + 3, 2, 2))
+
+        # 指示牌 ×1（道路右侧 y≈100）
+        sign_x, sign_y = road_right + 8, 100
+        # 竖杆
+        pygame.draw.line(surf, (110, 100, 90), (sign_x, sign_y), (sign_x, sign_y - 12), 1)
+        # 横牌
+        pygame.draw.rect(surf, (140, 120, 80), (sign_x, sign_y - 14, 12, 5))
+        pygame.draw.rect(surf, (120, 100, 60), (sign_x, sign_y - 14, 12, 5), 1)
+        # 箭头指示
+        pygame.draw.line(surf, (200, 180, 120), (sign_x + 2, sign_y - 12), (sign_x + 9, sign_y - 12), 1)
+        pygame.draw.line(surf, (200, 180, 120), (sign_x + 7, sign_y - 14), (sign_x + 9, sign_y - 12), 1)
+        pygame.draw.line(surf, (200, 180, 120), (sign_x + 7, sign_y - 10), (sign_x + 9, sign_y - 12), 1)
+
+        # 矮篱笆（道路两侧局部，y 80-110 段）
+        for fy in range(80, 112, 4):
+            # 左侧
+            fx = road_left - 6
+            pygame.draw.line(surf, (90, 75, 45), (fx, fy), (fx, fy + 3), 1)
+            pygame.draw.line(surf, (90, 75, 45), (fx + 2, fy), (fx + 2, fy + 3), 1)
+            # 右侧
+            fx2 = road_right + 4
+            pygame.draw.line(surf, (90, 75, 45), (fx2, fy), (fx2, fy + 3), 1)
+            pygame.draw.line(surf, (90, 75, 45), (fx2 + 2, fy), (fx2 + 2, fy + 3), 1)
+        # 篱笆横栏
+        pygame.draw.line(surf, (100, 85, 50), (road_left - 6, 84), (road_left - 4, 108), 1)
+        pygame.draw.line(surf, (100, 85, 50), (road_right + 4, 84), (road_right + 6, 108), 1)
+
+        # ============================================================
+        # 7. 桂花飘落粒子（增加数量）
+        # ============================================================
         self._draw_intro_petals()
 
-        # === 玩家（使用精灵表，从下往上走） ===
+        # ============================================================
+        # 8. 玩家（使用精灵表，从下往上走）
+        # ============================================================
         player_x = cx
         player_y = int(self._intro_player_y)
         self._draw_intro_player(surf, player_x, player_y)
+
+        # ============================================================
+        # 9. 暗角 + 暖色叠加
+        # ============================================================
+        # 暖色叠加（极淡暖黄，暗示秋日桂花季）
+        warm_overlay = pygame.Surface((INTERNAL_WIDTH, INTERNAL_HEIGHT), pygame.SRCALPHA)
+        warm_overlay.fill((255, 230, 150, 10))
+        surf.blit(warm_overlay, (0, 0))
+
+        # 暗角效果（极淡，聚焦视线到中央）
+        vignette = pygame.Surface((INTERNAL_WIDTH, INTERNAL_HEIGHT), pygame.SRCALPHA)
+        for corner in [(0, 0), (INTERNAL_WIDTH, 0), (0, INTERNAL_HEIGHT), (INTERNAL_WIDTH, INTERNAL_HEIGHT)]:
+            for r in range(40, 0, -5):
+                alpha = max(0, 15 - r // 4)
+                pygame.draw.circle(vignette, (0, 0, 0, alpha), corner, r * 3)
+        surf.blit(vignette, (0, 0))
 
     def _load_intro_sprite(self, filename):
         """加载开场动画用的精灵（带缓存）"""
@@ -2703,7 +3182,7 @@ class GameManager:
     def _draw_intro_petals(self):
         """绘制开场动画中的桂花飘落粒子"""
         t = self._intro_timer + getattr(self, '_intro_total_time', 0)
-        for i in range(12):
+        for i in range(20):
             seed_x = (i * 67 + 23) % INTERNAL_WIDTH
             speed = 12 + (i * 7) % 8
             drift = 8 * math.sin(t * 1.5 + i * 0.7)
@@ -3053,7 +3532,12 @@ class GameManager:
         self._realm_triggered = False
         self._realm_animating = False
         self._realm_first_night_shown = False
-        self._tutorial_shown = False
+        self._tutorial_step = TUTORIAL_NONE  # 新游戏时重新触发教程
+        self._tutorial_prompt_text = ""
+        self._tutorial_prompt_timer = 0.0
+        self._tutorial_initial_y = 0.0
+        self._tutorial_explore_timer = 0.0
+        self._tutorial_completed = False
         self._all_badges_collected = False
         self._guardian_npc = None
         self._pending_fountain_hint = False

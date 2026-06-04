@@ -971,28 +971,67 @@ def create_dining_table(path):
 
 
 def create_scoreboard(path):
-    """记分板: 24×20"""
-    surf = make_surface(24, 20)
-    # 外框
-    draw_rect_filled(surf, 0, 0, 24, 20, (60, 60, 70))
-    draw_rect_filled(surf, 1, 1, 22, 18, (80, 80, 90))
-    # 白色区域
-    draw_rect_filled(surf, 2, 2, 20, 16, (240, 240, 235))
-    # 分数显示区
-    draw_rect_filled(surf, 3, 3, 18, 6, (220, 220, 215))
-    # 数字（像素风格）
-    # "00"
-    _draw_digit(surf, 5, 4, 0, (40, 40, 40))
-    _draw_digit(surf, 10, 4, 0, (40, 40, 40))
-    # 冒号
-    draw_pixel(surf, 15, 5, (40, 40, 40))
-    draw_pixel(surf, 15, 7, (40, 40, 40))
-    # 底部文字区
-    draw_hline(surf, 3, 21, 10, (200, 200, 195))
-    draw_hline(surf, 4, 12, 12, (180, 180, 175))
-    draw_hline(surf, 4, 12, 14, (180, 180, 175))
-    draw_hline(surf, 14, 20, 12, (180, 180, 175))
-    draw_hline(surf, 14, 20, 14, (180, 180, 175))
+    """记分牌: 32×28，体育馆电子记分牌（美化版）
+    包含：金属外框、LED风格数字显示、队名区域、装饰细节
+    """
+    surf = make_surface(32, 28)
+    # ---- 金属外框 ----
+    draw_rect_filled(surf, 0, 0, 32, 28, (70, 70, 80))
+    # 外框高光（顶部和左侧）
+    draw_hline(surf, 0, 31, 0, (100, 100, 110))
+    draw_vline(surf, 0, 0, 27, (100, 100, 110))
+    # 外框阴影（底部和右侧）
+    draw_hline(surf, 0, 31, 27, (50, 50, 60))
+    draw_vline(surf, 31, 0, 27, (50, 50, 60))
+    # 内框
+    draw_rect_filled(surf, 1, 1, 30, 26, (55, 55, 65))
+    # ---- 主面板（深色背景，模拟LED屏幕） ----
+    draw_rect_filled(surf, 2, 2, 28, 24, (15, 15, 25))
+    # ---- 分数显示区（上半部分） ----
+    draw_rect_filled(surf, 3, 3, 26, 12, (10, 10, 18))
+    # 分数区边框
+    draw_hline(surf, 3, 28, 3, (40, 40, 50))
+    draw_hline(surf, 3, 28, 14, (40, 40, 50))
+    # 左队分数（红色LED风格）
+    _draw_digit(surf, 5, 5, 0, (220, 50, 50))
+    _draw_digit(surf, 9, 5, 0, (220, 50, 50))
+    # 冒号分隔
+    draw_pixel(surf, 14, 6, (220, 50, 50))
+    draw_pixel(surf, 14, 9, (220, 50, 50))
+    # 右队分数（蓝色LED风格）
+    _draw_digit(surf, 17, 5, 0, (50, 80, 220))
+    _draw_digit(surf, 21, 5, 0, (50, 80, 220))
+    # LED背景暗纹（模拟未亮的LED点）
+    for y in range(5, 10):
+        for x in range(5, 13):
+            if surf.get_at((x, y)) == (10, 10, 18, 255):
+                draw_pixel(surf, x, y, (18, 12, 18))
+    for y in range(5, 10):
+        for x in range(17, 25):
+            if surf.get_at((x, y)) == (10, 10, 18, 255):
+                draw_pixel(surf, x, y, (12, 14, 25))
+    # ---- 队名/文字区（下半部分） ----
+    draw_rect_filled(surf, 3, 15, 26, 10, (20, 20, 30))
+    # 队名区域分隔线
+    draw_vline(surf, 16, 15, 24, (40, 40, 50))
+    # 左队名区域（红色调）
+    draw_rect_filled(surf, 4, 16, 11, 8, (25, 15, 18))
+    draw_hline(surf, 5, 13, 18, (180, 60, 60))  # 简化队名
+    draw_hline(surf, 5, 13, 20, (150, 50, 50))
+    # 右队名区域（蓝色调）
+    draw_rect_filled(surf, 17, 16, 11, 8, (15, 18, 28))
+    draw_hline(surf, 18, 26, 18, (60, 80, 180))  # 简化队名
+    draw_hline(surf, 18, 26, 20, (50, 60, 150))
+    # ---- 底部装饰灯（小圆点模拟LED指示灯） ----
+    draw_pixel(surf, 8, 25, (50, 180, 50))   # 绿色电源灯
+    draw_pixel(surf, 14, 25, (180, 180, 50))  # 黄色状态灯
+    draw_pixel(surf, 20, 25, (50, 50, 180))   # 蓝色信号灯
+    draw_pixel(surf, 26, 25, (180, 50, 50))   # 红色告警灯
+    # ---- 安装支架（顶部两个挂钩） ----
+    draw_pixel(surf, 6, 0, (90, 90, 100))
+    draw_pixel(surf, 6, 1, (80, 80, 90))
+    draw_pixel(surf, 25, 0, (90, 90, 100))
+    draw_pixel(surf, 25, 1, (80, 80, 90))
     pygame.image.save(surf, path)
 
 
@@ -1018,43 +1057,103 @@ def _draw_digit(surf, x, y, digit, color):
 
 
 def create_equipment_cabinet(path):
-    """器材柜: 24×24"""
-    surf = make_surface(24, 24)
-    # 柜体
-    draw_rect_filled(surf, 0, 0, 24, 24, (120, 120, 130))
-    draw_rect_filled(surf, 1, 1, 22, 22, (140, 140, 150))
-    # 隔板
-    draw_hline(surf, 1, 22, 8, (120, 120, 130))
-    draw_hline(surf, 1, 22, 16, (120, 120, 130))
-    # 上层
-    draw_rect_filled(surf, 2, 2, 9, 6, (130, 130, 140))
-    draw_rect_filled(surf, 13, 2, 9, 6, (130, 130, 140))
-    # 把手
-    draw_pixel(surf, 10, 5, (180, 180, 190))
-    draw_pixel(surf, 13, 5, (180, 180, 190))
-    # 中层
-    draw_rect_filled(surf, 2, 9, 9, 7, (130, 130, 140))
-    draw_rect_filled(surf, 13, 9, 9, 7, (130, 130, 140))
-    # 器材轮廓（球）
-    draw_pixel(surf, 5, 12, (200, 100, 50))
-    draw_pixel(surf, 6, 11, (200, 100, 50))
-    draw_pixel(surf, 6, 12, (220, 120, 60))
-    draw_pixel(surf, 7, 12, (200, 100, 50))
-    # 把手
-    draw_pixel(surf, 10, 12, (180, 180, 190))
-    draw_pixel(surf, 13, 12, (180, 180, 190))
-    # 下层
-    draw_rect_filled(surf, 2, 17, 9, 5, (130, 130, 140))
-    draw_rect_filled(surf, 13, 17, 9, 5, (130, 130, 140))
-    # 器材（球拍轮廓）
-    draw_pixel(surf, 16, 18, (160, 120, 80))
-    draw_pixel(surf, 17, 18, (160, 120, 80))
-    draw_pixel(surf, 17, 19, (160, 120, 80))
-    draw_pixel(surf, 18, 19, (160, 120, 80))
-    draw_pixel(surf, 18, 20, (140, 100, 60))
-    # 把手
-    draw_pixel(surf, 10, 19, (180, 180, 190))
-    draw_pixel(surf, 13, 19, (180, 180, 190))
+    """器材柜: 32×32，体育馆金属器材柜（美化版）
+    包含：金属柜体、多层隔间、透明门、器材展示、标签牌
+    """
+    surf = make_surface(32, 32)
+    # ---- 柜体外壳 ----
+    draw_rect_filled(surf, 0, 0, 32, 32, (90, 95, 105))
+    # 外壳高光（顶部和左侧）
+    draw_hline(surf, 0, 31, 0, (120, 125, 135))
+    draw_vline(surf, 0, 0, 31, (120, 125, 135))
+    # 外壳阴影（底部和右侧）
+    draw_hline(surf, 0, 31, 31, (60, 65, 75))
+    draw_vline(surf, 31, 0, 31, (60, 65, 75))
+    # 内部面板
+    draw_rect_filled(surf, 1, 1, 30, 30, (100, 105, 115))
+    # ---- 顶部标签牌 ----
+    draw_rect_filled(surf, 2, 2, 28, 3, (70, 75, 85))
+    draw_hline(surf, 4, 27, 3, (160, 160, 170))  # 标签文字
+    draw_hline(surf, 4, 20, 3, (180, 180, 190))  # 标签文字高光
+    # ---- 上层隔间（透明门+篮球） ----
+    draw_rect_filled(surf, 2, 6, 13, 8, (80, 85, 95))
+    draw_rect_filled(surf, 3, 7, 11, 6, (110, 115, 125))
+    # 透明门效果（浅色覆盖）
+    draw_rect_filled(surf, 3, 7, 11, 6, (120, 130, 145))
+    # 门内篮球
+    draw_pixel(surf, 7, 9, (220, 110, 40))
+    draw_pixel(surf, 8, 9, (230, 120, 50))
+    draw_pixel(surf, 8, 10, (210, 100, 30))
+    draw_pixel(surf, 7, 10, (200, 90, 25))
+    # 门把手
+    draw_pixel(surf, 12, 9, (180, 180, 190))
+    draw_pixel(surf, 12, 10, (160, 160, 170))
+    # 上层右隔间
+    draw_rect_filled(surf, 17, 6, 13, 8, (80, 85, 95))
+    draw_rect_filled(surf, 18, 7, 11, 6, (120, 130, 145))
+    # 门内排球
+    draw_pixel(surf, 22, 9, (240, 240, 245))
+    draw_pixel(surf, 23, 9, (230, 230, 235))
+    draw_pixel(surf, 23, 10, (220, 220, 225))
+    draw_pixel(surf, 22, 10, (235, 235, 240))
+    # 排球纹线
+    draw_pixel(surf, 22, 9, (200, 80, 80))
+    draw_pixel(surf, 23, 10, (80, 80, 200))
+    # 门把手
+    draw_pixel(surf, 18, 9, (180, 180, 190))
+    draw_pixel(surf, 18, 10, (160, 160, 170))
+    # ---- 中层隔板线 ----
+    draw_hline(surf, 2, 29, 14, (70, 75, 85))
+    draw_hline(surf, 2, 29, 15, (110, 115, 125))
+    # ---- 中层隔间（球拍+护具） ----
+    draw_rect_filled(surf, 2, 16, 13, 7, (80, 85, 95))
+    draw_rect_filled(surf, 3, 17, 11, 5, (120, 130, 145))
+    # 门内球拍
+    draw_pixel(surf, 5, 17, (160, 120, 80))
+    draw_pixel(surf, 6, 17, (170, 130, 90))
+    draw_pixel(surf, 6, 18, (160, 120, 80))
+    draw_pixel(surf, 7, 18, (150, 110, 70))
+    draw_pixel(surf, 7, 19, (140, 100, 60))
+    # 球拍手柄
+    draw_pixel(surf, 8, 19, (120, 90, 50))
+    draw_pixel(surf, 8, 20, (110, 80, 40))
+    # 门把手
+    draw_pixel(surf, 12, 18, (180, 180, 190))
+    draw_pixel(surf, 12, 19, (160, 160, 170))
+    # 中层右隔间
+    draw_rect_filled(surf, 17, 16, 13, 7, (80, 85, 95))
+    draw_rect_filled(surf, 18, 17, 11, 5, (120, 130, 145))
+    # 门内护膝
+    draw_pixel(surf, 21, 18, (60, 60, 160))
+    draw_pixel(surf, 22, 18, (70, 70, 170))
+    draw_pixel(surf, 22, 19, (60, 60, 160))
+    draw_pixel(surf, 23, 19, (50, 50, 150))
+    # 门把手
+    draw_pixel(surf, 18, 18, (180, 180, 190))
+    draw_pixel(surf, 18, 19, (160, 160, 170))
+    # ---- 下层隔板线 ----
+    draw_hline(surf, 2, 29, 23, (70, 75, 85))
+    draw_hline(surf, 2, 29, 24, (110, 115, 125))
+    # ---- 下层（大隔间，放大型器材） ----
+    draw_rect_filled(surf, 2, 25, 28, 5, (80, 85, 95))
+    draw_rect_filled(surf, 3, 26, 26, 3, (120, 130, 145))
+    # 门内哑铃
+    draw_pixel(surf, 8, 27, (140, 140, 150))
+    draw_pixel(surf, 9, 27, (100, 100, 110))
+    draw_pixel(surf, 10, 27, (100, 100, 110))
+    draw_pixel(surf, 11, 27, (140, 140, 150))
+    # 门内跳绳
+    draw_pixel(surf, 18, 26, (200, 160, 60))
+    draw_pixel(surf, 19, 27, (200, 160, 60))
+    draw_pixel(surf, 20, 27, (200, 160, 60))
+    draw_pixel(surf, 21, 26, (200, 160, 60))
+    # 下层门把手
+    draw_pixel(surf, 15, 27, (180, 180, 190))
+    # ---- 中间竖隔板 ----
+    draw_vline(surf, 16, 6, 30, (70, 75, 85))
+    draw_vline(surf, 15, 6, 30, (110, 115, 125))
+    # ---- 底部踢脚线 ----
+    draw_hline(surf, 1, 30, 30, (60, 65, 75))
     pygame.image.save(surf, path)
 
 
@@ -1085,40 +1184,64 @@ def create_door_entrance(path):
 
 
 def create_shooting_station(path):
-    """投篮站: 24×32，篮球架（加高版）"""
-    surf = make_surface(24, 32)
-    # 篮板支架（更高）
-    draw_rect_filled(surf, 18, 4, 3, 24, (120, 120, 130))
-    draw_pixel(surf, 19, 5, (140, 140, 150))
-    draw_pixel(surf, 19, 10, (130, 130, 140))
-    # 篮板（更高位置）
-    draw_rect_filled(surf, 12, 4, 8, 7, (220, 220, 230))
-    draw_rect_filled(surf, 13, 5, 6, 5, (200, 200, 210))
-    # 篮板内框
-    draw_rect_filled(surf, 14, 6, 4, 3, (180, 180, 190))
-    # 篮筐
-    draw_hline(surf, 8, 13, 11, (200, 80, 30))
-    draw_pixel(surf, 7, 11, (200, 80, 30))
-    # 篮网（几条竖线）
-    draw_pixel(surf, 9, 12, (230, 230, 240))
-    draw_pixel(surf, 10, 13, (230, 230, 240))
-    draw_pixel(surf, 11, 12, (230, 230, 240))
-    draw_pixel(surf, 12, 13, (230, 230, 240))
-    draw_pixel(surf, 13, 14, (230, 230, 240))
-    # 底座
-    draw_rect_filled(surf, 16, 27, 6, 3, (100, 100, 110))
-    draw_rect_filled(surf, 15, 29, 8, 2, (80, 80, 90))
+    """投篮站: 24×48，篮球架（加高版，比例接近现实）
+    现实中篮筐高3.05m，人高1.7m，比例≈1.79
+    NPC高24px，篮筐高度≈43px，加上底座总高48px
+    """
+    surf = make_surface(24, 48)
+    # ---- 篮板支架（更高，从底座延伸到篮板） ----
+    draw_rect_filled(surf, 18, 6, 3, 36, (120, 120, 130))
+    # 支架高光
+    draw_pixel(surf, 19, 8, (140, 140, 150))
+    draw_pixel(surf, 19, 16, (130, 130, 140))
+    draw_pixel(surf, 19, 24, (135, 135, 145))
+    draw_pixel(surf, 19, 32, (130, 130, 140))
+    # ---- 横向支撑臂（连接支架与篮板） ----
+    draw_hline(surf, 14, 18, 8, (110, 110, 120))
+    draw_hline(surf, 14, 18, 9, (100, 100, 110))
+    # ---- 篮板（更高位置，接近顶部） ----
+    draw_rect_filled(surf, 8, 6, 10, 8, (230, 230, 240))
+    draw_rect_filled(surf, 9, 7, 8, 6, (210, 210, 220))
+    # 篮板内框（红色方框）
+    draw_rect_filled(surf, 10, 8, 6, 4, (190, 190, 200))
+    draw_hline(surf, 11, 14, 9, (220, 60, 40))
+    draw_hline(surf, 11, 14, 10, (220, 60, 40))
+    # 篮板边框
+    draw_hline(surf, 8, 17, 6, (180, 180, 190))
+    draw_hline(surf, 8, 17, 13, (180, 180, 190))
+    draw_vline(surf, 8, 6, 13, (180, 180, 190))
+    draw_vline(surf, 17, 6, 13, (180, 180, 190))
+    # ---- 篮筐（橙红色，从篮板下方伸出） ----
+    draw_hline(surf, 4, 11, 14, (220, 90, 30))
+    draw_hline(surf, 4, 11, 15, (200, 70, 20))
+    # 篮筐连接点
+    draw_pixel(surf, 11, 14, (200, 80, 25))
+    draw_pixel(surf, 11, 15, (180, 60, 15))
+    # ---- 篮网（白色竖线+横线编织） ----
+    draw_vline(surf, 5, 15, 20, (230, 230, 240))
+    draw_vline(surf, 7, 15, 21, (220, 220, 230))
+    draw_vline(surf, 9, 15, 21, (220, 220, 230))
+    draw_hline(surf, 5, 9, 18, (210, 210, 220))
+    draw_hline(surf, 5, 9, 20, (200, 200, 210))
+    # ---- 底座 ----
+    draw_rect_filled(surf, 15, 40, 7, 4, (100, 100, 110))
+    draw_rect_filled(surf, 14, 43, 9, 3, (80, 80, 90))
     # 底座高光
-    draw_pixel(surf, 17, 27, (120, 120, 130))
-    # 篮球（地面位置）
-    draw_pixel(surf, 5, 28, (220, 120, 40))
-    draw_pixel(surf, 6, 27, (220, 120, 40))
-    draw_pixel(surf, 6, 28, (200, 100, 30))
-    draw_pixel(surf, 5, 27, (200, 100, 30))
+    draw_pixel(surf, 16, 40, (120, 120, 130))
+    draw_pixel(surf, 17, 40, (115, 115, 125))
+    # 底座斜撑（从支架到底座的加固结构）
+    draw_pixel(surf, 16, 39, (100, 100, 110))
+    draw_pixel(surf, 15, 38, (95, 95, 105))
+    # ---- 篮球（地面位置） ----
+    draw_pixel(surf, 5, 43, (240, 140, 60))
+    draw_pixel(surf, 6, 42, (240, 140, 60))
+    draw_pixel(surf, 6, 43, (220, 120, 40))
+    draw_pixel(surf, 7, 43, (220, 120, 40))
+    draw_pixel(surf, 5, 42, (220, 120, 40))
     # 球上纹线
-    draw_pixel(surf, 6, 28, (180, 80, 20))
+    draw_pixel(surf, 6, 43, (180, 80, 20))
     # 篮球高光
-    draw_pixel(surf, 5, 27, (240, 140, 60))
+    draw_pixel(surf, 5, 42, (250, 160, 80))
     pygame.image.save(surf, path)
 
 
