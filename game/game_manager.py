@@ -4,6 +4,7 @@ import os
 import random
 import pygame
 import pygame_gui
+import pytmx
 from config import (
     INTERNAL_WIDTH,
     INTERNAL_HEIGHT,
