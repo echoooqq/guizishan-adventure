@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <map version="1.5" orientation="orthogonal" renderorder="right-down" width="22" height="16" tilewidth="16" tileheight="16" infinite="0" nextobjectid="8" nextlayerid="7">
- <tileset firstgid="1" name="indoor_tileset" tilewidth="16" tileheight="16" tilecount="46" columns="46">
-  <image source="../../assets/tilesets/indoor_tileset.png" width="736" height="16" />
+ <tileset firstgid="1" name="indoor_tileset" tilewidth="16" tileheight="16" tilecount="65" columns="65">
+  <image source="../../assets/tilesets/indoor_tileset.png" width="1040" height="16" />
   <tile id="4">
    <properties>
     <property name="solid" type="bool" value="true" />
@@ -58,6 +58,11 @@
    </properties>
   </tile>
   <tile id="19">
+   <properties>
+    <property name="solid" type="bool" value="true" />
+   </properties>
+  </tile>
+  <tile id="20">
    <properties>
     <property name="solid" type="bool" value="true" />
    </properties>
@@ -163,6 +168,86 @@
    </properties>
   </tile>
   <tile id="45">
+   <properties>
+    <property name="solid" type="bool" value="true" />
+   </properties>
+  </tile>
+  <tile id="46">
+   <properties>
+    <property name="solid" type="bool" value="true" />
+   </properties>
+  </tile>
+  <tile id="47">
+   <properties>
+    <property name="solid" type="bool" value="true" />
+   </properties>
+  </tile>
+  <tile id="48">
+   <properties>
+    <property name="solid" type="bool" value="true" />
+   </properties>
+  </tile>
+  <tile id="49">
+   <properties>
+    <property name="solid" type="bool" value="true" />
+   </properties>
+  </tile>
+  <tile id="50">
+   <properties>
+    <property name="solid" type="bool" value="true" />
+   </properties>
+  </tile>
+  <tile id="51">
+   <properties>
+    <property name="solid" type="bool" value="true" />
+   </properties>
+  </tile>
+  <tile id="52">
+   <properties>
+    <property name="solid" type="bool" value="true" />
+   </properties>
+  </tile>
+  <tile id="53">
+   <properties>
+    <property name="solid" type="bool" value="true" />
+   </properties>
+  </tile>
+  <tile id="54">
+   <properties>
+    <property name="solid" type="bool" value="true" />
+   </properties>
+  </tile>
+  <tile id="55">
+   <properties>
+    <property name="solid" type="bool" value="true" />
+   </properties>
+  </tile>
+  <tile id="56">
+   <properties>
+    <property name="solid" type="bool" value="true" />
+   </properties>
+  </tile>
+  <tile id="57">
+   <properties>
+    <property name="solid" type="bool" value="true" />
+   </properties>
+  </tile>
+  <tile id="58">
+   <properties>
+    <property name="solid" type="bool" value="true" />
+   </properties>
+  </tile>
+  <tile id="59">
+   <properties>
+    <property name="solid" type="bool" value="true" />
+   </properties>
+  </tile>
+  <tile id="63">
+   <properties>
+    <property name="solid" type="bool" value="true" />
+   </properties>
+  </tile>
+  <tile id="64">
    <properties>
     <property name="solid" type="bool" value="true" />
    </properties>

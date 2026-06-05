@@ -91,6 +91,17 @@ class TileMap:
             )
             self.triggers.append(trigger_obj)
 
+    # TMX 对象 type 到 sprite_key 的自动映射
+    # 有映射的类型使用精灵渲染，无映射且无 sprite_key 的设为不可见（瓦片层已提供视觉）
+    _TYPE_SPRITE_MAP = {
+        "osmanthus_tree": "osmanthus_tree",
+        "computer": "computer_terminal",
+        "bookshelf": "bookshelf",
+        "sculpture": "sculpture",
+        "scoreboard": "scoreboard",
+        "basketball_hoop": "shooting_station",
+    }
+
     def _parse_objects(self, layer):
         from entities.interactive_object import InteractiveObject
 
@@ -99,6 +110,13 @@ class TileMap:
             # 将对象 type 属性存入 properties，便于后续通过 properties.get("type") 查找
             if obj.type:
                 props["type"] = obj.type
+            # 自动映射 sprite_key：优先使用 TMX 中显式指定的，其次按 type 映射
+            if not props.get("sprite_key") and not props.get("sprite"):
+                if obj.type and obj.type in self._TYPE_SPRITE_MAP:
+                    props["sprite_key"] = self._TYPE_SPRITE_MAP[obj.type]
+                else:
+                    # 无对应精灵的对象设为不可见（瓦片层已提供视觉表现）
+                    props.setdefault("invisible", True)
             interactive_type = props.get("interactive_type", "examine")
             obj_instance = InteractiveObject(
                 x=obj.x, y=obj.y,

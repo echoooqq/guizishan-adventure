@@ -2219,6 +2219,13 @@ class GameManager:
         )
         self.screen.blit(scaled, (0, 0))
 
+        # 开场动画牌匾文字后置叠加（在缩放后的窗口表面绘制，保证清晰）
+        if self.state == GameState.INTRO and self._intro_phase in (1, 2, 3):
+            if hasattr(self, '_intro_plaque_rect') and self._intro_plaque_rect is not None:
+                # 计算文字alpha：与画面淡入淡出同步
+                text_alpha = 255 - self._intro_fade_alpha
+                self._draw_intro_plaque_text(self.screen, text_alpha)
+
         self.ui_manager.draw_ui(self.screen)
         pygame.display.flip()
 
@@ -3079,132 +3086,156 @@ class GameManager:
             pygame.draw.circle(surf, (50, 95, 45), (ftx - 1, fty - 1), ftr - 1)
 
         # ============================================================
-        # 4. 校门牌坊（中式造型·放大美化版） + 花坛
+        # 4. 校门牌坊（青灰色石牌坊·华师风格美化版） + 花坛 + 石狮子
         # ============================================================
-        gate_y = 32  # 校门整体上移，为放大后的牌坊留出空间
+        gate_y = 30  # 校门整体位置
 
-        # --- 牌坊阴影 ---
-        shadow_surf = pygame.Surface((110, 55), pygame.SRCALPHA)
-        pygame.draw.rect(shadow_surf, (0, 0, 0, 30), (3, 3, 104, 49))
-        surf.blit(shadow_surf, (cx - 55, gate_y + 3))
+        # --- 牌坊整体阴影 ---
+        shadow_surf = pygame.Surface((120, 62), pygame.SRCALPHA)
+        pygame.draw.rect(shadow_surf, (0, 0, 0, 25), (4, 4, 112, 54))
+        surf.blit(shadow_surf, (cx - 60, gate_y + 4))
 
-        # --- 柱础（底座石墩，放大加厚） ---
-        # 左柱础
-        pygame.draw.rect(surf, (160, 150, 130), (cx - 48, gate_y + 40, 18, 7))
-        pygame.draw.rect(surf, (140, 130, 110), (cx - 48, gate_y + 40, 18, 7), 1)
-        pygame.draw.rect(surf, (170, 160, 140), (cx - 46, gate_y + 38, 14, 3))
-        # 右柱础
-        pygame.draw.rect(surf, (160, 150, 130), (cx + 30, gate_y + 40, 18, 7))
-        pygame.draw.rect(surf, (140, 130, 110), (cx + 30, gate_y + 40, 18, 7), 1)
-        pygame.draw.rect(surf, (170, 160, 140), (cx + 32, gate_y + 38, 14, 3))
+        # --- 石狮子（简化像素风，柱础外侧） ---
+        for lion_x, lion_dir in [(cx - 52, -1), (cx + 44, 1)]:
+            lion_y = gate_y + 38
+            # 底座
+            pygame.draw.rect(surf, (130, 135, 140), (lion_x, lion_y + 6, 8, 4))
+            pygame.draw.rect(surf, (110, 115, 120), (lion_x, lion_y + 6, 8, 4), 1)
+            # 身体
+            pygame.draw.rect(surf, (140, 145, 150), (lion_x + 1, lion_y + 1, 6, 6))
+            # 头
+            pygame.draw.circle(surf, (145, 150, 155), (lion_x + 4, lion_y), 3)
+            # 耳朵小突起
+            surf.set_at((lion_x + 2, lion_y - 2), (150, 155, 160))
+            surf.set_at((lion_x + 5, lion_y - 2), (150, 155, 160))
 
-        # --- 左柱（放大加宽，带纹理） ---
-        pygame.draw.rect(surf, (178, 168, 148), (cx - 44, gate_y + 2, 12, 40))
-        pygame.draw.rect(surf, (150, 140, 120), (cx - 44, gate_y + 2, 12, 40), 1)
-        # 柱身纹理线（暗示石柱凹槽）
-        pygame.draw.line(surf, (165, 155, 135), (cx - 40, gate_y + 4), (cx - 40, gate_y + 38), 1)
-        pygame.draw.line(surf, (165, 155, 135), (cx - 37, gate_y + 4), (cx - 37, gate_y + 38), 1)
+        # --- 柱础（莲花瓣底座造型） ---
+        for base_x in [cx - 48, cx + 32]:
+            # 底层宽基座
+            pygame.draw.rect(surf, (135, 140, 148), (base_x - 2, gate_y + 42, 20, 6))
+            pygame.draw.rect(surf, (115, 120, 128), (base_x - 2, gate_y + 42, 20, 6), 1)
+            # 莲花瓣底座（上层，带弧线暗示）
+            pygame.draw.rect(surf, (140, 145, 152), (base_x, gate_y + 39, 16, 4))
+            pygame.draw.rect(surf, (120, 125, 132), (base_x, gate_y + 39, 16, 4), 1)
+            # 莲花瓣弧线装饰
+            for petal_x in range(base_x + 2, base_x + 14, 3):
+                pygame.draw.arc(surf, (125, 130, 138), (petal_x, gate_y + 39, 3, 3), 0, 3.14, 1)
+
+        # --- 左柱（青灰色石材，带凹槽纹理） ---
+        pygame.draw.rect(surf, (150, 155, 163), (cx - 44, gate_y + 2, 12, 40))
+        pygame.draw.rect(surf, (125, 130, 138), (cx - 44, gate_y + 2, 12, 40), 1)
+        # 柱身凹槽纹理
+        pygame.draw.line(surf, (138, 143, 151), (cx - 41, gate_y + 4), (cx - 41, gate_y + 38), 1)
+        pygame.draw.line(surf, (138, 143, 151), (cx - 38, gate_y + 4), (cx - 38, gate_y + 38), 1)
+        # 柱身侧高光（暗示圆柱感）
+        pygame.draw.line(surf, (160, 165, 173), (cx - 43, gate_y + 4), (cx - 43, gate_y + 38), 1)
 
         # --- 右柱 ---
-        pygame.draw.rect(surf, (178, 168, 148), (cx + 32, gate_y + 2, 12, 40))
-        pygame.draw.rect(surf, (150, 140, 120), (cx + 32, gate_y + 2, 12, 40), 1)
-        pygame.draw.line(surf, (165, 155, 135), (cx + 36, gate_y + 4), (cx + 36, gate_y + 38), 1)
-        pygame.draw.line(surf, (165, 155, 135), (cx + 39, gate_y + 4), (cx + 39, gate_y + 38), 1)
+        pygame.draw.rect(surf, (150, 155, 163), (cx + 32, gate_y + 2, 12, 40))
+        pygame.draw.rect(surf, (125, 130, 138), (cx + 32, gate_y + 2, 12, 40), 1)
+        pygame.draw.line(surf, (138, 143, 151), (cx + 35, gate_y + 4), (cx + 35, gate_y + 38), 1)
+        pygame.draw.line(surf, (138, 143, 151), (cx + 38, gate_y + 4), (cx + 38, gate_y + 38), 1)
+        pygame.draw.line(surf, (160, 165, 173), (cx + 43, gate_y + 4), (cx + 43, gate_y + 38), 1)
 
-        # --- 柱头装饰（莲花座/云纹） ---
+        # --- 柱头装饰（石斗+圆珠） ---
         for pillar_x in [cx - 44, cx + 32]:
             # 柱头加宽石斗
-            pygame.draw.rect(surf, (165, 155, 135), (pillar_x - 2, gate_y - 2, 16, 5))
-            pygame.draw.rect(surf, (145, 135, 115), (pillar_x - 2, gate_y - 2, 16, 5), 1)
-            # 柱头小圆珠
-            pygame.draw.circle(surf, (190, 180, 160), (pillar_x + 6, gate_y - 4), 3)
-            pygame.draw.circle(surf, (160, 150, 130), (pillar_x + 6, gate_y - 4), 3, 1)
+            pygame.draw.rect(surf, (142, 147, 155), (pillar_x - 3, gate_y - 2, 18, 5))
+            pygame.draw.rect(surf, (120, 125, 133), (pillar_x - 3, gate_y - 2, 18, 5), 1)
+            # 柱头宝珠
+            pygame.draw.circle(surf, (158, 163, 170), (pillar_x + 6, gate_y - 4), 3)
+            pygame.draw.circle(surf, (130, 135, 143), (pillar_x + 6, gate_y - 4), 3, 1)
+            # 宝珠高光点
+            surf.set_at((pillar_x + 5, gate_y - 5), (175, 180, 188))
 
-        # --- 下横梁（额枋，加宽加厚） ---
-        pygame.draw.rect(surf, (162, 147, 122), (cx - 46, gate_y + 4, 92, 7))
-        pygame.draw.rect(surf, (140, 125, 100), (cx - 46, gate_y + 4, 92, 7), 1)
-        # 额枋装饰线
-        pygame.draw.line(surf, (150, 135, 110), (cx - 44, gate_y + 7), (cx + 44, gate_y + 7), 1)
+        # --- 下横梁（额枋，带回纹装饰带） ---
+        pygame.draw.rect(surf, (145, 150, 158), (cx - 47, gate_y + 4, 94, 8))
+        pygame.draw.rect(surf, (120, 125, 133), (cx - 47, gate_y + 4, 94, 8), 1)
+        # 回纹装饰带（横梁中间横线）
+        pygame.draw.line(surf, (132, 137, 145), (cx - 45, gate_y + 8), (cx + 45, gate_y + 8), 1)
+        # 回纹单元（简化锯齿纹）
+        for rx in range(cx - 42, cx + 42, 8):
+            pygame.draw.lines(surf, (128, 133, 141), False, [
+                (rx, gate_y + 6), (rx + 2, gate_y + 6), (rx + 2, gate_y + 10),
+                (rx + 4, gate_y + 10), (rx + 4, gate_y + 6), (rx + 6, gate_y + 6)
+            ], 1)
 
         # --- 上横梁（大额枋） ---
-        pygame.draw.rect(surf, (158, 143, 118), (cx - 48, gate_y - 6, 96, 8))
-        pygame.draw.rect(surf, (138, 123, 98), (cx - 48, gate_y - 6, 96, 8), 1)
+        pygame.draw.rect(surf, (142, 147, 155), (cx - 49, gate_y - 7, 98, 9))
+        pygame.draw.rect(surf, (118, 123, 131), (cx - 49, gate_y - 7, 98, 9), 1)
         # 横梁装饰线
-        pygame.draw.line(surf, (148, 133, 108), (cx - 46, gate_y - 3), (cx + 46, gate_y - 3), 1)
-        pygame.draw.line(surf, (148, 133, 108), (cx - 46, gate_y - 1), (cx + 46, gate_y - 1), 1)
+        pygame.draw.line(surf, (130, 135, 143), (cx - 47, gate_y - 4), (cx + 47, gate_y - 4), 1)
+        pygame.draw.line(surf, (130, 135, 143), (cx - 47, gate_y - 2), (cx + 47, gate_y - 2), 1)
 
-        # --- 斗拱层（简化：横梁与屋顶之间的层叠结构） ---
-        # 第一层斗拱（宽出柱头）
-        pygame.draw.rect(surf, (150, 135, 110), (cx - 50, gate_y - 10, 100, 4))
-        pygame.draw.rect(surf, (130, 115, 90), (cx - 50, gate_y - 10, 100, 4), 1)
+        # --- 斗拱层（层叠结构） ---
+        # 第一层斗拱
+        pygame.draw.rect(surf, (138, 143, 151), (cx - 52, gate_y - 11, 104, 4))
+        pygame.draw.rect(surf, (115, 120, 128), (cx - 52, gate_y - 11, 104, 4), 1)
         # 第二层斗拱（更宽）
-        pygame.draw.rect(surf, (145, 130, 105), (cx - 53, gate_y - 14, 106, 4))
-        pygame.draw.rect(surf, (125, 110, 85), (cx - 53, gate_y - 14, 106, 4), 1)
+        pygame.draw.rect(surf, (135, 140, 148), (cx - 55, gate_y - 15, 110, 4))
+        pygame.draw.rect(surf, (112, 117, 125), (cx - 55, gate_y - 15, 110, 4), 1)
 
-        # --- 屋顶（歇山顶造型，放大加厚） ---
+        # --- 屋顶（歇山顶造型） ---
         # 主屋面板
-        pygame.draw.rect(surf, (148, 133, 108), (cx - 55, gate_y - 18, 110, 5))
-        # 左翘角（飞檐，更明显）
-        pygame.draw.polygon(surf, (142, 127, 102), [
-            (cx - 55, gate_y - 18), (cx - 62, gate_y - 24), (cx - 52, gate_y - 15)
+        pygame.draw.rect(surf, (140, 145, 153), (cx - 57, gate_y - 19, 114, 5))
+        # 左翘角（飞檐）
+        pygame.draw.polygon(surf, (135, 140, 148), [
+            (cx - 57, gate_y - 19), (cx - 64, gate_y - 25), (cx - 54, gate_y - 16)
         ])
         # 右翘角
-        pygame.draw.polygon(surf, (142, 127, 102), [
-            (cx + 55, gate_y - 18), (cx + 62, gate_y - 24), (cx + 52, gate_y - 15)
+        pygame.draw.polygon(surf, (135, 140, 148), [
+            (cx + 57, gate_y - 19), (cx + 64, gate_y - 25), (cx + 54, gate_y - 16)
         ])
 
-        # --- 屋脊（正脊，加粗） ---
-        pygame.draw.rect(surf, (138, 123, 98), (cx - 50, gate_y - 22, 100, 4))
-        # 脊端翘角（鸱吻简化）
-        pygame.draw.polygon(surf, (132, 117, 92), [
-            (cx - 50, gate_y - 22), (cx - 55, gate_y - 27), (cx - 47, gate_y - 20)
+        # --- 屋脊（正脊） ---
+        pygame.draw.rect(surf, (132, 137, 145), (cx - 52, gate_y - 23, 104, 4))
+        # 脊端鸱吻
+        pygame.draw.polygon(surf, (128, 133, 141), [
+            (cx - 52, gate_y - 23), (cx - 57, gate_y - 28), (cx - 49, gate_y - 21)
         ])
-        pygame.draw.polygon(surf, (132, 117, 92), [
-            (cx + 50, gate_y - 22), (cx + 55, gate_y - 27), (cx + 47, gate_y - 20)
+        pygame.draw.polygon(surf, (128, 133, 141), [
+            (cx + 52, gate_y - 23), (cx + 57, gate_y - 28), (cx + 49, gate_y - 21)
         ])
-        # 脊中宝顶（小圆珠装饰）
-        pygame.draw.circle(surf, (155, 140, 115), (cx, gate_y - 24), 2)
+        # 脊中宝顶
+        pygame.draw.circle(surf, (148, 153, 160), (cx, gate_y - 25), 2)
 
-        # --- 瓦当纹理（屋顶底部一排小半圆） ---
-        for wx in range(cx - 48, cx + 48, 6):
-            pygame.draw.arc(surf, (130, 115, 90), (wx, gate_y - 19, 6, 4), 0, 3.14, 1)
+        # --- 瓦当纹理 ---
+        for wx in range(cx - 50, cx + 50, 5):
+            pygame.draw.arc(surf, (122, 127, 135), (wx, gate_y - 20, 5, 4), 0, 3.14, 1)
 
-        # --- 匾额（放大，带立体边框） ---
-        plaque_rect = pygame.Rect(cx - 24, gate_y + 10, 48, 18)
-        # 匾额外框（深色底板，模拟木匾）
-        pygame.draw.rect(surf, (90, 60, 30), (plaque_rect.x - 1, plaque_rect.y - 1, plaque_rect.w + 2, plaque_rect.h + 2))
-        # 匾额内底
-        pygame.draw.rect(surf, (110, 75, 35), plaque_rect)
-        # 匾额金边
-        pygame.draw.rect(surf, (200, 170, 100), plaque_rect, 1)
-        # 匾额内框线（双线装饰）
+        # --- 匾额（深墨绿底+三层边框+角花，华师风格） ---
+        plaque_rect = pygame.Rect(cx - 30, gate_y + 2, 60, 22)
+        # 第一层：深木外框（最外层）
+        pygame.draw.rect(surf, (65, 55, 40), (plaque_rect.x - 2, plaque_rect.y - 2, plaque_rect.w + 4, plaque_rect.h + 4))
+        # 第二层：金边
+        pygame.draw.rect(surf, (185, 160, 90), (plaque_rect.x - 1, plaque_rect.y - 1, plaque_rect.w + 2, plaque_rect.h + 2))
+        # 第三层：深墨绿底（华大绿）
+        pygame.draw.rect(surf, (30, 65, 45), plaque_rect)
+        # 内框金线
         inner_rect = plaque_rect.inflate(-4, -4)
-        pygame.draw.rect(surf, (180, 150, 80), inner_rect, 1)
+        pygame.draw.rect(surf, (170, 145, 75), inner_rect, 1)
+        # 角花装饰（四角小三角）
+        for corner_x, corner_y in [
+            (plaque_rect.x + 1, plaque_rect.y + 1),
+            (plaque_rect.right - 2, plaque_rect.y + 1),
+            (plaque_rect.x + 1, plaque_rect.bottom - 2),
+            (plaque_rect.right - 2, plaque_rect.bottom - 2),
+        ]:
+            pygame.draw.rect(surf, (170, 145, 75), (corner_x, corner_y, 2, 2))
 
-        # --- 校名"桂子山"（使用霞鹜文楷GB字体，典雅古朴） ---
-        plaque_font_path = os.path.join(
-            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-            "assets", "fonts", "LXGWWenKaiGB-Regular.ttf"
-        )
-        if os.path.exists(plaque_font_path):
-            plaque_font = pygame.font.Font(plaque_font_path, 14)
-        else:
-            # 降级：使用项目默认字体
-            plaque_font = pygame.font.Font(FONT_PATH, 14)
-        name_surf = plaque_font.render("桂子山", True, (230, 200, 130))
-        name_rect = name_surf.get_rect(center=plaque_rect.center)
-        surf.blit(name_surf, name_rect)
+        # 保存牌匾位置供后置叠加文字使用
+        self._intro_plaque_rect = plaque_rect.copy()
 
-        # 校门两侧花坛（位置适配放大后的校门）
-        for ft_x in [cx - 60, cx + 42]:
+        # 校门两侧花坛（位置适配校门）
+        for ft_x in [cx - 62, cx + 44]:
             # 花坛外框
-            pygame.draw.rect(surf, (140, 120, 90), (ft_x, gate_y + 35, 14, 10))
-            pygame.draw.rect(surf, (120, 100, 70), (ft_x, gate_y + 35, 14, 10), 1)
+            pygame.draw.rect(surf, (140, 120, 90), (ft_x, gate_y + 38, 14, 10))
+            pygame.draw.rect(surf, (120, 100, 70), (ft_x, gate_y + 38, 14, 10), 1)
             # 花坛内泥土+花
-            pygame.draw.rect(surf, (90, 70, 40), (ft_x + 1, gate_y + 36, 12, 8))
+            pygame.draw.rect(surf, (90, 70, 40), (ft_x + 1, gate_y + 39, 12, 8))
             for fi in range(4):
                 ffx = ft_x + 2 + fi * 3
-                ffy = gate_y + 35
+                ffy = gate_y + 38
                 fc = [(255, 200, 200), (255, 255, 200), (255, 200, 200), (255, 230, 150)][fi]
                 surf.set_at((ffx, ffy), fc)
 
@@ -3507,6 +3538,43 @@ class GameManager:
             petal_surf = pygame.Surface((3, 3), pygame.SRCALPHA)
             pygame.draw.circle(petal_surf, color, (1, 1), 1)
             self.internal_surface.blit(petal_surf, (int(x), int(y)))
+
+    def _draw_intro_plaque_text(self, screen_surface, text_alpha=255):
+        """在缩放后的窗口表面上绘制牌匾文字（后置叠加，保证清晰）"""
+        # 计算缩放比例
+        scale_x = SCREEN_WIDTH / INTERNAL_WIDTH
+        scale_y = SCREEN_HEIGHT / INTERNAL_HEIGHT
+
+        # 牌匾在窗口坐标系中的位置
+        pr = self._intro_plaque_rect
+        plaque_screen_rect = pygame.Rect(
+            int(pr.x * scale_x), int(pr.y * scale_y),
+            int(pr.width * scale_x), int(pr.height * scale_y)
+        )
+
+        # 加载牌匾专用字体
+        plaque_font_path = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+            "assets", "fonts", "ZhiMangXing-Regular.ttf"
+        )
+        if not os.path.exists(plaque_font_path):
+            plaque_font_path = os.path.join(
+                os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                "assets", "fonts", "LXGWWenKaiGB-Regular.ttf"
+            )
+
+        # 字号：在窗口分辨率下使用足够大的字号
+        font_size = max(20, int(plaque_screen_rect.height * 0.75))
+        if os.path.exists(plaque_font_path):
+            plaque_font = pygame.font.Font(plaque_font_path, font_size)
+        else:
+            plaque_font = pygame.font.Font(FONT_PATH, font_size)
+
+        # 渲染文字（带alpha同步淡入淡出）
+        name_surf = plaque_font.render("桂子山", True, (220, 195, 120))
+        name_surf.set_alpha(text_alpha)
+        name_rect = name_surf.get_rect(center=plaque_screen_rect.center)
+        screen_surface.blit(name_surf, name_rect)
 
     def _draw_intro_hint_effect(self):
         """绘制开场动画阶段2：微弱绿光暗示效果"""

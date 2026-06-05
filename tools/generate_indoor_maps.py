@@ -23,7 +23,8 @@ GID_FRIDGE = 12
 GID_STAIRS_DOWN = 13
 GID_STAIRS_UP = 14
 GID_COURT_FLOOR = 15
-GID_HOOP = 16
+GID_HOOP_TOP = 16     # 篮球架上部（篮板+篮筐+篮网）
+GID_HOOP_BOT = 21     # 篮球架下部（支柱+底座）
 GID_SCOREBOARD = 17
 GID_COMPUTER = 18
 GID_DOOR_INDOOR = 19
@@ -59,13 +60,33 @@ GID_SECRET_TORCH = 43    # 密室火把
 GID_OFFICE_DESK = 44     # 办公桌+电脑一体
 GID_LARGE_DESK_L = 45   # 大办公桌左半（抽屉柜+桌面物品）
 GID_LARGE_DESK_R = 46   # 大办公桌右半（显示器+键盘）
+# 体育馆设施 tile（多部件拼接）
+GID_GYM_TABLE_TL = 47    # 体育馆桌子左上
+GID_GYM_TABLE_TR = 48    # 体育馆桌子右上
+GID_GYM_TABLE_BL = 49    # 体育馆桌子左下
+GID_GYM_TABLE_BR = 50    # 体育馆桌子右下
+GID_GYM_TROPHY_TL = 51   # 奖杯展示柜左上
+GID_GYM_TROPHY_TR = 52   # 奖杯展示柜右上
+GID_GYM_TROPHY_ML = 53   # 奖杯展示柜左中
+GID_GYM_TROPHY_MR = 54   # 奖杯展示柜右中
+GID_GYM_TROPHY_BL = 55   # 奖杯展示柜左下
+GID_GYM_TROPHY_BR = 56   # 奖杯展示柜右下
+GID_GYM_WATER_TOP = 57   # 饮水机顶部
+GID_GYM_WATER_BOT = 58   # 饮水机底部
+GID_GYM_BENCH_L = 59     # 体育馆长凳左半
+GID_GYM_BENCH_R = 60     # 体育馆长凳右半
+GID_GYM_MAT_L = 61       # 体操垫左部
+GID_GYM_MAT_M = 62       # 体操垫中部
+GID_GYM_MAT_R = 63       # 体操垫右部
+GID_GYM_EQUIP_L = 64     # 器材柜左半
+GID_GYM_EQUIP_R = 65     # 器材柜右半
 
-TILE_COUNT = 46
+TILE_COUNT = 65
 
 SOLID_GIDS = {
     GID_INDOOR_WALL, GID_INDOOR_WALL_TOP, GID_BOOKSHELF, GID_BOOKSHELF_TOP,
     GID_TABLE, GID_CHAIR, GID_COUNTER, GID_FRIDGE,
-    GID_HOOP, GID_SCOREBOARD, GID_COMPUTER,
+    GID_HOOP_TOP, GID_HOOP_BOT, GID_SCOREBOARD, GID_COMPUTER,
     GID_BLACKBOARD, GID_PLANT_INDOOR, GID_COLLISION,
     GID_LIB_WALL, GID_LIB_WALL_TOP, GID_LIB_READING_LAMP,
     GID_GYM_WALL, GID_GYM_WALL_TOP, GID_GYM_LOCKER,
@@ -73,6 +94,12 @@ SOLID_GIDS = {
     GID_NANHU_WALL, GID_NANHU_WALL_TOP, GID_NANHU_ELEVATOR,
     GID_SECRET_WALL, GID_SECRET_WALL_TOP, GID_SECRET_RUNE, GID_SECRET_TORCH,
     GID_OFFICE_DESK, GID_LARGE_DESK_L, GID_LARGE_DESK_R,
+    GID_GYM_TABLE_TL, GID_GYM_TABLE_TR, GID_GYM_TABLE_BL, GID_GYM_TABLE_BR,
+    GID_GYM_TROPHY_TL, GID_GYM_TROPHY_TR, GID_GYM_TROPHY_ML, GID_GYM_TROPHY_MR,
+    GID_GYM_TROPHY_BL, GID_GYM_TROPHY_BR,
+    GID_GYM_WATER_TOP, GID_GYM_WATER_BOT,
+    GID_GYM_BENCH_L, GID_GYM_BENCH_R,
+    GID_GYM_EQUIP_L, GID_GYM_EQUIP_R,
 }
 
 
@@ -212,18 +239,51 @@ def _draw_tile(surface, gid, x):
         pygame.draw.line(surface, (180, 140, 80), (x, TILE_SIZE - 1), (x + TILE_SIZE, TILE_SIZE - 1))
         pygame.draw.line(surface, (220, 180, 120), (x + 8, 0), (x + 8, TILE_SIZE))
         pygame.draw.arc(surface, (220, 180, 120), (x, 0, TILE_SIZE, TILE_SIZE), 0, 3.14, 1)
-    elif gid == GID_HOOP:
-        # 篮球框：篮板+篮筐+篮网
+    elif gid == GID_HOOP_TOP:
+        # 篮球架上部：篮板+篮筐+篮网+支柱顶部
         surface.fill((0, 0, 0, 0), rect)
-        # 篮板（白色矩形）
-        pygame.draw.rect(surface, (240, 240, 245), (x + 3, 0, 10, 8))
-        pygame.draw.rect(surface, (200, 200, 210), (x + 3, 0, 10, 8), 1)
-        # 篮筐（红色圆环）
-        pygame.draw.rect(surface, (200, 60, 30), (x + 4, 8, 8, 2))
+        # 支柱（灰色金属管，从底部延伸上来）
+        pygame.draw.rect(surface, (140, 140, 150), (x + 7, 0, 2, 16))
+        # 支柱高光
+        surface.set_at((x + 7, 2), (165, 165, 175))
+        surface.set_at((x + 7, 5), (165, 165, 175))
+        surface.set_at((x + 7, 8), (165, 165, 175))
+        surface.set_at((x + 7, 11), (165, 165, 175))
+        # 横臂（从支柱向一侧延伸到篮板）
+        pygame.draw.rect(surface, (140, 140, 150), (x + 9, 0, 5, 2))
+        # 横臂高光
+        pygame.draw.line(surface, (160, 160, 170), (x + 9, 0), (x + 13, 0))
+        # 篮板（白色矩形，从横臂末端悬挂）
+        pygame.draw.rect(surface, (240, 240, 245), (x + 10, 2, 5, 6))
+        pygame.draw.rect(surface, (200, 200, 210), (x + 10, 2, 5, 6), 1)
+        # 篮板内框（红色小方框）
+        pygame.draw.rect(surface, (200, 60, 30), (x + 11, 3, 3, 3), 1)
+        # 篮筐（红色圆环，从篮板底部伸出）
+        pygame.draw.rect(surface, (200, 60, 30), (x + 9, 8, 6, 2))
+        # 篮筐端点（圆环效果）
+        surface.set_at((x + 9, 9), (180, 50, 25))
+        surface.set_at((x + 14, 9), (180, 50, 25))
         # 篮网（白色线条）
-        for nx in range(5, 11, 2):
+        for nx in range(10, 15, 2):
             pygame.draw.line(surface, (230, 230, 230), (x + nx, 10), (x + nx, 14))
-        pygame.draw.line(surface, (230, 230, 230), (x + 5, 14), (x + 9, 14))
+        pygame.draw.line(surface, (230, 230, 230), (x + 10, 14), (x + 14, 14))
+    elif gid == GID_HOOP_BOT:
+        # 篮球架下部：支柱+底座
+        surface.fill((0, 0, 0, 0), rect)
+        # 支柱（灰色金属管，从上延伸到底座）
+        pygame.draw.rect(surface, (140, 140, 150), (x + 7, 0, 2, 12))
+        # 支柱高光
+        surface.set_at((x + 7, 2), (165, 165, 175))
+        surface.set_at((x + 7, 5), (165, 165, 175))
+        surface.set_at((x + 7, 8), (165, 165, 175))
+        # 底座（厚重的金属底座，确保稳定）
+        pygame.draw.rect(surface, (100, 100, 110), (x + 4, 12, 8, 3))
+        # 底座高光
+        pygame.draw.rect(surface, (120, 120, 130), (x + 5, 12, 6, 1))
+        # 底座暗面
+        pygame.draw.rect(surface, (80, 80, 90), (x + 4, 14, 8, 1))
+        # 底座阴影
+        pygame.draw.rect(surface, (70, 70, 80), (x + 5, 15, 6, 1))
     elif gid == GID_SCOREBOARD:
         # 使用墙壁背景色，让精灵覆盖显示
         surface.fill((240, 240, 245), rect)
@@ -537,6 +597,458 @@ def _draw_tile(surface, gid, x):
         pygame.draw.rect(surface, (75, 75, 85), (x + 10, 7, 2, 1))
         # 桌面阴影
         pygame.draw.rect(surface, (100, 62, 28), (x, 13, 15, 1))
+    # 体育馆设施 tile（多部件拼接）
+    elif gid == GID_GYM_TABLE_TL:
+        # 体育馆桌子左上：桌面左半+运动水壶+毛巾
+        surface.fill((0, 0, 0, 0), rect)
+        # 桌面（浅灰金属质感）
+        pygame.draw.rect(surface, (180, 185, 190), (x, 3, 16, 5))
+        # 桌面高光
+        pygame.draw.rect(surface, (200, 205, 210), (x + 1, 3, 14, 1))
+        # 桌面暗边
+        pygame.draw.rect(surface, (155, 160, 165), (x, 7, 16, 1))
+        # 前面板
+        pygame.draw.rect(surface, (165, 170, 175), (x, 8, 16, 3))
+        # 前面板暗线
+        pygame.draw.rect(surface, (145, 150, 155), (x, 10, 16, 1))
+        # 运动水壶（蓝色，桌面左侧）
+        pygame.draw.rect(surface, (50, 100, 180), (x + 3, 1, 3, 3))
+        pygame.draw.rect(surface, (40, 80, 150), (x + 3, 0, 3, 1))
+        surface.set_at((x + 4, 1), (80, 130, 210))
+        # 毛巾（白色折叠条）
+        pygame.draw.rect(surface, (230, 230, 235), (x + 8, 4, 5, 2))
+        pygame.draw.rect(surface, (210, 210, 215), (x + 8, 5, 5, 1))
+    elif gid == GID_GYM_TABLE_TR:
+        # 体育馆桌子右上：桌面右半+记事板
+        surface.fill((0, 0, 0, 0), rect)
+        # 桌面
+        pygame.draw.rect(surface, (180, 185, 190), (x, 3, 16, 5))
+        # 桌面高光
+        pygame.draw.rect(surface, (200, 205, 210), (x, 3, 14, 1))
+        # 桌面暗边
+        pygame.draw.rect(surface, (155, 160, 165), (x, 7, 16, 1))
+        # 前面板
+        pygame.draw.rect(surface, (165, 170, 175), (x, 8, 16, 3))
+        # 前面板暗线
+        pygame.draw.rect(surface, (145, 150, 155), (x, 10, 16, 1))
+        # 记事板（棕色夹板+白纸）
+        pygame.draw.rect(surface, (140, 100, 50), (x + 2, 1, 5, 3))
+        pygame.draw.rect(surface, (240, 240, 240), (x + 3, 2, 3, 1))
+    elif gid == GID_GYM_TABLE_BL:
+        # 体育馆桌子左下：左桌腿+横撑左半
+        surface.fill((0, 0, 0, 0), rect)
+        # 左桌腿（金属管，1px宽体现细管感）
+        pygame.draw.rect(surface, (140, 145, 150), (x + 3, 0, 2, 14))
+        # 桌腿高光
+        surface.set_at((x + 3, 1), (165, 170, 175))
+        surface.set_at((x + 3, 3), (165, 170, 175))
+        # 横撑（连接两腿的金属杆）
+        pygame.draw.rect(surface, (130, 135, 140), (x + 3, 6, 13, 1))
+        # 横撑高光
+        pygame.draw.line(surface, (150, 155, 160), (x + 3, 5), (x + 15, 5))
+        # 地面阴影
+        pygame.draw.rect(surface, (120, 125, 130), (x + 2, 14, 3, 1))
+    elif gid == GID_GYM_TABLE_BR:
+        # 体育馆桌子右下：右桌腿+横撑右半
+        surface.fill((0, 0, 0, 0), rect)
+        # 右桌腿
+        pygame.draw.rect(surface, (140, 145, 150), (x + 11, 0, 2, 14))
+        # 桌腿高光
+        surface.set_at((x + 11, 1), (165, 170, 175))
+        surface.set_at((x + 11, 3), (165, 170, 175))
+        # 横撑右半
+        pygame.draw.rect(surface, (130, 135, 140), (x, 6, 12, 1))
+        # 横撑高光
+        pygame.draw.line(surface, (150, 155, 160), (x, 5), (x + 11, 5))
+        # 地面阴影
+        pygame.draw.rect(surface, (120, 125, 130), (x + 10, 14, 3, 1))
+    elif gid == GID_GYM_TROPHY_TL:
+        # 奖杯展示柜左上：柜顶装饰+玻璃罩左上+金色奖杯上部
+        surface.fill((0, 0, 0, 0), rect)
+        # 柜顶装饰线（深色木框）
+        pygame.draw.rect(surface, (90, 55, 25), (x, 0, 16, 2))
+        pygame.draw.rect(surface, (110, 70, 35), (x + 1, 0, 14, 1))
+        # 玻璃罩（浅蓝半透明）
+        pygame.draw.rect(surface, (200, 215, 235), (x + 1, 2, 15, 13))
+        # 玻璃边框
+        pygame.draw.rect(surface, (170, 185, 210), (x + 1, 2, 15, 13), 1)
+        # 玻璃反光（左上竖线）
+        pygame.draw.line(surface, (225, 235, 250), (x + 2, 3), (x + 2, 13))
+        # 金色奖杯上部（杯口+杯身）
+        pygame.draw.rect(surface, (220, 180, 50), (x + 4, 4, 5, 1))
+        pygame.draw.rect(surface, (220, 180, 50), (x + 5, 5, 3, 4))
+        # 奖杯高光
+        surface.set_at((x + 6, 5), (240, 210, 90))
+    elif gid == GID_GYM_TROPHY_TR:
+        # 奖杯展示柜右上：柜顶装饰+玻璃罩右上+银色奖杯上部
+        surface.fill((0, 0, 0, 0), rect)
+        # 柜顶装饰线
+        pygame.draw.rect(surface, (90, 55, 25), (x, 0, 16, 2))
+        pygame.draw.rect(surface, (110, 70, 35), (x + 1, 0, 14, 1))
+        # 玻璃罩
+        pygame.draw.rect(surface, (200, 215, 235), (x, 2, 15, 13))
+        # 玻璃边框
+        pygame.draw.rect(surface, (170, 185, 210), (x, 2, 15, 13), 1)
+        # 银色奖杯上部
+        pygame.draw.rect(surface, (200, 200, 215), (x + 5, 5, 5, 1))
+        pygame.draw.rect(surface, (200, 200, 215), (x + 6, 6, 3, 3))
+        # 奖杯高光
+        surface.set_at((x + 7, 6), (220, 220, 235))
+    elif gid == GID_GYM_TROPHY_ML:
+        # 奖杯展示柜左中：玻璃罩左中+金色奖杯底座+铜牌
+        surface.fill((0, 0, 0, 0), rect)
+        # 玻璃罩
+        pygame.draw.rect(surface, (200, 215, 235), (x + 1, 0, 15, 16))
+        pygame.draw.rect(surface, (170, 185, 210), (x + 1, 0, 15, 16), 1)
+        # 玻璃反光
+        pygame.draw.line(surface, (225, 235, 250), (x + 2, 0), (x + 2, 15))
+        # 金色奖杯底座
+        pygame.draw.rect(surface, (200, 160, 40), (x + 5, 0, 3, 1))
+        pygame.draw.rect(surface, (180, 140, 30), (x + 4, 1, 5, 1))
+        # 隔板（木质层板）
+        pygame.draw.rect(surface, (100, 65, 30), (x + 1, 3, 14, 1))
+        # 铜牌（第三层）
+        pygame.draw.rect(surface, (180, 120, 50), (x + 5, 6, 3, 4))
+        pygame.draw.rect(surface, (200, 140, 60), (x + 5, 6, 3, 1))
+        # 铜牌绶带
+        pygame.draw.rect(surface, (180, 40, 40), (x + 6, 5, 1, 1))
+    elif gid == GID_GYM_TROPHY_MR:
+        # 奖杯展示柜右中：玻璃罩右中+银色奖杯底座+奖状
+        surface.fill((0, 0, 0, 0), rect)
+        # 玻璃罩
+        pygame.draw.rect(surface, (200, 215, 235), (x, 0, 15, 16))
+        pygame.draw.rect(surface, (170, 185, 210), (x, 0, 15, 16), 1)
+        # 银色奖杯底座
+        pygame.draw.rect(surface, (180, 180, 195), (x + 6, 0, 3, 1))
+        pygame.draw.rect(surface, (160, 160, 175), (x + 5, 1, 5, 1))
+        # 隔板
+        pygame.draw.rect(surface, (100, 65, 30), (x, 3, 15, 1))
+        # 奖状（金色边框+白纸）
+        pygame.draw.rect(surface, (200, 170, 50), (x + 3, 5, 7, 6))
+        pygame.draw.rect(surface, (240, 235, 220), (x + 4, 6, 5, 4))
+        # 奖状文字行
+        for dy in range(3):
+            surface.set_at((x + 5, 7 + dy), (100, 100, 120))
+            surface.set_at((x + 7, 7 + dy), (100, 100, 120))
+    elif gid == GID_GYM_TROPHY_BL:
+        # 奖杯展示柜左下：木质底座左半+柜门+标签
+        surface.fill((0, 0, 0, 0), rect)
+        # 木质底座（深色）
+        pygame.draw.rect(surface, (80, 50, 25), (x, 0, 16, 16))
+        # 底座顶部装饰线
+        pygame.draw.rect(surface, (100, 65, 35), (x, 0, 16, 1))
+        # 柜门面板（略浅色）
+        pygame.draw.rect(surface, (95, 60, 30), (x + 1, 2, 14, 12))
+        # 柜门边框
+        pygame.draw.rect(surface, (70, 42, 18), (x + 1, 2, 14, 12), 1)
+        # 柜门拉手
+        pygame.draw.rect(surface, (180, 160, 100), (x + 12, 7, 2, 2))
+        # 标签牌（金色）
+        pygame.draw.rect(surface, (200, 180, 50), (x + 3, 4, 6, 2))
+        pygame.draw.rect(surface, (220, 200, 70), (x + 4, 4, 4, 1))
+        # 底部踢脚线
+        pygame.draw.rect(surface, (60, 35, 15), (x, 14, 16, 2))
+    elif gid == GID_GYM_TROPHY_BR:
+        # 奖杯展示柜右下：木质底座右半+柜门+标签
+        surface.fill((0, 0, 0, 0), rect)
+        # 木质底座
+        pygame.draw.rect(surface, (80, 50, 25), (x, 0, 16, 16))
+        # 底座顶部装饰线
+        pygame.draw.rect(surface, (100, 65, 35), (x, 0, 16, 1))
+        # 柜门面板
+        pygame.draw.rect(surface, (95, 60, 30), (x + 1, 2, 14, 12))
+        # 柜门边框
+        pygame.draw.rect(surface, (70, 42, 18), (x + 1, 2, 14, 12), 1)
+        # 柜门拉手
+        pygame.draw.rect(surface, (180, 160, 100), (x + 2, 7, 2, 2))
+        # 标签牌（银色）
+        pygame.draw.rect(surface, (190, 190, 200), (x + 5, 4, 6, 2))
+        pygame.draw.rect(surface, (210, 210, 220), (x + 6, 4, 4, 1))
+        # 底部踢脚线
+        pygame.draw.rect(surface, (60, 35, 15), (x, 14, 16, 2))
+    elif gid == GID_GYM_WATER_TOP:
+        # 饮水机顶部：水桶+机身顶部
+        surface.fill((0, 0, 0, 0), rect)
+        # 水桶（蓝色半透明，倒扣）
+        pygame.draw.rect(surface, (100, 165, 225), (x + 4, 0, 8, 8))
+        pygame.draw.rect(surface, (80, 145, 205), (x + 4, 0, 8, 8), 1)
+        # 水桶颈部
+        pygame.draw.rect(surface, (90, 155, 215), (x + 6, 0, 4, 2))
+        # 水面高光
+        pygame.draw.rect(surface, (130, 185, 245), (x + 5, 2, 3, 4))
+        # 水桶底部（与机身衔接）
+        pygame.draw.rect(surface, (85, 150, 210), (x + 5, 7, 6, 1))
+        # 机身顶部
+        pygame.draw.rect(surface, (230, 230, 235), (x + 3, 8, 10, 8))
+        pygame.draw.rect(surface, (200, 200, 205), (x + 3, 8, 10, 8), 1)
+        # 机身顶部圆弧
+        pygame.draw.rect(surface, (235, 235, 240), (x + 4, 8, 8, 2))
+    elif gid == GID_GYM_WATER_BOT:
+        # 饮水机底部：出水口+按钮+接水盘
+        surface.fill((0, 0, 0, 0), rect)
+        # 机身
+        pygame.draw.rect(surface, (230, 230, 235), (x + 3, 0, 10, 13))
+        pygame.draw.rect(surface, (200, 200, 205), (x + 3, 0, 10, 13), 1)
+        # 红色热水按钮
+        pygame.draw.rect(surface, (200, 55, 55), (x + 5, 2, 2, 2))
+        surface.set_at((x + 5, 2), (230, 80, 80))
+        # 蓝色冷水按钮
+        pygame.draw.rect(surface, (55, 100, 200), (x + 9, 2, 2, 2))
+        surface.set_at((x + 9, 2), (80, 130, 230))
+        # 出水口
+        pygame.draw.rect(surface, (180, 180, 185), (x + 7, 5, 2, 3))
+        # 接水盘
+        pygame.draw.rect(surface, (190, 190, 195), (x + 4, 9, 8, 1))
+        # 盘中水滴
+        surface.set_at((x + 7, 10), (150, 200, 240))
+        # 机身底座
+        pygame.draw.rect(surface, (200, 200, 205), (x + 3, 11, 10, 2))
+        # 地面阴影
+        pygame.draw.rect(surface, (170, 170, 175), (x + 4, 14, 8, 1))
+    elif gid == GID_GYM_BENCH_L:
+        # 体育馆替补长凳左半：加厚蓝色软垫+粗金属支架+横撑+左扶手
+        surface.fill((0, 0, 0, 0), rect)
+        # 左扶手（圆弧形金属扶手，体育馆长凳标志性特征）
+        pygame.draw.rect(surface, (160, 165, 175), (x + 1, 1, 2, 3))
+        pygame.draw.rect(surface, (175, 180, 190), (x + 1, 1, 2, 1))
+        # 扶手顶部圆弧
+        surface.set_at((x + 2, 0), (160, 165, 175))
+        # 软垫座面（深蓝色乙烯基，加厚设计，占更多画面）
+        pygame.draw.rect(surface, (30, 60, 135), (x + 1, 4, 15, 7))
+        # 软垫高光（上方亮面，体现皮质光泽）
+        pygame.draw.rect(surface, (45, 80, 165), (x + 2, 4, 13, 3))
+        # 软垫缝线（3条竖线，体现软垫分区）
+        pygame.draw.line(surface, (25, 50, 120), (x + 5, 5), (x + 5, 10))
+        pygame.draw.line(surface, (25, 50, 120), (x + 9, 5), (x + 9, 10))
+        pygame.draw.line(surface, (25, 50, 120), (x + 13, 5), (x + 13, 10))
+        # 软垫暗面（下方阴影）
+        pygame.draw.rect(surface, (20, 45, 110), (x + 2, 10, 13, 1))
+        # 金属左腿（粗管状，2px宽，清晰可见）
+        pygame.draw.rect(surface, (145, 150, 160), (x + 2, 11, 2, 4))
+        # 腿部高光
+        surface.set_at((x + 2, 12), (170, 175, 185))
+        surface.set_at((x + 2, 13), (170, 175, 185))
+        # 横撑（连接前后腿的横杆，体育馆长凳特征）
+        pygame.draw.rect(surface, (135, 140, 150), (x + 2, 13, 14, 1))
+        # 横撑高光
+        pygame.draw.line(surface, (155, 160, 170), (x + 2, 12), (x + 15, 12))
+        # 底部脚垫
+        pygame.draw.rect(surface, (100, 100, 110), (x + 1, 14, 3, 1))
+    elif gid == GID_GYM_BENCH_R:
+        # 体育馆替补长凳右半：加厚蓝色软垫+粗金属支架+横撑+右扶手
+        surface.fill((0, 0, 0, 0), rect)
+        # 右扶手
+        pygame.draw.rect(surface, (160, 165, 175), (x + 13, 1, 2, 3))
+        pygame.draw.rect(surface, (175, 180, 190), (x + 13, 1, 2, 1))
+        # 扶手顶部圆弧
+        surface.set_at((x + 13, 0), (160, 165, 175))
+        # 软垫座面
+        pygame.draw.rect(surface, (30, 60, 135), (x, 4, 15, 7))
+        # 软垫高光
+        pygame.draw.rect(surface, (45, 80, 165), (x + 1, 4, 13, 3))
+        # 软垫缝线
+        pygame.draw.line(surface, (25, 50, 120), (x + 3, 5), (x + 3, 10))
+        pygame.draw.line(surface, (25, 50, 120), (x + 7, 5), (x + 7, 10))
+        pygame.draw.line(surface, (25, 50, 120), (x + 11, 5), (x + 11, 10))
+        # 软垫暗面
+        pygame.draw.rect(surface, (20, 45, 110), (x + 1, 10, 13, 1))
+        # 金属右腿（粗管状）
+        pygame.draw.rect(surface, (145, 150, 160), (x + 12, 11, 2, 4))
+        # 腿部高光
+        surface.set_at((x + 12, 12), (170, 175, 185))
+        surface.set_at((x + 12, 13), (170, 175, 185))
+        # 横撑右半
+        pygame.draw.rect(surface, (135, 140, 150), (x, 13, 13, 1))
+        # 横撑高光
+        pygame.draw.line(surface, (155, 160, 170), (x, 12), (x + 12, 12))
+        # 底部脚垫
+        pygame.draw.rect(surface, (100, 100, 110), (x + 12, 14, 3, 1))
+    elif gid == GID_GYM_MAT_L:
+        # 体操垫左部（展开铺平）：左圆角+4面板折叠+防滑纹理+厚度+固定带
+        surface.fill((0, 0, 0, 0), rect)
+        # 垫子主体（蓝色，俯视角平铺）
+        pygame.draw.rect(surface, (50, 100, 180), (x + 2, 2, 14, 12))
+        # 左侧圆角
+        pygame.draw.rect(surface, (50, 100, 180), (x + 3, 1, 13, 1))
+        pygame.draw.rect(surface, (50, 100, 180), (x + 4, 0, 12, 1))
+        # 垫子厚度边缘（深色描边，体现约5cm厚度）
+        pygame.draw.rect(surface, (30, 70, 145), (x + 2, 2, 14, 12), 1)
+        pygame.draw.rect(surface, (30, 70, 145), (x + 3, 1, 13, 1), 1)
+        pygame.draw.rect(surface, (30, 70, 145), (x + 4, 0, 12, 1), 1)
+        # 面板1高光区（上半部分）
+        pygame.draw.rect(surface, (65, 118, 200), (x + 3, 3, 12, 3))
+        # 面板1防滑纹理（十字交叉纹路）
+        for dy in range(3, 6):
+            for dx in range(4, 14, 3):
+                surface.set_at((x + dx, dy), (55, 108, 190))
+        # 折叠接缝线1（面板1和面板2之间，暗色+高光体现层次差）
+        pygame.draw.line(surface, (25, 60, 130), (x + 3, 6), (x + 14, 6))
+        pygame.draw.line(surface, (75, 128, 210), (x + 3, 7), (x + 14, 7))
+        # 面板2
+        pygame.draw.rect(surface, (55, 105, 185), (x + 3, 7, 12, 4))
+        # 面板2防滑纹理
+        for dy in range(8, 11):
+            for dx in range(4, 14, 3):
+                surface.set_at((x + dx, dy), (48, 95, 175))
+        # 折叠接缝线2（面板2和面板3之间）
+        pygame.draw.line(surface, (25, 60, 130), (x + 3, 11), (x + 14, 11))
+        pygame.draw.line(surface, (75, 128, 210), (x + 3, 12), (x + 14, 12))
+        # 面板3（底部，略暗，体现阴影）
+        pygame.draw.rect(surface, (45, 92, 170), (x + 3, 12, 12, 2))
+        # 左上角固定带（魔术贴绑带）
+        pygame.draw.rect(surface, (200, 180, 50), (x + 3, 3, 2, 1))
+        # 左下角固定带
+        pygame.draw.rect(surface, (200, 180, 50), (x + 3, 13, 2, 1))
+    elif gid == GID_GYM_MAT_M:
+        # 体操垫中部（展开铺平）：4面板折叠+防滑纹理+厚度+固定带
+        surface.fill((0, 0, 0, 0), rect)
+        # 垫子主体
+        pygame.draw.rect(surface, (50, 100, 180), (x, 2, 16, 12))
+        # 垫子厚度边缘
+        pygame.draw.rect(surface, (30, 70, 145), (x, 2, 16, 12), 1)
+        # 面板1高光区
+        pygame.draw.rect(surface, (65, 118, 200), (x + 1, 3, 14, 3))
+        # 面板1防滑纹理
+        for dy in range(3, 6):
+            for dx in range(2, 15, 3):
+                surface.set_at((x + dx, dy), (55, 108, 190))
+        # 折叠接缝线1
+        pygame.draw.line(surface, (25, 60, 130), (x + 1, 6), (x + 14, 6))
+        pygame.draw.line(surface, (75, 128, 210), (x + 1, 7), (x + 14, 7))
+        # 面板2
+        pygame.draw.rect(surface, (55, 105, 185), (x + 1, 7, 14, 4))
+        # 面板2防滑纹理
+        for dy in range(8, 11):
+            for dx in range(2, 15, 3):
+                surface.set_at((x + dx, dy), (48, 95, 175))
+        # 折叠接缝线2
+        pygame.draw.line(surface, (25, 60, 130), (x + 1, 11), (x + 14, 11))
+        pygame.draw.line(surface, (75, 128, 210), (x + 1, 12), (x + 14, 12))
+        # 面板3
+        pygame.draw.rect(surface, (45, 92, 170), (x + 1, 12, 14, 2))
+        # 中部纵向折叠线（体操垫通常沿长边折叠）
+        pygame.draw.line(surface, (40, 85, 165), (x + 8, 3), (x + 8, 13))
+    elif gid == GID_GYM_MAT_R:
+        # 体操垫右部（展开铺平）：右圆角+4面板折叠+防滑纹理+厚度+固定带
+        surface.fill((0, 0, 0, 0), rect)
+        # 垫子主体
+        pygame.draw.rect(surface, (50, 100, 180), (x, 2, 14, 12))
+        # 右侧圆角
+        pygame.draw.rect(surface, (50, 100, 180), (x, 1, 13, 1))
+        pygame.draw.rect(surface, (50, 100, 180), (x, 0, 12, 1))
+        # 垫子厚度边缘
+        pygame.draw.rect(surface, (30, 70, 145), (x, 2, 14, 12), 1)
+        pygame.draw.rect(surface, (30, 70, 145), (x, 1, 13, 1), 1)
+        pygame.draw.rect(surface, (30, 70, 145), (x, 0, 12, 1), 1)
+        # 面板1高光区
+        pygame.draw.rect(surface, (65, 118, 200), (x + 1, 3, 12, 3))
+        # 面板1防滑纹理
+        for dy in range(3, 6):
+            for dx in range(2, 12, 3):
+                surface.set_at((x + dx, dy), (55, 108, 190))
+        # 折叠接缝线1
+        pygame.draw.line(surface, (25, 60, 130), (x + 1, 6), (x + 12, 6))
+        pygame.draw.line(surface, (75, 128, 210), (x + 1, 7), (x + 12, 7))
+        # 面板2
+        pygame.draw.rect(surface, (55, 105, 185), (x + 1, 7, 12, 4))
+        # 面板2防滑纹理
+        for dy in range(8, 11):
+            for dx in range(2, 12, 3):
+                surface.set_at((x + dx, dy), (48, 95, 175))
+        # 折叠接缝线2
+        pygame.draw.line(surface, (25, 60, 130), (x + 1, 11), (x + 12, 11))
+        pygame.draw.line(surface, (75, 128, 210), (x + 1, 12), (x + 12, 12))
+        # 面板3
+        pygame.draw.rect(surface, (45, 92, 170), (x + 1, 12, 12, 2))
+        # 右上角固定带
+        pygame.draw.rect(surface, (200, 180, 50), (x + 11, 3, 2, 1))
+        # 右下角固定带
+        pygame.draw.rect(surface, (200, 180, 50), (x + 11, 13, 2, 1))
+    elif gid == GID_GYM_EQUIP_L:
+        # 器材柜左半：金属框架+3个储物格+球类+标签+滑轮
+        surface.fill((0, 0, 0, 0), rect)
+        # 柜体（银灰色金属）
+        pygame.draw.rect(surface, (170, 175, 185), (x, 1, 16, 13))
+        # 柜体边框
+        pygame.draw.rect(surface, (130, 135, 145), (x, 1, 16, 13), 1)
+        # 顶部横梁
+        pygame.draw.rect(surface, (150, 155, 165), (x, 1, 16, 2))
+        # 格1（左上）：篮球（橙色圆）
+        pygame.draw.rect(surface, (155, 160, 170), (x + 1, 3, 6, 4))
+        pygame.draw.rect(surface, (130, 135, 145), (x + 1, 3, 6, 4), 1)
+        pygame.draw.circle(surface, (220, 130, 40), (x + 4, 5), 2)
+        # 篮球纹线
+        surface.set_at((x + 3, 4), (200, 110, 30))
+        surface.set_at((x + 5, 5), (200, 110, 30))
+        # 格1标签
+        pygame.draw.rect(surface, (240, 240, 240), (x + 2, 7, 4, 1))
+        # 格2（左中）：排球（蓝白条纹）
+        pygame.draw.rect(surface, (155, 160, 170), (x + 1, 8, 6, 4))
+        pygame.draw.rect(surface, (130, 135, 145), (x + 1, 8, 6, 4), 1)
+        pygame.draw.circle(surface, (240, 240, 250), (x + 4, 10), 2)
+        # 排球条纹
+        surface.set_at((x + 3, 9), (60, 100, 200))
+        surface.set_at((x + 5, 10), (60, 100, 200))
+        surface.set_at((x + 4, 9), (60, 100, 200))
+        # 格2标签
+        pygame.draw.rect(surface, (240, 240, 240), (x + 2, 12, 4, 1))
+        # 底部横梁
+        pygame.draw.rect(surface, (150, 155, 165), (x, 13, 16, 1))
+        # 滑轮（底部2个）
+        pygame.draw.rect(surface, (80, 80, 90), (x + 3, 14, 2, 2))
+        pygame.draw.rect(surface, (100, 100, 110), (x + 3, 14, 2, 1))
+    elif gid == GID_GYM_EQUIP_R:
+        # 器材柜右半：金属框架+3个储物格+球类+标签+滑轮
+        surface.fill((0, 0, 0, 0), rect)
+        # 柜体
+        pygame.draw.rect(surface, (170, 175, 185), (x, 1, 16, 13))
+        # 柜体边框
+        pygame.draw.rect(surface, (130, 135, 145), (x, 1, 16, 13), 1)
+        # 顶部横梁
+        pygame.draw.rect(surface, (150, 155, 165), (x, 1, 16, 2))
+        # 格3（右上）：足球（黑白）
+        pygame.draw.rect(surface, (155, 160, 170), (x + 1, 3, 6, 4))
+        pygame.draw.rect(surface, (130, 135, 145), (x + 1, 3, 6, 4), 1)
+        pygame.draw.circle(surface, (240, 240, 240), (x + 4, 5), 2)
+        # 足球黑色五边形纹
+        surface.set_at((x + 4, 4), (40, 40, 50))
+        surface.set_at((x + 3, 5), (40, 40, 50))
+        surface.set_at((x + 5, 5), (40, 40, 50))
+        # 格3标签
+        pygame.draw.rect(surface, (240, 240, 240), (x + 2, 7, 4, 1))
+        # 格4（右中）：羽毛球拍+球
+        pygame.draw.rect(surface, (155, 160, 170), (x + 1, 8, 6, 4))
+        pygame.draw.rect(surface, (130, 135, 145), (x + 1, 8, 6, 4), 1)
+        # 羽毛球拍（竖线+椭圆拍头）
+        pygame.draw.line(surface, (140, 100, 50), (x + 3, 9), (x + 3, 11))
+        pygame.draw.rect(surface, (180, 180, 190), (x + 2, 8, 3, 2))
+        pygame.draw.rect(surface, (160, 160, 170), (x + 2, 8, 3, 2), 1)
+        # 羽毛球（白色小圆+尾部）
+        pygame.draw.circle(surface, (240, 240, 240), (x + 6, 10), 1)
+        surface.set_at((x + 7, 10), (220, 220, 220))
+        # 格4标签
+        pygame.draw.rect(surface, (240, 240, 240), (x + 2, 12, 4, 1))
+        # 格5（右下角小格）：跳绳/手球
+        pygame.draw.rect(surface, (155, 160, 170), (x + 9, 3, 6, 4))
+        pygame.draw.rect(surface, (130, 135, 145), (x + 9, 3, 6, 4), 1)
+        # 手球（红色小球）
+        pygame.draw.circle(surface, (200, 60, 60), (x + 12, 5), 2)
+        surface.set_at((x + 12, 4), (220, 80, 80))
+        # 格5标签
+        pygame.draw.rect(surface, (240, 240, 240), (x + 10, 7, 4, 1))
+        # 格6（右下小格）：哨子/秒表
+        pygame.draw.rect(surface, (155, 160, 170), (x + 9, 8, 6, 4))
+        pygame.draw.rect(surface, (130, 135, 145), (x + 9, 8, 6, 4), 1)
+        # 秒表（圆形+按钮）
+        pygame.draw.circle(surface, (60, 60, 70), (x + 12, 10), 2)
+        surface.set_at((x + 12, 8), (80, 80, 90))
+        # 格6标签
+        pygame.draw.rect(surface, (240, 240, 240), (x + 10, 12, 4, 1))
+        # 底部横梁
+        pygame.draw.rect(surface, (150, 155, 165), (x, 13, 16, 1))
+        # 滑轮（底部2个）
+        pygame.draw.rect(surface, (80, 80, 90), (x + 11, 14, 2, 2))
+        pygame.draw.rect(surface, (100, 100, 110), (x + 11, 14, 2, 1))
 
 
 def _fill_layer(layer, w, h, gid):
@@ -884,48 +1396,130 @@ def design_gym():
         structures[y][0] = GID_GYM_WALL
         structures[y][W - 1] = GID_GYM_WALL
 
-    for x in range(3, 7):
+    # 记分牌（顶部中央）
+    for x in range(12, 16):
         structures[1][x] = GID_SCOREBOARD
         collision[1][x] = GID_COLLISION
 
-    structures[1][W - 2] = GID_HOOP
-    collision[1][W - 2] = GID_COLLISION
-    structures[1][1] = GID_HOOP
-    collision[1][1] = GID_COLLISION
+    # 篮球架（左侧，y=1-2，上部篮板+下部支柱底座）
+    structures[1][2] = GID_HOOP_TOP
+    collision[1][2] = GID_COLLISION
+    structures[2][2] = GID_HOOP_BOT
+    collision[2][2] = GID_COLLISION
 
-    # 更衣柜
+    # 篮球架（右侧，y=1-2）
+    structures[1][W - 3] = GID_HOOP_TOP
+    collision[1][W - 3] = GID_COLLISION
+    structures[2][W - 3] = GID_HOOP_BOT
+    collision[2][W - 3] = GID_COLLISION
+
+    # 左墙更衣柜（x=1, y=3-5，进门换衣区）
+    structures[3][1] = GID_GYM_LOCKER
+    collision[3][1] = GID_COLLISION
     structures[4][1] = GID_GYM_LOCKER
     collision[4][1] = GID_COLLISION
     structures[5][1] = GID_GYM_LOCKER
     collision[5][1] = GID_COLLISION
-    structures[6][1] = GID_GYM_LOCKER
-    collision[6][1] = GID_COLLISION
 
-    for y in range(4, 8):
-        structures[y][2] = GID_CHAIR
-        collision[y][2] = GID_COLLISION
-        structures[y][3] = GID_CHAIR
-        collision[y][3] = GID_COLLISION
+    # 右墙更衣柜（x=28, y=3-5，不碰墙x=29）
+    structures[3][28] = GID_GYM_LOCKER
+    collision[3][28] = GID_COLLISION
+    structures[4][28] = GID_GYM_LOCKER
+    collision[4][28] = GID_COLLISION
+    structures[5][28] = GID_GYM_LOCKER
+    collision[5][28] = GID_COLLISION
 
-    for y in range(4, 8):
-        structures[y][W - 3] = GID_CHAIR
-        collision[y][W - 3] = GID_COLLISION
-        structures[y][W - 4] = GID_CHAIR
-        collision[y][W - 4] = GID_COLLISION
+    # 左墙奖杯展示柜（x=1-2, y=7-9，与更衣柜隔1格）
+    structures[7][1] = GID_GYM_TROPHY_TL
+    structures[7][2] = GID_GYM_TROPHY_TR
+    structures[8][1] = GID_GYM_TROPHY_ML
+    structures[8][2] = GID_GYM_TROPHY_MR
+    structures[9][1] = GID_GYM_TROPHY_BL
+    structures[9][2] = GID_GYM_TROPHY_BR
+    collision[7][1] = GID_COLLISION
+    collision[7][2] = GID_COLLISION
+    collision[8][1] = GID_COLLISION
+    collision[8][2] = GID_COLLISION
+    collision[9][1] = GID_COLLISION
+    collision[9][2] = GID_COLLISION
 
-    structures[4][5] = GID_TABLE
-    structures[4][6] = GID_TABLE
-    collision[4][5] = GID_COLLISION
-    collision[4][6] = GID_COLLISION
+    # 右墙奖杯展示柜（x=27-28, y=7-9，不碰墙x=29）
+    structures[7][27] = GID_GYM_TROPHY_TL
+    structures[7][28] = GID_GYM_TROPHY_TR
+    structures[8][27] = GID_GYM_TROPHY_ML
+    structures[8][28] = GID_GYM_TROPHY_MR
+    structures[9][27] = GID_GYM_TROPHY_BL
+    structures[9][28] = GID_GYM_TROPHY_BR
+    collision[7][27] = GID_COLLISION
+    collision[7][28] = GID_COLLISION
+    collision[8][27] = GID_COLLISION
+    collision[8][28] = GID_COLLISION
+    collision[9][27] = GID_COLLISION
+    collision[9][28] = GID_COLLISION
 
-    structures[H - 3][5] = GID_FRIDGE
-    collision[H - 3][5] = GID_COLLISION
+    # 左侧饮水机（x=4, y=7-8，靠近替补席）
+    structures[7][4] = GID_GYM_WATER_TOP
+    structures[8][4] = GID_GYM_WATER_BOT
+    collision[7][4] = GID_COLLISION
+    collision[8][4] = GID_COLLISION
 
-    structures[H - 3][8] = GID_COUNTER
-    structures[H - 3][9] = GID_COUNTER
-    collision[H - 3][8] = GID_COLLISION
-    collision[H - 3][9] = GID_COLLISION
+    # 右侧饮水机（x=25, y=7-8）
+    structures[7][25] = GID_GYM_WATER_TOP
+    structures[8][25] = GID_GYM_WATER_BOT
+    collision[7][25] = GID_COLLISION
+    collision[8][25] = GID_COLLISION
 
+    # 左侧替补长凳（x=4-5, y=11，球场边线）
+    structures[11][4] = GID_GYM_BENCH_L
+    structures[11][5] = GID_GYM_BENCH_R
+    collision[11][4] = GID_COLLISION
+    collision[11][5] = GID_COLLISION
+
+    # 右侧替补长凳（x=24-25, y=11）
+    structures[11][24] = GID_GYM_BENCH_L
+    structures[11][25] = GID_GYM_BENCH_R
+    collision[11][24] = GID_COLLISION
+    collision[11][25] = GID_COLLISION
+
+    # 左侧桌子（x=4-5, y=13-14，替补席后方放水壶毛巾）
+    structures[13][4] = GID_GYM_TABLE_TL
+    structures[13][5] = GID_GYM_TABLE_TR
+    structures[14][4] = GID_GYM_TABLE_BL
+    structures[14][5] = GID_GYM_TABLE_BR
+    collision[13][4] = GID_COLLISION
+    collision[13][5] = GID_COLLISION
+    collision[14][4] = GID_COLLISION
+    collision[14][5] = GID_COLLISION
+
+    # 右侧桌子（x=24-25, y=13-14）
+    structures[13][24] = GID_GYM_TABLE_TL
+    structures[13][25] = GID_GYM_TABLE_TR
+    structures[14][24] = GID_GYM_TABLE_BL
+    structures[14][25] = GID_GYM_TABLE_BR
+    collision[13][24] = GID_COLLISION
+    collision[13][25] = GID_COLLISION
+    collision[14][24] = GID_COLLISION
+    collision[14][25] = GID_COLLISION
+
+    # 体操垫（左上角偏下，3×2，装饰层无碰撞，展开铺平）
+    decorations[4][3] = GID_GYM_MAT_L
+    decorations[4][4] = GID_GYM_MAT_M
+    decorations[4][5] = GID_GYM_MAT_R
+    decorations[5][3] = GID_GYM_MAT_L
+    decorations[5][4] = GID_GYM_MAT_M
+    decorations[5][5] = GID_GYM_MAT_R
+
+    # 冰箱（底部区域）
+    structures[16][5] = GID_FRIDGE
+    collision[16][5] = GID_COLLISION
+
+    # 器材柜（底部中央偏左，2格宽）
+    structures[16][8] = GID_GYM_EQUIP_L
+    structures[16][9] = GID_GYM_EQUIP_R
+    collision[16][8] = GID_COLLISION
+    collision[16][9] = GID_COLLISION
+
+    # 门
     structures[H - 2][14] = GID_DOOR_INDOOR
     structures[H - 2][15] = GID_DOOR_INDOOR
     collision[H - 2][14] = GID_EMPTY
