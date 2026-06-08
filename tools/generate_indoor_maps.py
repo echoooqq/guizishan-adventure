@@ -80,8 +80,9 @@ GID_GYM_MAT_M = 62       # 体操垫中部
 GID_GYM_MAT_R = 63       # 体操垫右部
 GID_GYM_EQUIP_L = 64     # 器材柜左半
 GID_GYM_EQUIP_R = 65     # 器材柜右半
+GID_SECTION_SIGN = 66   # 分区标识牌（挂在墙上或立在书架旁）
 
-TILE_COUNT = 65
+TILE_COUNT = 66
 
 SOLID_GIDS = {
     GID_INDOOR_WALL, GID_INDOOR_WALL_TOP, GID_BOOKSHELF, GID_BOOKSHELF_TOP,
@@ -161,22 +162,61 @@ def _draw_tile(surface, gid, x):
         pygame.draw.rect(surface, (200, 190, 170), (x, 0, TILE_SIZE, 3))
         pygame.draw.line(surface, (190, 180, 160), (x, TILE_SIZE - 1), (x + TILE_SIZE, TILE_SIZE - 1))
     elif gid == GID_BOOKSHELF:
-        surface.fill((180, 140, 90), rect)
+        # 书架身体 - 更精致的三层书架
+        surface.fill((0, 0, 0, 0), rect)  # 透明背景
+        # 木质框架
         pygame.draw.rect(surface, (101, 67, 33), (x + 1, 0, 14, TILE_SIZE))
+        # 左右立柱
+        pygame.draw.rect(surface, (80, 50, 25), (x + 1, 0, 2, TILE_SIZE))
+        pygame.draw.rect(surface, (80, 50, 25), (x + 13, 0, 2, TILE_SIZE))
+        # 三层隔板
         for row in range(4):
             yy = row * 4
-            pygame.draw.line(surface, (80, 50, 25), (x + 1, yy), (x + 15, yy))
-            colors = [(180, 50, 50), (50, 50, 180), (50, 140, 50), (180, 140, 50)]
-            for bx in range(2, 14, 3):
-                c = colors[(bx + row) % 4]
-                pygame.draw.rect(surface, c, (x + bx, yy + 1, 2, 3))
+            pygame.draw.line(surface, (90, 58, 28), (x + 1, yy), (x + 15, yy))
+            pygame.draw.line(surface, (120, 80, 40), (x + 1, yy + 1), (x + 15, yy + 1))
+        # 书籍 - 每层不同颜色组合，更丰富
+        shelf_books = [
+            [(180, 50, 50), (50, 80, 160), (50, 140, 60), (200, 160, 40), (140, 40, 140)],
+            [(60, 60, 140), (160, 80, 40), (80, 160, 80), (180, 60, 100), (100, 100, 40)],
+            [(140, 100, 60), (60, 120, 140), (160, 40, 80), (80, 80, 120), (120, 140, 60)],
+            [(100, 60, 120), (180, 120, 60), (60, 100, 160), (140, 80, 40), (80, 140, 100)],
+        ]
+        for row in range(4):
+            yy = row * 4
+            bx = x + 3
+            for i, color in enumerate(shelf_books[row]):
+                w = 2 if i % 2 == 0 else 3
+                if bx + w > x + 13:
+                    break
+                pygame.draw.rect(surface, color, (bx, yy + 1, w, 3))
+                # 书脊高光
+                pygame.draw.line(surface, (min(255, color[0]+50), min(255, color[1]+50), min(255, color[2]+50)), (bx, yy + 1), (bx, yy + 3))
+                bx += w + 1
     elif gid == GID_BOOKSHELF_TOP:
-        surface.fill((180, 140, 90), rect)
-        pygame.draw.rect(surface, (101, 67, 33), (x + 1, 0, 14, 6))
-        pygame.draw.rect(surface, (120, 80, 40), (x + 1, 6, 14, 3))
-        pygame.draw.line(surface, (80, 50, 25), (x + 1, 0), (x + 15, 0))
-        pygame.draw.line(surface, (80, 50, 25), (x + 1, 6), (x + 15, 6))
-        pygame.draw.line(surface, (80, 50, 25), (x + 1, 9), (x + 15, 9))
+        # 书架顶部 - 带装饰檐
+        surface.fill((0, 0, 0, 0), rect)  # 透明背景
+        # 装饰顶檐（比书架宽1px）
+        pygame.draw.rect(surface, (80, 50, 25), (x, 0, 16, 2))
+        pygame.draw.line(surface, (120, 80, 40), (x, 2), (x + 16, 2))
+        # 书架主体
+        pygame.draw.rect(surface, (101, 67, 33), (x + 1, 2, 14, 7))
+        # 左右立柱
+        pygame.draw.rect(surface, (80, 50, 25), (x + 1, 2, 2, 7))
+        pygame.draw.rect(surface, (80, 50, 25), (x + 13, 2, 2, 7))
+        # 隔板
+        pygame.draw.line(surface, (90, 58, 28), (x + 1, 5), (x + 15, 5))
+        pygame.draw.line(surface, (120, 80, 40), (x + 1, 6), (x + 15, 6))
+        # 顶部书籍
+        top_books = [(180, 50, 50), (50, 80, 160), (50, 140, 60), (200, 160, 40)]
+        bx = x + 3
+        for color in top_books:
+            w = 2
+            pygame.draw.rect(surface, color, (bx, 3, w, 2))
+            pygame.draw.line(surface, (min(255, color[0]+50), min(255, color[1]+50), min(255, color[2]+50)), (bx, 3), (bx, 4))
+            bx += 3
+        # 底部隔板
+        pygame.draw.line(surface, (90, 58, 28), (x + 1, 9), (x + 15, 9))
+        pygame.draw.line(surface, (120, 80, 40), (x + 1, 10), (x + 15, 10))
     elif gid == GID_TABLE:
         surface.fill((180, 140, 90), rect)
         # 桌面（与 dining_table 精灵配色一致）
@@ -1049,6 +1089,20 @@ def _draw_tile(surface, gid, x):
         # 滑轮（底部2个）
         pygame.draw.rect(surface, (80, 80, 90), (x + 11, 14, 2, 2))
         pygame.draw.rect(surface, (100, 100, 110), (x + 11, 14, 2, 1))
+    elif gid == GID_SECTION_SIGN:
+        # 分区标识牌 - 小木牌
+        surface.fill((0, 0, 0, 0), rect)
+        # 木牌底板
+        pygame.draw.rect(surface, (120, 80, 40), (x + 2, 2, 12, 12))
+        pygame.draw.rect(surface, (140, 95, 50), (x + 3, 3, 10, 10))
+        # 边框
+        pygame.draw.rect(surface, (80, 50, 25), (x + 2, 2, 12, 12), 1)
+        # 文字区域（浅色底）
+        pygame.draw.rect(surface, (240, 230, 200), (x + 4, 4, 8, 8))
+        # 简单文字线条（代表文字）
+        pygame.draw.line(surface, (60, 40, 20), (x + 5, 6), (x + 11, 6))
+        pygame.draw.line(surface, (60, 40, 20), (x + 5, 8), (x + 9, 8))
+        pygame.draw.line(surface, (60, 40, 20), (x + 5, 10), (x + 11, 10))
 
 
 def _fill_layer(layer, w, h, gid):

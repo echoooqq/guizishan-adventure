@@ -172,7 +172,6 @@ class GameManager:
         self._boya_badge_obj = None
         self._gym_equipment_cabinet_obj = None
         self._gym_scoreboard_obj = None
-        self._library_bookshelf_obj = None
         self._library_badge_obj = None
         self._pending_library_quiz = False
         self._pending_gym_shooting = False
@@ -1146,7 +1145,8 @@ class GameManager:
             if gm.library_puzzle.quiz_passed:
                 return {"type": "dialog", "dialogue_data": {
                     "default": [
-                        {"speaker": "图书管理员", "text": "你已经通过答题了！快去2楼找到对应的书架放置书籍吧。"},
+                        {"speaker": "图书管理员", "text": "拿着便签去2楼找到对应的书架吧。"},
+                        {"speaker": "图书管理员", "text": "1楼的查询终端可以查看2楼的索书号分布图。"},
                     ]
                 }}
             gm._pending_library_quiz = True
@@ -1160,61 +1160,101 @@ class GameManager:
         librarian.on_interact = on_librarian_interact
         self.npcs.append(librarian)
 
+        # 设置1楼查询终端交互：显示索书号分类指引
+        for obj in self.interactive_objects:
+            if obj.properties.get("terminal_type") == "call_number_guide":
+                def on_terminal_interact(term_obj):
+                    return {"type": "dialog", "dialogue_data": {
+                        "default": [
+                            {"speaker": "", "text": "屏幕上显示着2楼特藏阅览室索书号分布图——"},
+                            {"speaker": "", "text": "西北角：B 哲学 / K 历史、地理"},
+                            {"speaker": "", "text": "东北角：A 马列 / I 文学"},
+                            {"speaker": "", "text": "西南角：O 数理 / P 天文地球"},
+                            {"speaker": "", "text": "东南角：Q 生物 / TU 建筑"},
+                        ]
+                    }}
+                obj.on_interact = on_terminal_interact
+
         self.puzzle_manager.discover("library")
 
+    # 图书馆2楼8个书架的索书号配置
+    # key: 书架在TMX中的call_number属性值, value: (索书号显示文本, 分类提示, 所在区域)
+    LIBRARY_F2_CALL_NUMBERS = {
+        "A123.4/W1": ("A123.4/W1", "哲学类", "东北"),
+        "B821/L3": ("B821/L3", "宗教类", "西北"),
+        "K291.5/Z3": ("K291.5/Z3", "历史地理类", "西北"),
+        "I242/Z7": ("I242/Z7", "文学类", "东北"),
+        "O413/C2": ("O413/C2", "数理科学类", "西南"),
+        "P462/W5": ("P462/W5", "天文地球类", "西南"),
+        "Q949/L1": ("Q949/L1", "生物科学类", "东南"),
+        "TU984/H6": ("TU984/H6", "建筑科学类", "东南"),
+    }
+    # 正确书架的索书号
+    LIBRARY_CORRECT_CALL_NUMBER = "K291.5/Z3"
+
     def _setup_library_f2_entities(self):
-        from entities.interactive_object import InteractiveObject
-
-        spawn_x, spawn_y = self.tile_map.get_spawn_position()
-
+        """设置图书馆2楼实体：8个带索书号的书架，玩家需找到正确书架放置古旧典籍"""
         if self.puzzle_manager.get_state("library") == PuzzleState.SOLVED:
             return
 
-        bookshelf = InteractiveObject(
-            x=spawn_x, y=spawn_y - 16,
-            width=16, height=16,
-            interactive_type="mechanism",
-            properties={
-                "prompt_text": "放置书籍",
-                "color": (120, 80, 40),
-                "sprite_key": "bookshelf",
-                "puzzle_id": "library",
-                "mechanism_text": "",
-            },
-        )
-
         gm = self
 
-        def on_bookshelf_interact(obj):
-            if gm.puzzle_manager.get_state("library") == PuzzleState.SOLVED:
-                return {"type": "dialog", "dialogue_data": {
-                    "default": [{"speaker": "", "text": "书架已经归位了。"}]
-                }}
-            if not gm.library_puzzle.quiz_passed:
-                return {"type": "dialog", "dialogue_data": {
-                    "default": [{"speaker": "", "text": "这个书架上方标着'K291.5/Z3'。也许需要先通过管理员的答题挑战……"}]
-                }}
-            if not gm.player.inventory.has_item("special_book"):
-                return {"type": "dialog", "dialogue_data": {
-                    "default": [{"speaker": "", "text": "书架上方标着'K291.5/Z3'。你似乎需要找到对应的书籍才能放置……"}]
-                }}
-            gm.player.inventory.remove_item("special_book")
-            gm.player.inventory.remove_item("call_number_note")
-            gm.puzzle_manager.solve("library", gm.player.inventory)
-            if obj in gm.interactive_objects:
-                gm.interactive_objects.remove(obj)
-            gm._library_bookshelf_obj = None
-            return {"type": "dialog", "dialogue_data": {
-                "default": [
-                    {"speaker": "", "text": "你将古旧典籍放回书架……"},
-                    {"speaker": "", "text": "书架缓缓移开，露出了隐藏的密室！"},
-                    {"speaker": "", "text": "获得了桂花徽章碎片·叁！"},
-                ]
-            }}
+        # 遍历地图中已有的书架对象，为其设置交互回调
+        for obj in self.interactive_objects:
+            if obj.properties.get("type") == "bookshelf":
+                call_number = obj.properties.get("call_number", "")
+                obj.interactive_type = "mechanism"
+                obj.prompt_text = "查看书架"
 
-        bookshelf.on_interact = on_bookshelf_interact
-        self.interactive_objects.append(bookshelf)
-        self._library_bookshelf_obj = bookshelf
+                def make_shelf_callback(shelf_call_number):
+                    def on_shelf_interact(shelf_obj):
+                        # 谜题已解决
+                        if gm.puzzle_manager.get_state("library") == PuzzleState.SOLVED:
+                            if shelf_call_number == gm.LIBRARY_CORRECT_CALL_NUMBER:
+                                return {"type": "dialog", "dialogue_data": {
+                                    "default": [{"speaker": "", "text": "书架已经归位了，密室入口就在身后。"}]
+                                }}
+                            return {"type": "dialog", "dialogue_data": {
+                                "default": [{"speaker": "", "text": f"书架编号 {shelf_call_number}。"}]
+                            }}
+
+                        # 未通过答题
+                        if not gm.library_puzzle.quiz_passed:
+                            return {"type": "dialog", "dialogue_data": {
+                                "default": [{"speaker": "", "text": f"书架上方的小牌写着'{shelf_call_number}'。"}]
+                            }}
+
+                        # 通过了答题但找错了书架
+                        if shelf_call_number != gm.LIBRARY_CORRECT_CALL_NUMBER:
+                            return {"type": "dialog", "dialogue_data": {
+                                "default": [{"speaker": "", "text": f"这里的编号是 {shelf_call_number}，不是便签上写的那个。"}]
+                            }}
+
+                        # 找到了正确书架但没有古旧典籍
+                        if not gm.player.inventory.has_item("special_book"):
+                            return {"type": "dialog", "dialogue_data": {
+                                "default": [{"speaker": "", "text": "编号 K291.5/Z3，就是这里！但这个书架好像缺了一本书……"}]
+                            }}
+
+                        # 放置古旧典籍，谜题解决
+                        gm.player.inventory.remove_item("special_book")
+                        gm.player.inventory.remove_item("call_number_note")
+                        gm.puzzle_manager.solve("library", gm.player.inventory)
+                        # 移除所有书架交互（谜题已解决）
+                        for o in list(gm.interactive_objects):
+                            if o.properties.get("type") == "bookshelf":
+                                o.on_interact = None
+                                o.interactive_type = "examine"
+                                o.prompt_text = "查看书架"
+                        return {"type": "dialog", "dialogue_data": {
+                            "default": [
+                                {"speaker": "", "text": "你将古旧典籍放回编号 K291.5/Z3 的书架……"},
+                                {"speaker": "", "text": "书架缓缓移开，露出了隐藏的密室！"},
+                                {"speaker": "", "text": "获得了桂花徽章碎片·叁！"},
+                            ]
+                        }}
+                    return on_shelf_interact
+                obj.on_interact = make_shelf_callback(call_number)
 
     def _setup_gym_entities(self):
         from entities.npc import NPC
@@ -1392,7 +1432,9 @@ class GameManager:
                 self.dialog_box.start(
                     {"default": [
                         {"speaker": "", "text": "全部答对！管理员递给你一本古旧典籍和一张索书号便签。"},
-                        {"speaker": "", "text": "索书号便签上写着：'K291.5/Z3'。去2楼找到对应的书架放置书籍吧！"},
+                        {"speaker": "", "text": "便签上写着：'K291.5/Z3'。"},
+                        {"speaker": "", "text": "去2楼特藏阅览室找到编号对应的书架，把书放回去。"},
+                        {"speaker": "", "text": "1楼查询终端可以查看2楼的索书号分布图。"},
                     ]},
                     start_key="default",
                     on_complete=self._on_dialog_complete,
@@ -3086,7 +3128,7 @@ class GameManager:
             pygame.draw.circle(surf, (50, 95, 45), (ftx - 1, fty - 1), ftr - 1)
 
         # ============================================================
-        # 4. 校门牌坊（青灰色石牌坊·华师风格美化版） + 花坛 + 石狮子
+        # 4. 校门牌坊（红棕色中式牌坊·与游戏内校门风格统一） + 花坛 + 石狮子
         # ============================================================
         gate_y = 30  # 校门整体位置
 
@@ -3095,133 +3137,143 @@ class GameManager:
         pygame.draw.rect(shadow_surf, (0, 0, 0, 25), (4, 4, 112, 54))
         surf.blit(shadow_surf, (cx - 60, gate_y + 4))
 
-        # --- 石狮子（简化像素风，柱础外侧） ---
+        # --- 石狮子（暖灰石色，柱础外侧） ---
         for lion_x, lion_dir in [(cx - 52, -1), (cx + 44, 1)]:
             lion_y = gate_y + 38
             # 底座
-            pygame.draw.rect(surf, (130, 135, 140), (lion_x, lion_y + 6, 8, 4))
-            pygame.draw.rect(surf, (110, 115, 120), (lion_x, lion_y + 6, 8, 4), 1)
+            pygame.draw.rect(surf, (160, 155, 145), (lion_x, lion_y + 6, 8, 4))
+            pygame.draw.rect(surf, (140, 135, 125), (lion_x, lion_y + 6, 8, 4), 1)
             # 身体
-            pygame.draw.rect(surf, (140, 145, 150), (lion_x + 1, lion_y + 1, 6, 6))
+            pygame.draw.rect(surf, (175, 170, 160), (lion_x + 1, lion_y + 1, 6, 6))
             # 头
-            pygame.draw.circle(surf, (145, 150, 155), (lion_x + 4, lion_y), 3)
+            pygame.draw.circle(surf, (180, 175, 165), (lion_x + 4, lion_y), 3)
             # 耳朵小突起
-            surf.set_at((lion_x + 2, lion_y - 2), (150, 155, 160))
-            surf.set_at((lion_x + 5, lion_y - 2), (150, 155, 160))
+            surf.set_at((lion_x + 2, lion_y - 2), (190, 185, 175))
+            surf.set_at((lion_x + 5, lion_y - 2), (190, 185, 175))
 
-        # --- 柱础（莲花瓣底座造型） ---
+        # --- 柱础（莲花瓣底座造型，暖灰石色） ---
         for base_x in [cx - 48, cx + 32]:
             # 底层宽基座
-            pygame.draw.rect(surf, (135, 140, 148), (base_x - 2, gate_y + 42, 20, 6))
-            pygame.draw.rect(surf, (115, 120, 128), (base_x - 2, gate_y + 42, 20, 6), 1)
-            # 莲花瓣底座（上层，带弧线暗示）
-            pygame.draw.rect(surf, (140, 145, 152), (base_x, gate_y + 39, 16, 4))
-            pygame.draw.rect(surf, (120, 125, 132), (base_x, gate_y + 39, 16, 4), 1)
+            pygame.draw.rect(surf, (160, 155, 145), (base_x - 2, gate_y + 42, 20, 6))
+            pygame.draw.rect(surf, (140, 135, 125), (base_x - 2, gate_y + 42, 20, 6), 1)
+            # 莲花瓣底座（上层）
+            pygame.draw.rect(surf, (170, 165, 155), (base_x, gate_y + 39, 16, 4))
+            pygame.draw.rect(surf, (145, 140, 130), (base_x, gate_y + 39, 16, 4), 1)
             # 莲花瓣弧线装饰
             for petal_x in range(base_x + 2, base_x + 14, 3):
-                pygame.draw.arc(surf, (125, 130, 138), (petal_x, gate_y + 39, 3, 3), 0, 3.14, 1)
+                pygame.draw.arc(surf, (150, 145, 135), (petal_x, gate_y + 39, 3, 3), 0, 3.14, 1)
 
-        # --- 左柱（青灰色石材，带凹槽纹理） ---
-        pygame.draw.rect(surf, (150, 155, 163), (cx - 44, gate_y + 2, 12, 40))
-        pygame.draw.rect(surf, (125, 130, 138), (cx - 44, gate_y + 2, 12, 40), 1)
+        # --- 左柱（暖灰石色，带凹槽纹理+高光） ---
+        pygame.draw.rect(surf, (180, 175, 165), (cx - 44, gate_y + 2, 12, 40))
+        pygame.draw.rect(surf, (150, 145, 135), (cx - 44, gate_y + 2, 12, 40), 1)
         # 柱身凹槽纹理
-        pygame.draw.line(surf, (138, 143, 151), (cx - 41, gate_y + 4), (cx - 41, gate_y + 38), 1)
-        pygame.draw.line(surf, (138, 143, 151), (cx - 38, gate_y + 4), (cx - 38, gate_y + 38), 1)
+        pygame.draw.line(surf, (160, 155, 145), (cx - 41, gate_y + 4), (cx - 41, gate_y + 38), 1)
+        pygame.draw.line(surf, (160, 155, 145), (cx - 38, gate_y + 4), (cx - 38, gate_y + 38), 1)
         # 柱身侧高光（暗示圆柱感）
-        pygame.draw.line(surf, (160, 165, 173), (cx - 43, gate_y + 4), (cx - 43, gate_y + 38), 1)
+        pygame.draw.line(surf, (200, 195, 185), (cx - 43, gate_y + 4), (cx - 43, gate_y + 38), 1)
 
         # --- 右柱 ---
-        pygame.draw.rect(surf, (150, 155, 163), (cx + 32, gate_y + 2, 12, 40))
-        pygame.draw.rect(surf, (125, 130, 138), (cx + 32, gate_y + 2, 12, 40), 1)
-        pygame.draw.line(surf, (138, 143, 151), (cx + 35, gate_y + 4), (cx + 35, gate_y + 38), 1)
-        pygame.draw.line(surf, (138, 143, 151), (cx + 38, gate_y + 4), (cx + 38, gate_y + 38), 1)
-        pygame.draw.line(surf, (160, 165, 173), (cx + 43, gate_y + 4), (cx + 43, gate_y + 38), 1)
+        pygame.draw.rect(surf, (180, 175, 165), (cx + 32, gate_y + 2, 12, 40))
+        pygame.draw.rect(surf, (150, 145, 135), (cx + 32, gate_y + 2, 12, 40), 1)
+        pygame.draw.line(surf, (160, 155, 145), (cx + 35, gate_y + 4), (cx + 35, gate_y + 38), 1)
+        pygame.draw.line(surf, (160, 155, 145), (cx + 38, gate_y + 4), (cx + 38, gate_y + 38), 1)
+        pygame.draw.line(surf, (200, 195, 185), (cx + 43, gate_y + 4), (cx + 43, gate_y + 38), 1)
 
-        # --- 柱头装饰（石斗+圆珠） ---
+        # --- 柱头装饰（石斗+宝珠，暖灰色） ---
         for pillar_x in [cx - 44, cx + 32]:
             # 柱头加宽石斗
-            pygame.draw.rect(surf, (142, 147, 155), (pillar_x - 3, gate_y - 2, 18, 5))
-            pygame.draw.rect(surf, (120, 125, 133), (pillar_x - 3, gate_y - 2, 18, 5), 1)
+            pygame.draw.rect(surf, (170, 165, 155), (pillar_x - 3, gate_y - 2, 18, 5))
+            pygame.draw.rect(surf, (145, 140, 130), (pillar_x - 3, gate_y - 2, 18, 5), 1)
             # 柱头宝珠
-            pygame.draw.circle(surf, (158, 163, 170), (pillar_x + 6, gate_y - 4), 3)
-            pygame.draw.circle(surf, (130, 135, 143), (pillar_x + 6, gate_y - 4), 3, 1)
+            pygame.draw.circle(surf, (190, 185, 175), (pillar_x + 6, gate_y - 4), 3)
+            pygame.draw.circle(surf, (155, 150, 140), (pillar_x + 6, gate_y - 4), 3, 1)
             # 宝珠高光点
-            surf.set_at((pillar_x + 5, gate_y - 5), (175, 180, 188))
+            surf.set_at((pillar_x + 5, gate_y - 5), (210, 205, 195))
 
-        # --- 下横梁（额枋，带回纹装饰带） ---
-        pygame.draw.rect(surf, (145, 150, 158), (cx - 47, gate_y + 4, 94, 8))
-        pygame.draw.rect(surf, (120, 125, 133), (cx - 47, gate_y + 4, 94, 8), 1)
-        # 回纹装饰带（横梁中间横线）
-        pygame.draw.line(surf, (132, 137, 145), (cx - 45, gate_y + 8), (cx + 45, gate_y + 8), 1)
+        # --- 下横梁（额枋，暖棕木色+金色回纹装饰带） ---
+        pygame.draw.rect(surf, (120, 70, 45), (cx - 47, gate_y + 4, 94, 8))
+        pygame.draw.rect(surf, (80, 45, 28), (cx - 47, gate_y + 4, 94, 8), 1)
+        # 横梁亮面（上部）
+        pygame.draw.line(surf, (150, 100, 60), (cx - 46, gate_y + 5), (cx + 46, gate_y + 5), 1)
+        # 横梁暗面（下部）
+        pygame.draw.line(surf, (80, 45, 28), (cx - 46, gate_y + 11), (cx + 46, gate_y + 11), 1)
+        # 回纹装饰带（金色）
+        pygame.draw.line(surf, (210, 185, 80), (cx - 45, gate_y + 8), (cx + 45, gate_y + 8), 1)
         # 回纹单元（简化锯齿纹）
         for rx in range(cx - 42, cx + 42, 8):
-            pygame.draw.lines(surf, (128, 133, 141), False, [
+            pygame.draw.lines(surf, (195, 170, 70), False, [
                 (rx, gate_y + 6), (rx + 2, gate_y + 6), (rx + 2, gate_y + 10),
                 (rx + 4, gate_y + 10), (rx + 4, gate_y + 6), (rx + 6, gate_y + 6)
             ], 1)
 
-        # --- 上横梁（大额枋） ---
-        pygame.draw.rect(surf, (142, 147, 155), (cx - 49, gate_y - 7, 98, 9))
-        pygame.draw.rect(surf, (118, 123, 131), (cx - 49, gate_y - 7, 98, 9), 1)
-        # 横梁装饰线
-        pygame.draw.line(surf, (130, 135, 143), (cx - 47, gate_y - 4), (cx + 47, gate_y - 4), 1)
-        pygame.draw.line(surf, (130, 135, 143), (cx - 47, gate_y - 2), (cx + 47, gate_y - 2), 1)
+        # --- 上横梁（大额枋，暖棕木色+金色装饰线） ---
+        pygame.draw.rect(surf, (120, 70, 45), (cx - 49, gate_y - 7, 98, 9))
+        pygame.draw.rect(surf, (80, 45, 28), (cx - 49, gate_y - 7, 98, 9), 1)
+        # 横梁亮面
+        pygame.draw.line(surf, (150, 100, 60), (cx - 48, gate_y - 6), (cx + 48, gate_y - 6), 1)
+        # 金色装饰线
+        pygame.draw.line(surf, (210, 185, 80), (cx - 47, gate_y - 4), (cx + 47, gate_y - 4), 1)
+        pygame.draw.line(surf, (210, 185, 80), (cx - 47, gate_y - 2), (cx + 47, gate_y - 2), 1)
 
-        # --- 斗拱层（层叠结构） ---
+        # --- 斗拱层（暖赭石层叠结构） ---
         # 第一层斗拱
-        pygame.draw.rect(surf, (138, 143, 151), (cx - 52, gate_y - 11, 104, 4))
-        pygame.draw.rect(surf, (115, 120, 128), (cx - 52, gate_y - 11, 104, 4), 1)
+        pygame.draw.rect(surf, (130, 80, 50), (cx - 52, gate_y - 11, 104, 4))
+        pygame.draw.rect(surf, (90, 55, 33), (cx - 52, gate_y - 11, 104, 4), 1)
         # 第二层斗拱（更宽）
-        pygame.draw.rect(surf, (135, 140, 148), (cx - 55, gate_y - 15, 110, 4))
-        pygame.draw.rect(surf, (112, 117, 125), (cx - 55, gate_y - 15, 110, 4), 1)
+        pygame.draw.rect(surf, (125, 75, 47), (cx - 55, gate_y - 15, 110, 4))
+        pygame.draw.rect(surf, (85, 50, 32), (cx - 55, gate_y - 15, 110, 4), 1)
 
-        # --- 屋顶（歇山顶造型） ---
+        # --- 屋顶（歇山顶造型，深红褐） ---
         # 主屋面板
-        pygame.draw.rect(surf, (140, 145, 153), (cx - 57, gate_y - 19, 114, 5))
+        pygame.draw.rect(surf, (110, 55, 35), (cx - 57, gate_y - 19, 114, 5))
         # 左翘角（飞檐）
-        pygame.draw.polygon(surf, (135, 140, 148), [
+        pygame.draw.polygon(surf, (100, 50, 33), [
             (cx - 57, gate_y - 19), (cx - 64, gate_y - 25), (cx - 54, gate_y - 16)
         ])
         # 右翘角
-        pygame.draw.polygon(surf, (135, 140, 148), [
+        pygame.draw.polygon(surf, (100, 50, 33), [
             (cx + 57, gate_y - 19), (cx + 64, gate_y - 25), (cx + 54, gate_y - 16)
         ])
 
-        # --- 屋脊（正脊） ---
-        pygame.draw.rect(surf, (132, 137, 145), (cx - 52, gate_y - 23, 104, 4))
+        # --- 屋脊（正脊，深红褐） ---
+        pygame.draw.rect(surf, (95, 48, 32), (cx - 52, gate_y - 23, 104, 4))
         # 脊端鸱吻
-        pygame.draw.polygon(surf, (128, 133, 141), [
+        pygame.draw.polygon(surf, (85, 44, 30), [
             (cx - 52, gate_y - 23), (cx - 57, gate_y - 28), (cx - 49, gate_y - 21)
         ])
-        pygame.draw.polygon(surf, (128, 133, 141), [
+        pygame.draw.polygon(surf, (85, 44, 30), [
             (cx + 52, gate_y - 23), (cx + 57, gate_y - 28), (cx + 49, gate_y - 21)
         ])
         # 脊中宝顶
-        pygame.draw.circle(surf, (148, 153, 160), (cx, gate_y - 25), 2)
+        pygame.draw.circle(surf, (140, 90, 50), (cx, gate_y - 25), 2)
 
-        # --- 瓦当纹理 ---
+        # --- 瓦当纹理（深红褐半圆） ---
         for wx in range(cx - 50, cx + 50, 5):
-            pygame.draw.arc(surf, (122, 127, 135), (wx, gate_y - 20, 5, 4), 0, 3.14, 1)
+            pygame.draw.arc(surf, (80, 40, 28), (wx, gate_y - 20, 5, 4), 0, 3.14, 1)
 
-        # --- 匾额（深墨绿底+三层边框+角花，华师风格） ---
-        plaque_rect = pygame.Rect(cx - 30, gate_y + 2, 60, 22)
+        # --- 匾额（深红褐底+亮金边框+角花） ---
+        plaque_rect = pygame.Rect(cx - 24, gate_y + 3, 48, 18)
         # 第一层：深木外框（最外层）
-        pygame.draw.rect(surf, (65, 55, 40), (plaque_rect.x - 2, plaque_rect.y - 2, plaque_rect.w + 4, plaque_rect.h + 4))
+        pygame.draw.rect(surf, (75, 55, 40), (plaque_rect.x - 2, plaque_rect.y - 2, plaque_rect.w + 4, plaque_rect.h + 4))
         # 第二层：金边
-        pygame.draw.rect(surf, (185, 160, 90), (plaque_rect.x - 1, plaque_rect.y - 1, plaque_rect.w + 2, plaque_rect.h + 2))
-        # 第三层：深墨绿底（华大绿）
-        pygame.draw.rect(surf, (30, 65, 45), plaque_rect)
+        pygame.draw.rect(surf, (220, 195, 90), (plaque_rect.x - 1, plaque_rect.y - 1, plaque_rect.w + 2, plaque_rect.h + 2))
+        # 第三层：深红褐底
+        pygame.draw.rect(surf, (140, 50, 35), plaque_rect)
+        # 亮面
+        pygame.draw.rect(surf, (170, 70, 50), (plaque_rect.x, plaque_rect.y, plaque_rect.w, 2))
+        # 暗面
+        pygame.draw.rect(surf, (100, 40, 28), (plaque_rect.x, plaque_rect.bottom - 2, plaque_rect.w, 2))
         # 内框金线
         inner_rect = plaque_rect.inflate(-4, -4)
-        pygame.draw.rect(surf, (170, 145, 75), inner_rect, 1)
-        # 角花装饰（四角小三角）
+        pygame.draw.rect(surf, (210, 185, 80), inner_rect, 1)
+        # 角花装饰（四角金色小方块）
         for corner_x, corner_y in [
             (plaque_rect.x + 1, plaque_rect.y + 1),
             (plaque_rect.right - 2, plaque_rect.y + 1),
             (plaque_rect.x + 1, plaque_rect.bottom - 2),
             (plaque_rect.right - 2, plaque_rect.bottom - 2),
         ]:
-            pygame.draw.rect(surf, (170, 145, 75), (corner_x, corner_y, 2, 2))
+            pygame.draw.rect(surf, (210, 185, 80), (corner_x, corner_y, 2, 2))
 
         # 保存牌匾位置供后置叠加文字使用
         self._intro_plaque_rect = plaque_rect.copy()

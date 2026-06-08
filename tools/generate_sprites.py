@@ -471,38 +471,59 @@ def create_street_lamp(path):
 
 
 def create_bookshelf(path):
-    """书架: 32×24"""
-    surf = make_surface(32, 24)
-    # 木质框架
-    draw_rect_filled(surf, 0, 0, 32, 24, (120, 80, 40))
-    draw_rect_filled(surf, 1, 1, 30, 22, (100, 65, 30))
-    # 隔板
-    draw_hline(surf, 1, 30, 8, (120, 80, 40))
-    draw_hline(surf, 1, 30, 16, (120, 80, 40))
-    # 书籍 - 第一层
-    book_colors_1 = [(180, 40, 40), (40, 80, 160), (40, 140, 60), (200, 160, 40), (140, 40, 140)]
-    x = 2
-    for color in book_colors_1:
-        w = 4 if color != book_colors_1[2] else 5
-        draw_rect_filled(surf, x, 2, w, 6, color)
-        draw_vline(surf, x, 2, 7, (min(255, color[0] + 40), min(255, color[1] + 40), min(255, color[2] + 40)))
+    """书架: 32×48 - 更精致的三层书架，带装饰顶檐和分类标签"""
+    surf = make_surface(32, 48)
+    # 装饰顶檐
+    draw_rect_filled(surf, 0, 0, 32, 4, (80, 50, 25))
+    draw_rect_filled(surf, 1, 1, 30, 2, (120, 80, 40))
+    # 主体框架
+    draw_rect_filled(surf, 1, 4, 30, 40, (101, 67, 33))
+    # 左右立柱
+    draw_rect_filled(surf, 1, 4, 3, 40, (80, 50, 25))
+    draw_rect_filled(surf, 28, 4, 3, 40, (80, 50, 25))
+    # 三层隔板
+    for shelf_y in [4, 17, 30, 43]:
+        draw_hline(surf, 1, 31, shelf_y, (90, 58, 28))
+        draw_hline(surf, 1, 31, shelf_y + 1, (120, 80, 40))
+    # 第一层书籍 (y=5 to y=16)
+    book_colors_1 = [(180, 50, 50), (50, 80, 160), (50, 140, 60), (200, 160, 40), (140, 40, 140), (180, 100, 60)]
+    x = 4
+    for i, color in enumerate(book_colors_1):
+        w = 3 if i % 2 == 0 else 4
+        draw_rect_filled(surf, x, 6, w, 10, color)
+        # 书脊高光
+        draw_vline(surf, x, 6, 15, (min(255, color[0]+50), min(255, color[1]+50), min(255, color[2]+50)))
+        # 书脊暗线
+        draw_vline(surf, x + w - 1, 6, 15, (max(0, color[0]-30), max(0, color[1]-30), max(0, color[2]-30)))
         x += w + 1
-    # 书籍 - 第二层
-    book_colors_2 = [(60, 60, 140), (160, 80, 40), (80, 160, 80), (180, 60, 100), (100, 100, 40)]
-    x = 2
-    for color in book_colors_2:
-        w = 5 if color != book_colors_2[3] else 4
-        draw_rect_filled(surf, x, 9, w, 7, color)
-        draw_vline(surf, x, 9, 15, (min(255, color[0] + 40), min(255, color[1] + 40), min(255, color[2] + 40)))
+    # 第二层书籍 (y=18 to y=29)
+    book_colors_2 = [(60, 60, 140), (160, 80, 40), (80, 160, 80), (180, 60, 100), (100, 100, 40), (60, 120, 160)]
+    x = 4
+    for i, color in enumerate(book_colors_2):
+        w = 4 if i % 2 == 0 else 3
+        draw_rect_filled(surf, x, 19, w, 10, color)
+        draw_vline(surf, x, 19, 28, (min(255, color[0]+50), min(255, color[1]+50), min(255, color[2]+50)))
+        draw_vline(surf, x + w - 1, 19, 28, (max(0, color[0]-30), max(0, color[1]-30), max(0, color[2]-30)))
         x += w + 1
-    # 书籍 - 第三层
-    book_colors_3 = [(140, 100, 60), (60, 120, 140), (160, 40, 80), (80, 80, 120), (120, 140, 60)]
-    x = 2
-    for color in book_colors_3:
-        w = 4 if color != book_colors_3[0] else 6
-        draw_rect_filled(surf, x, 17, w, 5, color)
-        draw_vline(surf, x, 17, 21, (min(255, color[0] + 40), min(255, color[1] + 40), min(255, color[2] + 40)))
+    # 第三层书籍 (y=31 to y=42)
+    book_colors_3 = [(140, 100, 60), (60, 120, 140), (160, 40, 80), (80, 80, 120), (120, 140, 60), (100, 60, 120)]
+    x = 4
+    for i, color in enumerate(book_colors_3):
+        w = 3 if i % 2 == 0 else 4
+        draw_rect_filled(surf, x, 32, w, 10, color)
+        draw_vline(surf, x, 32, 41, (min(255, color[0]+50), min(255, color[1]+50), min(255, color[2]+50)))
+        draw_vline(surf, x + w - 1, 32, 41, (max(0, color[0]-30), max(0, color[1]-30), max(0, color[2]-30)))
         x += w + 1
+    # 底部装饰线
+    draw_hline(surf, 1, 31, 44, (90, 58, 28))
+    draw_hline(surf, 1, 31, 45, (120, 80, 40))
+    # 分类标签牌（右下角小木牌）
+    draw_rect_filled(surf, 22, 38, 8, 6, (240, 230, 200))
+    draw_rect_filled(surf, 22, 38, 8, 6, (0, 0, 0))  # 边框用黑色
+    draw_rect_filled(surf, 23, 39, 6, 4, (240, 230, 200))
+    # 标签文字线条
+    draw_hline(surf, 24, 28, 40, (60, 40, 20))
+    draw_hline(surf, 24, 27, 41, (60, 40, 20))
     pygame.image.save(surf, path)
 
 

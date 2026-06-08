@@ -278,6 +278,7 @@
     <property name="interactive_type" value="examine" />
     <property name="prompt_text" value="查看电脑" />
     <property name="display_name" value="查询终端" />
+    <property name="terminal_type" value="call_number_guide" />
    </properties>
   </object>
   <object id="3" x="336" y="160" width="16" height="16" type="computer">
@@ -285,6 +286,7 @@
     <property name="interactive_type" value="examine" />
     <property name="prompt_text" value="查看电脑" />
     <property name="display_name" value="查询终端" />
+    <property name="terminal_type" value="call_number_guide" />
    </properties>
   </object>
   <object id="4" x="32" y="16" width="16" height="48" type="bookshelf">
