@@ -279,20 +279,20 @@
   <data encoding="csv">
 26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,
 26,13,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,26,
-25,0,0,0,8,8,0,0,0,0,0,0,0,0,0,0,0,0,8,8,0,0,0,25,
-25,0,0,0,7,7,0,0,0,0,0,0,0,0,0,0,0,0,7,7,0,0,0,25,
-25,0,0,0,7,7,0,0,0,0,0,0,0,0,0,0,0,0,7,7,0,0,0,25,
 25,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,25,
-25,0,0,0,0,0,0,0,0,9,9,0,0,0,0,0,0,0,0,0,0,0,0,25,
-25,0,0,0,0,0,0,0,0,10,10,0,0,0,0,0,0,0,0,0,0,0,25,
+25,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,25,
 25,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,25,
 25,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,25,
 25,0,0,0,0,0,0,0,0,9,9,0,0,0,0,0,0,0,0,0,0,0,0,25,
-25,0,0,0,0,0,0,0,0,10,10,0,0,0,0,0,0,0,0,0,0,0,25,
+25,0,0,0,0,0,0,0,0,10,10,0,0,0,0,0,0,0,0,0,0,0,0,25,
 25,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,25,
-25,0,0,0,8,8,0,0,0,0,0,0,0,0,0,0,0,0,8,8,0,0,0,25,
-25,0,0,0,7,7,0,0,0,0,0,0,0,0,0,0,0,0,7,7,0,0,0,25,
-25,0,0,0,7,7,0,0,0,0,0,0,0,0,0,0,0,0,7,7,0,0,0,25,
+25,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,25,
+25,0,0,0,0,0,0,0,0,9,9,0,0,0,0,0,0,0,0,0,0,0,0,25,
+25,0,0,0,0,0,0,0,0,10,10,0,0,0,0,0,0,0,0,0,0,0,0,25,
+25,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,25,
+25,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,25,
+25,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,25,
+25,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,25,
 25,0,0,0,0,0,0,0,0,0,0,0,0,0,23,0,0,0,0,0,0,0,0,25,
 26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26
 </data>
@@ -307,40 +307,44 @@
     <property name="transition_type" value="floor_change" />
    </properties>
   </object>
-  <object id="2" x="64" y="32" width="32" height="48" type="bookshelf">
+  <object id="2" x="64" y="16" width="32" height="48" type="bookshelf">
    <properties>
     <property name="call_number" value="K291.5/Z3" />
     <property name="display_name" value="特藏书架" />
     <property name="interactive_type" value="examine" />
     <property name="prompt_text" value="查看书架" />
     <property name="section" value="西北" />
+    <property name="sprite_key" value="bookshelf" />
    </properties>
   </object>
-  <object id="3" x="80" y="32" width="16" height="48" type="bookshelf">
+  <object id="3" x="96" y="16" width="32" height="48" type="bookshelf">
    <properties>
     <property name="call_number" value="B821/L3" />
     <property name="display_name" value="特藏书架" />
     <property name="interactive_type" value="examine" />
     <property name="prompt_text" value="查看书架" />
     <property name="section" value="西北" />
+    <property name="sprite_key" value="bookshelf" />
    </properties>
   </object>
-  <object id="4" x="288" y="32" width="32" height="48" type="bookshelf">
+  <object id="4" x="288" y="16" width="32" height="48" type="bookshelf">
    <properties>
     <property name="call_number" value="A123.4/W1" />
     <property name="display_name" value="特藏书架" />
     <property name="interactive_type" value="examine" />
     <property name="prompt_text" value="查看书架" />
     <property name="section" value="东北" />
+    <property name="sprite_key" value="bookshelf" />
    </properties>
   </object>
-  <object id="5" x="304" y="32" width="16" height="48" type="bookshelf">
+  <object id="5" x="320" y="16" width="32" height="48" type="bookshelf">
    <properties>
     <property name="call_number" value="I242/Z7" />
     <property name="display_name" value="特藏书架" />
     <property name="interactive_type" value="examine" />
     <property name="prompt_text" value="查看书架" />
     <property name="section" value="东北" />
+    <property name="sprite_key" value="bookshelf" />
    </properties>
   </object>
   <object id="6" x="64" y="208" width="32" height="48" type="bookshelf">
@@ -350,15 +354,17 @@
     <property name="interactive_type" value="examine" />
     <property name="prompt_text" value="查看书架" />
     <property name="section" value="西南" />
+    <property name="sprite_key" value="bookshelf" />
    </properties>
   </object>
-  <object id="7" x="80" y="208" width="16" height="48" type="bookshelf">
+  <object id="7" x="96" y="208" width="32" height="48" type="bookshelf">
    <properties>
     <property name="call_number" value="P462/W5" />
     <property name="display_name" value="特藏书架" />
     <property name="interactive_type" value="examine" />
     <property name="prompt_text" value="查看书架" />
     <property name="section" value="西南" />
+    <property name="sprite_key" value="bookshelf" />
    </properties>
   </object>
   <object id="8" x="288" y="208" width="32" height="48" type="bookshelf">
@@ -368,15 +374,17 @@
     <property name="interactive_type" value="examine" />
     <property name="prompt_text" value="查看书架" />
     <property name="section" value="东南" />
+    <property name="sprite_key" value="bookshelf" />
    </properties>
   </object>
-  <object id="9" x="304" y="208" width="16" height="48" type="bookshelf">
+  <object id="9" x="320" y="208" width="32" height="48" type="bookshelf">
    <properties>
     <property name="call_number" value="TU984/H6" />
     <property name="display_name" value="特藏书架" />
     <property name="interactive_type" value="examine" />
     <property name="prompt_text" value="查看书架" />
     <property name="section" value="东南" />
+    <property name="sprite_key" value="bookshelf" />
    </properties>
   </object>
   <object id="10" x="224" y="256" width="16" height="16" type="blackboard">
@@ -406,10 +414,10 @@
  <layer id="4" name="collision" width="24" height="18" visible="0">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,20,20,0,0,0,0,0,0,0,0,0,0,0,0,20,20,0,0,0,0,
+0,0,0,0,20,20,0,0,0,0,0,0,0,0,0,0,0,0,20,20,0,0,0,0,
+0,0,0,0,20,20,0,0,0,0,0,0,0,0,0,0,0,0,20,20,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,20,20,0,0,0,0,0,0,0,0,0,0,0,0,20,20,0,0,0,0,
-0,0,0,0,20,20,0,0,0,0,0,0,0,0,0,0,0,0,20,20,0,0,0,0,
-0,0,0,0,20,20,0,0,0,0,0,0,0,0,0,0,0,0,20,20,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,20,20,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,20,20,0,0,0,0,0,0,0,0,0,0,0,0,0,

@@ -1145,8 +1145,7 @@ class GameManager:
             if gm.library_puzzle.quiz_passed:
                 return {"type": "dialog", "dialogue_data": {
                     "default": [
-                        {"speaker": "图书管理员", "text": "拿着便签去2楼找到对应的书架吧。"},
-                        {"speaker": "图书管理员", "text": "1楼的查询终端可以查看2楼的索书号分布图。"},
+                        {"speaker": "图书管理员", "text": "便签上的编号就是书架的位置，2楼每个书架上都标着。"},
                     ]
                 }}
             gm._pending_library_quiz = True
@@ -1174,6 +1173,9 @@ class GameManager:
                         ]
                     }}
                 obj.on_interact = on_terminal_interact
+            # 1楼书架也使用精灵渲染
+            if obj.properties.get("type") == "bookshelf" and not obj.sprite_key:
+                obj.sprite_key = "bookshelf"
 
         self.puzzle_manager.discover("library")
 
@@ -1221,19 +1223,19 @@ class GameManager:
                         # 未通过答题
                         if not gm.library_puzzle.quiz_passed:
                             return {"type": "dialog", "dialogue_data": {
-                                "default": [{"speaker": "", "text": f"书架上方的小牌写着'{shelf_call_number}'。"}]
+                                "default": [{"speaker": "", "text": f"小牌上写着'{shelf_call_number}'。"}]
                             }}
 
                         # 通过了答题但找错了书架
                         if shelf_call_number != gm.LIBRARY_CORRECT_CALL_NUMBER:
                             return {"type": "dialog", "dialogue_data": {
-                                "default": [{"speaker": "", "text": f"这里的编号是 {shelf_call_number}，不是便签上写的那个。"}]
+                                "default": [{"speaker": "", "text": f"编号{shelf_call_number}……和便签上不一样。"}]
                             }}
 
                         # 找到了正确书架但没有古旧典籍
                         if not gm.player.inventory.has_item("special_book"):
                             return {"type": "dialog", "dialogue_data": {
-                                "default": [{"speaker": "", "text": "编号 K291.5/Z3，就是这里！但这个书架好像缺了一本书……"}]
+                                "default": [{"speaker": "", "text": "K291.5/Z3……就是这里，但这个位置空着。"}]
                             }}
 
                         # 放置古旧典籍，谜题解决
@@ -1433,8 +1435,7 @@ class GameManager:
                     {"default": [
                         {"speaker": "", "text": "全部答对！管理员递给你一本古旧典籍和一张索书号便签。"},
                         {"speaker": "", "text": "便签上写着：'K291.5/Z3'。"},
-                        {"speaker": "", "text": "去2楼特藏阅览室找到编号对应的书架，把书放回去。"},
-                        {"speaker": "", "text": "1楼查询终端可以查看2楼的索书号分布图。"},
+                        {"speaker": "", "text": "这本书……它属于2楼的特藏区。K开头的，历史地理类，便签上的编号你应该看得懂吧？"},
                     ]},
                     start_key="default",
                     on_complete=self._on_dialog_complete,
