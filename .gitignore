@@ -1,0 +1,9 @@
+# Python 缓存
+__pycache__/
+*.pyc
+
+# 存档文件
+saves/
+
+# IDE
+.vscode/
