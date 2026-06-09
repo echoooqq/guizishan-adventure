@@ -1145,7 +1145,7 @@ class GameManager:
             if gm.library_puzzle.quiz_passed:
                 return {"type": "dialog", "dialogue_data": {
                     "default": [
-                        {"speaker": "图书管理员", "text": "便签上的编号就是书架的位置，2楼每个书架上都标着。"},
+                        {"speaker": "图书管理员", "text": "便签上的编号就是书架位置，1楼电脑查得到。"},
                     ]
                 }}
             gm._pending_library_quiz = True
@@ -1257,6 +1257,46 @@ class GameManager:
                         }}
                     return on_shelf_interact
                 obj.on_interact = make_shelf_callback(call_number)
+
+        # 设置2楼装饰物交互
+        for obj in self.interactive_objects:
+            obj_type = obj.properties.get("type", "")
+            if obj_type == "display_cabinet":
+                def on_cabinet_interact(cab_obj):
+                    return {"type": "dialog", "dialogue_data": {
+                        "default": [{"speaker": "", "text": "展示柜里陈列着校史文献。"}]
+                    }}
+                obj.on_interact = on_cabinet_interact
+            elif obj_type == "potted_plant":
+                def on_plant_interact(plant_obj):
+                    return {"type": "dialog", "dialogue_data": {
+                        "default": [{"speaker": "", "text": "一盆修剪整齐的绿植。"}]
+                    }}
+                obj.on_interact = on_plant_interact
+            elif obj_type == "sofa":
+                def on_sofa_interact(sofa_obj):
+                    return {"type": "dialog", "dialogue_data": {
+                        "default": [{"speaker": "", "text": "柔软的阅读沙发。"}]
+                    }}
+                obj.on_interact = on_sofa_interact
+            elif obj_type == "floor_lamp":
+                def on_lamp_interact(lamp_obj):
+                    return {"type": "dialog", "dialogue_data": {
+                        "default": [{"speaker": "", "text": "一盏暖黄色的落地灯。"}]
+                    }}
+                obj.on_interact = on_lamp_interact
+            elif obj_type == "magazine_rack":
+                def on_magazine_interact(mag_obj):
+                    return {"type": "dialog", "dialogue_data": {
+                        "default": [{"speaker": "", "text": "架子上摆着几本过期期刊。"}]
+                    }}
+                obj.on_interact = on_magazine_interact
+            elif obj_type == "water_dispenser":
+                def on_water_interact(water_obj):
+                    return {"type": "dialog", "dialogue_data": {
+                        "default": [{"speaker": "", "text": "饮水机，水温正常。"}]
+                    }}
+                obj.on_interact = on_water_interact
 
     def _setup_gym_entities(self):
         from entities.npc import NPC
@@ -1435,7 +1475,7 @@ class GameManager:
                     {"default": [
                         {"speaker": "", "text": "全部答对！管理员递给你一本古旧典籍和一张索书号便签。"},
                         {"speaker": "", "text": "便签上写着：'K291.5/Z3'。"},
-                        {"speaker": "", "text": "这本书……它属于2楼的特藏区。K开头的，历史地理类，便签上的编号你应该看得懂吧？"},
+                        {"speaker": "", "text": "这本书在2楼特藏区，1楼电脑上可以查位置。"},
                     ]},
                     start_key="default",
                     on_complete=self._on_dialog_complete,
@@ -3129,7 +3169,7 @@ class GameManager:
             pygame.draw.circle(surf, (50, 95, 45), (ftx - 1, fty - 1), ftr - 1)
 
         # ============================================================
-        # 4. 校门牌坊（红棕色中式牌坊·与游戏内校门风格统一） + 花坛 + 石狮子
+        # 4. 校门牌坊（中式牌坊·暖棕木色+深红褐+金色） + 花坛 + 石狮子
         # ============================================================
         gate_y = 30  # 校门整体位置
 
@@ -3279,7 +3319,7 @@ class GameManager:
         # 保存牌匾位置供后置叠加文字使用
         self._intro_plaque_rect = plaque_rect.copy()
 
-        # 校门两侧花坛（位置适配校门）
+        # 校门两侧花坛
         for ft_x in [cx - 62, cx + 44]:
             # 花坛外框
             pygame.draw.rect(surf, (140, 120, 90), (ft_x, gate_y + 38, 14, 10))
@@ -3297,19 +3337,19 @@ class GameManager:
         # ============================================================
         # 树木定义：(x, y, scale, 冠色偏移) — 4大树+2小树，位置自然化
         tree_defs = [
-            # 校门两侧大树
-            (cx - 58, 75, 1.0, 0),   # 大树A：左侧，校门旁
-            (cx + 62, 72, 1.0, 3),   # 大树B：右侧，校门旁，y略偏
-            # 道路中段小树（远景感）
-            (cx - 82, 145, 0.7, 5),  # 小树C：左侧远处
-            (cx + 78, 150, 0.7, 2),  # 小树D：右侧远处，y略偏
-            # 道路近处大树
-            (cx - 52, 195, 1.0, 4),  # 大树E：左侧近处
-            (cx + 58, 205, 1.0, 1),  # 大树F：右侧近处，y偏移
-            # 远侧桂花树苗（填充画面远左/远右空白）
-            (40, 90, 0.5, 6),        # 树苗G：左远侧
-            (440, 85, 0.5, 7),       # 树苗H：右远侧
-            (100, 220, 0.5, 8),      # 树苗I：左下角
+            # 校门两侧大树（向外移，留出校门空间）
+            (cx - 85, 75, 1.0, 0),   # 大树A：左侧，校门旁
+            (cx + 90, 72, 1.0, 3),   # 大树B：右侧，校门旁
+            # 道路中段小树（远景感，向外移）
+            (cx - 110, 145, 0.7, 5),  # 小树C：左侧远处
+            (cx + 105, 150, 0.7, 2),  # 小树D：右侧远处
+            # 道路近处大树（向外移）
+            (cx - 80, 200, 1.0, 4),  # 大树E：左侧近处
+            (cx + 85, 210, 1.0, 1),  # 大树F：右侧近处
+            # 远侧桂花树苗（填充画面远端）
+            (25, 90, 0.5, 6),        # 树苗G：左远侧
+            (455, 85, 0.5, 7),       # 树苗H：右远侧
+            (70, 225, 0.5, 8),       # 树苗I：左下角
         ]
 
         tree_sprite = self._load_intro_sprite("osmanthus_tree.png")
@@ -3362,20 +3402,20 @@ class GameManager:
                 pygame.draw.circle(surf, bush_c1, (tx + int(8 * scale), ty), max(2, int(4 * scale)))
                 pygame.draw.circle(surf, bush_c2, (tx + int(6 * scale), ty - 1), max(2, int(3 * scale)))
 
-        # 独立灌木丛簇（填充树间间隙和远侧空旷区）
+        # 独立灌木丛簇（填充树间间隙和远侧空旷区，向外扩散）
         bush_clusters = [
-            # (x, y, 大小) — 树间间隙
-            (cx - 60, 110, 5),   # 左侧树A与树C之间
-            (cx + 65, 115, 4),   # 右侧树B与树D之间
-            # 远侧大灌木
-            (60, 130, 7),        # 远左侧
-            (420, 140, 6),       # 远右侧
-            # 画面底部点缀
-            (cx - 90, 230, 4),   # 左下
-            (cx + 95, 240, 3),   # 右下
-            # 校门到树A/B之间（适配放大后的校门）
-            (cx - 55, 60, 4),    # 校门左侧
-            (cx + 55, 58, 3),    # 校门右侧
+            # 树间间隙（跟随树木外移）
+            (cx - 95, 110, 5),   # 左侧树A与树C之间
+            (cx + 100, 115, 4),  # 右侧树B与树D之间
+            # 远侧大灌木（更靠外）
+            (45, 130, 7),        # 远左侧
+            (435, 140, 6),       # 远右侧
+            # 画面底部点缀（向外移）
+            (cx - 110, 230, 4),  # 左下
+            (cx + 115, 240, 3),  # 右下
+            # 校门到树A/B之间（适配新校门）
+            (cx - 70, 58, 4),    # 校门左侧
+            (cx + 70, 56, 3),    # 校门右侧
         ]
         for bx, by, br in bush_clusters:
             pygame.draw.circle(surf, (42, 100, 38), (bx, by), br)
@@ -3402,16 +3442,16 @@ class GameManager:
             pygame.draw.circle(glow_s, (255, 240, 180, 25), (5, 5), 5)
             surf.blit(glow_s, (lx - 4, ly - 20))
 
-        # 石凳 ×1（道路左侧 y≈170）
-        bench_x, bench_y = road_left - 16, 170
+        # 石凳 ×1（道路左侧 y≈170，向外移）
+        bench_x, bench_y = road_left - 30, 170
         # 凳面
         pygame.draw.rect(surf, (150, 140, 130), (bench_x, bench_y, 10, 3))
         # 凳腿
         pygame.draw.rect(surf, (120, 110, 100), (bench_x + 1, bench_y + 3, 2, 2))
         pygame.draw.rect(surf, (120, 110, 100), (bench_x + 7, bench_y + 3, 2, 2))
 
-        # 指示牌 ×1（道路右侧 y≈100）
-        sign_x, sign_y = road_right + 8, 100
+        # 指示牌 ×1（道路右侧 y≈100，向外移）
+        sign_x, sign_y = road_right + 22, 100
         # 竖杆
         pygame.draw.line(surf, (110, 100, 90), (sign_x, sign_y), (sign_x, sign_y - 12), 1)
         # 横牌
@@ -3436,8 +3476,8 @@ class GameManager:
         pygame.draw.line(surf, (100, 85, 50), (road_left - 6, 84), (road_left - 4, 108), 1)
         pygame.draw.line(surf, (100, 85, 50), (road_right + 4, 84), (road_right + 6, 108), 1)
 
-        # 宣传栏（左侧 x≈100, y≈55，校门旁常见设施）
-        bb_x, bb_y = 100, 55
+        # 宣传栏（左侧 x≈60, y≈55，校门旁常见设施，向外移）
+        bb_x, bb_y = 60, 55
         # 竖杆
         pygame.draw.line(surf, (90, 80, 70), (bb_x + 2, bb_y + 16), (bb_x + 2, bb_y), 1)
         pygame.draw.line(surf, (90, 80, 70), (bb_x + 12, bb_y + 16), (bb_x + 12, bb_y), 1)
@@ -3449,31 +3489,31 @@ class GameManager:
             ly = bb_y + 3 + li * 3
             pygame.draw.line(surf, (120, 115, 100), (bb_x + 2, ly), (bb_x + 11, ly), 1)
 
-        # 垃圾桶（右侧 x≈350, y≈180）
-        trash_x, trash_y = 350, 180
+        # 垃圾桶（右侧 x≈400, y≈185，向外移）
+        trash_x, trash_y = 400, 185
         # 桶身
         pygame.draw.rect(surf, (80, 100, 80), (trash_x, trash_y, 6, 6))
         pygame.draw.rect(surf, (60, 80, 60), (trash_x, trash_y, 6, 6), 1)
         # 桶盖
         pygame.draw.rect(surf, (90, 110, 90), (trash_x - 1, trash_y - 1, 8, 2))
 
-        # 自行车（左侧 x≈170, y≈230，像素风）
-        bike_x, bike_y = 170, 230
-        # 后轮
-        pygame.draw.circle(surf, (60, 60, 60), (bike_x, bike_y), 4, 1)
-        # 前轮
-        pygame.draw.circle(surf, (60, 60, 60), (bike_x + 10, bike_y), 4, 1)
-        # 车架（三角）
-        pygame.draw.line(surf, (150, 50, 50), (bike_x, bike_y), (bike_x + 5, bike_y - 5), 1)
-        pygame.draw.line(surf, (150, 50, 50), (bike_x + 5, bike_y - 5), (bike_x + 10, bike_y), 1)
-        pygame.draw.line(surf, (150, 50, 50), (bike_x + 5, bike_y - 5), (bike_x + 3, bike_y), 1)
-        # 车把
-        pygame.draw.line(surf, (150, 50, 50), (bike_x + 9, bike_y - 5), (bike_x + 11, bike_y - 4), 1)
-        # 座垫
-        pygame.draw.rect(surf, (80, 40, 40), (bike_x + 4, bike_y - 7, 3, 1))
+        # 自行车（左侧 x≈130, y≈235，像素风，放大1.5倍+向外移）
+        bike_x, bike_y = 130, 235
+        # 后轮（放大）
+        pygame.draw.circle(surf, (60, 60, 60), (bike_x, bike_y), 6, 1)
+        # 前轮（放大）
+        pygame.draw.circle(surf, (60, 60, 60), (bike_x + 15, bike_y), 6, 1)
+        # 车架（三角，放大）
+        pygame.draw.line(surf, (150, 50, 50), (bike_x, bike_y), (bike_x + 7, bike_y - 7), 1)
+        pygame.draw.line(surf, (150, 50, 50), (bike_x + 7, bike_y - 7), (bike_x + 15, bike_y), 1)
+        pygame.draw.line(surf, (150, 50, 50), (bike_x + 7, bike_y - 7), (bike_x + 4, bike_y), 1)
+        # 车把（放大）
+        pygame.draw.line(surf, (150, 50, 50), (bike_x + 13, bike_y - 8), (bike_x + 17, bike_y - 6), 1)
+        # 座垫（放大）
+        pygame.draw.rect(surf, (80, 40, 40), (bike_x + 5, bike_y - 10, 5, 2))
 
-        # 石灯笼（右侧 x≈380, y≈70，中式校园园林风格）
-        lantern_x, lantern_y = 380, 70
+        # 石灯笼（右侧 x≈420, y≈70，中式校园园林风格，向外移）
+        lantern_x, lantern_y = 420, 70
         # 底座
         pygame.draw.rect(surf, (160, 155, 145), (lantern_x - 2, lantern_y + 6, 8, 3))
         # 灯杆
@@ -3491,12 +3531,48 @@ class GameManager:
             (lantern_x, lantern_y - 8)
         ])
 
-        # 校门两侧桂花花丛（低矮，3-4个黄色小圆点聚集，适配放大后的校门）
-        for fc_x, fc_y in [(cx - 58, gate_y + 46), (cx + 48, gate_y + 45)]:
+        # 校门两侧桂花花丛（低矮，3-4个黄色小圆点聚集，适配新校门）
+        for fc_x, fc_y in [(cx - 68, gate_y + 48), (cx + 58, gate_y + 47)]:
             for fi in range(5):
                 ffx = fc_x + (fi % 3) * 3
                 ffy = fc_y + (fi // 3) * 2
                 pygame.draw.circle(surf, (255, 220, 80), (ffx, ffy), 1)
+
+        # --- 新增元素：填充远端空旷区域 ---
+        # 左侧远景小桂花树苗
+        tree_sprite = self._load_intro_sprite("osmanthus_tree.png")
+        for new_tx, new_ty, new_s, new_co in [(20, 160, 0.4, 9), (460, 155, 0.4, 10)]:
+            if tree_sprite is not None:
+                sw = tree_sprite.get_width()
+                sh = tree_sprite.get_height()
+                new_w = max(1, int(sw * new_s))
+                new_h = max(1, int(sh * new_s))
+                scaled = pygame.transform.scale(tree_sprite, (new_w, new_h))
+                surf.blit(scaled, (new_tx - new_w // 2, new_ty - new_h))
+            else:
+                trunk_c = (100 - new_co * 2, 70 - new_co, 30)
+                crown_c1 = (55 + new_co * 2, 130 + new_co, 45)
+                crown_c2 = (65 + new_co * 2, 145 + new_co, 55)
+                tw = max(1, int(4 * new_s))
+                th = max(1, int(20 * new_s))
+                pygame.draw.rect(surf, trunk_c, (new_tx - tw // 2, new_ty - th, tw, th))
+                cr = max(2, int(11 * new_s))
+                pygame.draw.circle(surf, crown_c1, (new_tx, new_ty - int(25 * new_s)), cr)
+
+        # 左侧花盆/盆栽
+        pot_x, pot_y = 50, 200
+        pygame.draw.rect(surf, (160, 100, 60), (pot_x, pot_y, 6, 5))  # 花盆
+        pygame.draw.rect(surf, (140, 85, 45), (pot_x, pot_y, 6, 5), 1)
+        pygame.draw.rect(surf, (170, 110, 70), (pot_x - 1, pot_y - 1, 8, 2))  # 盆沿
+        pygame.draw.circle(surf, (50, 120, 45), (pot_x + 3, pot_y - 3), 3)  # 绿叶
+        pygame.draw.circle(surf, (255, 200, 100), (pot_x + 2, pot_y - 4), 1)  # 小花
+
+        # 右侧邮筒
+        mail_x, mail_y = 430, 200
+        pygame.draw.rect(surf, (50, 80, 140), (mail_x, mail_y - 10, 6, 14))  # 筒身
+        pygame.draw.rect(surf, (40, 65, 115), (mail_x, mail_y - 10, 6, 14), 1)
+        pygame.draw.rect(surf, (60, 90, 155), (mail_x - 1, mail_y - 11, 8, 2))  # 顶盖
+        pygame.draw.rect(surf, (180, 160, 60), (mail_x + 1, mail_y - 6, 4, 2))  # 投信口
 
         # ============================================================
         # 7. 桂花飘落粒子（增加数量）
@@ -3630,22 +3706,8 @@ class GameManager:
         screen_surface.blit(name_surf, name_rect)
 
     def _draw_intro_hint_effect(self):
-        """绘制开场动画阶段2：微弱绿光暗示效果"""
+        """绘制开场动画阶段2：旁白文字"""
         progress = self._intro_timer / 3.0
-
-        # 极淡的绿色脉冲（秘境暗示）
-        if progress < 0.6:
-            # 绿光在远处桂花树上微微闪烁
-            pulse = 0.5 + 0.5 * math.sin(self._intro_timer * 3)
-            green_alpha = int(25 * pulse)  # 非常淡
-            hint_surf = pygame.Surface((INTERNAL_WIDTH, INTERNAL_HEIGHT), pygame.SRCALPHA)
-            # 只在树的位置附近添加绿光
-            cx = INTERNAL_WIDTH // 2
-            for tx in [cx - 60, cx + 60]:
-                glow_surf = pygame.Surface((30, 30), pygame.SRCALPHA)
-                pygame.draw.circle(glow_surf, (80, 200, 80, green_alpha), (15, 15), 15)
-                hint_surf.blit(glow_surf, (tx - 15, 65))
-            self.internal_surface.blit(hint_surf, (0, 0))
 
         # 旁白文字
         if progress > 0.15:

@@ -81,8 +81,11 @@ GID_GYM_MAT_R = 63       # 体操垫右部
 GID_GYM_EQUIP_L = 64     # 器材柜左半
 GID_GYM_EQUIP_R = 65     # 器材柜右半
 GID_SECTION_SIGN = 66   # 分区标识牌（挂在墙上或立在书架旁）
+GID_DISPLAY_CABINET = 67  # 展示柜
+GID_POTTED_PLANT = 68     # 盆栽
+GID_SOFA = 69             # 沙发
 
-TILE_COUNT = 66
+TILE_COUNT = 70
 
 SOLID_GIDS = {
     GID_INDOOR_WALL, GID_INDOOR_WALL_TOP, GID_BOOKSHELF, GID_BOOKSHELF_TOP,
@@ -1103,6 +1106,59 @@ def _draw_tile(surface, gid, x):
         pygame.draw.line(surface, (60, 40, 20), (x + 5, 6), (x + 11, 6))
         pygame.draw.line(surface, (60, 40, 20), (x + 5, 8), (x + 9, 8))
         pygame.draw.line(surface, (60, 40, 20), (x + 5, 10), (x + 11, 10))
+    elif gid == GID_DISPLAY_CABINET:
+        # 展示柜 - 玻璃柜
+        surface.fill((0, 0, 0, 0), rect)
+        # 柜体
+        pygame.draw.rect(surface, (101, 67, 33), (x + 1, 2, 14, 12))
+        # 玻璃面板
+        pygame.draw.rect(surface, (180, 210, 230), (x + 2, 3, 12, 6))
+        pygame.draw.rect(surface, (160, 190, 210), (x + 2, 3, 12, 6), 1)
+        # 玻璃反光
+        pygame.draw.line(surface, (220, 240, 255), (x + 3, 4), (x + 6, 4))
+        pygame.draw.line(surface, (220, 240, 255), (x + 3, 5), (x + 5, 5))
+        # 底部木框
+        pygame.draw.rect(surface, (80, 50, 25), (x + 1, 9, 14, 2))
+        # 柜内物品（小方块代表展品）
+        pygame.draw.rect(surface, (200, 180, 140), (x + 4, 10, 3, 3))
+        pygame.draw.rect(surface, (140, 160, 180), (x + 9, 10, 3, 3))
+        # 底座
+        pygame.draw.rect(surface, (80, 50, 25), (x + 2, 13, 12, 2))
+    elif gid == GID_POTTED_PLANT:
+        # 盆栽
+        surface.fill((0, 0, 0, 0), rect)
+        # 花盆
+        pygame.draw.rect(surface, (160, 80, 40), (x + 5, 10, 6, 5))
+        pygame.draw.rect(surface, (140, 65, 30), (x + 4, 10, 8, 1))
+        # 土壤
+        pygame.draw.rect(surface, (100, 70, 40), (x + 5, 10, 6, 2))
+        # 植物茎
+        pygame.draw.line(surface, (50, 100, 40), (x + 8, 10), (x + 8, 4))
+        # 叶子
+        pygame.draw.circle(surface, (60, 130, 50), (x + 6, 5), 3)
+        pygame.draw.circle(surface, (50, 120, 45), (x + 10, 4), 3)
+        pygame.draw.circle(surface, (70, 140, 55), (x + 8, 3), 3)
+        pygame.draw.circle(surface, (55, 125, 48), (x + 5, 7), 2)
+        pygame.draw.circle(surface, (65, 135, 52), (x + 11, 6), 2)
+    elif gid == GID_SOFA:
+        # 沙发（2格宽，左半部分）
+        surface.fill((0, 0, 0, 0), rect)
+        # 靠背
+        pygame.draw.rect(surface, (120, 60, 40), (x, 2, 16, 5))
+        # 坐垫
+        pygame.draw.rect(surface, (140, 75, 50), (x, 7, 16, 6))
+        # 扶手
+        pygame.draw.rect(surface, (100, 50, 35), (x, 2, 3, 11))
+        pygame.draw.rect(surface, (100, 50, 35), (x + 13, 2, 3, 11))
+        # 坐垫分隔线
+        pygame.draw.line(surface, (120, 60, 40), (x + 8, 7), (x + 8, 12))
+        # 靠背纹理
+        pygame.draw.line(surface, (130, 65, 42), (x + 4, 3), (x + 4, 6))
+        pygame.draw.line(surface, (130, 65, 42), (x + 8, 3), (x + 8, 6))
+        pygame.draw.line(surface, (130, 65, 42), (x + 12, 3), (x + 12, 6))
+        # 腿
+        pygame.draw.rect(surface, (80, 50, 25), (x + 2, 13, 2, 2))
+        pygame.draw.rect(surface, (80, 50, 25), (x + 12, 13, 2, 2))
 
 
 def _fill_layer(layer, w, h, gid):

@@ -28,6 +28,9 @@ OBJECT_SPRITE_MAP = {
     "water_bottle": "water_bottle.png",
     "old_badge": "old_badge.png",
     "magnifying_glass": "magnifying_glass.png",
+    "floor_lamp": "floor_lamp.png",
+    "magazine_rack": "magazine_rack.png",
+    "water_dispenser": "water_dispenser.png",
 }
 
 # 精灵缓存

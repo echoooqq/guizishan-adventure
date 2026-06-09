@@ -6,7 +6,7 @@
     "droppable": false,
     "combinable_with": [],
     "combine_result": "",
-    "sprite": "badge_1"
+    "sprite": "badge_fragment_1"
   },
   "badge_2": {
     "name": "桂花徽章碎片·贰",
@@ -15,7 +15,7 @@
     "droppable": false,
     "combinable_with": [],
     "combine_result": "",
-    "sprite": "badge_2"
+    "sprite": "badge_fragment_2"
   },
   "badge_3": {
     "name": "桂花徽章碎片·叁",
@@ -24,7 +24,7 @@
     "droppable": false,
     "combinable_with": [],
     "combine_result": "",
-    "sprite": "badge_3"
+    "sprite": "badge_fragment_3"
   },
   "badge_4": {
     "name": "桂花徽章碎片·肆",
@@ -33,7 +33,7 @@
     "droppable": false,
     "combinable_with": [],
     "combine_result": "",
-    "sprite": "badge_4"
+    "sprite": "badge_fragment_4"
   },
   "badge_5": {
     "name": "桂花徽章碎片·伍",
@@ -42,7 +42,7 @@
     "droppable": false,
     "combinable_with": [],
     "combine_result": "",
-    "sprite": "badge_5"
+    "sprite": "badge_fragment_5"
   },
   "badge_6": {
     "name": "桂花徽章碎片·陆",
@@ -51,7 +51,7 @@
     "droppable": false,
     "combinable_with": [],
     "combine_result": "",
-    "sprite": "badge_6"
+    "sprite": "badge_fragment_6"
   },
   "badge_7": {
     "name": "桂花徽章碎片·柒",
@@ -60,7 +60,7 @@
     "droppable": false,
     "combinable_with": [],
     "combine_result": "",
-    "sprite": "badge_7"
+    "sprite": "badge_fragment_7"
   },
   "lab_key": {
     "name": "实验室钥匙",
@@ -69,7 +69,7 @@
     "droppable": true,
     "combinable_with": [],
     "combine_result": "",
-    "sprite": "key"
+    "sprite": "lab_key"
   },
   "equipment_key": {
     "name": "器材室钥匙",
@@ -78,7 +78,7 @@
     "droppable": false,
     "combinable_with": [],
     "combine_result": "",
-    "sprite": "key"
+    "sprite": "equipment_key"
   },
   "bulletin_scrap": {
     "name": "公告栏残页",
@@ -87,7 +87,7 @@
     "droppable": true,
     "combinable_with": [],
     "combine_result": "",
-    "sprite": "note"
+    "sprite": "icon_note"
   },
   "call_number_note": {
     "name": "索书号便签",
@@ -96,7 +96,7 @@
     "droppable": false,
     "combinable_with": [],
     "combine_result": "",
-    "sprite": "note"
+    "sprite": "call_number_note"
   },
   "scoreboard_note": {
     "name": "记分牌便条",
@@ -105,7 +105,7 @@
     "droppable": false,
     "combinable_with": [],
     "combine_result": "",
-    "sprite": "note"
+    "sprite": "scoreboard_note"
   },
   "boya_stone": {
     "name": "博雅石",
@@ -132,7 +132,7 @@
     "droppable": true,
     "combinable_with": [],
     "combine_result": "",
-    "sprite": "cake",
+    "sprite": "osmanthus_cake",
     "effect": {"type": "reveal_badge", "target": "badge_6"}
   },
   "osmanthus_branch": {

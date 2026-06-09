@@ -142,24 +142,89 @@ def create_note_icon(path, s=32):
 
 
 def create_badge_fragment_icon(path, s=32, index=1):
+    """桂花徽章碎片图标：参考场景中 badge_pickup 的十字形桂花造型，32x32放大版+裂纹"""
     surf = pygame.Surface((s, s), pygame.SRCALPHA)
     surf.fill((0, 0, 0, 0))
     cx, cy = s // 2, s // 2
-    colors = [
-        (255, 200, 0), (200, 255, 0), (0, 200, 255),
-        (255, 100, 0), (200, 0, 255), (0, 255, 100), (255, 0, 100),
-    ]
-    color = colors[(index - 1) % len(colors)]
-    points = []
-    for i in range(5):
-        angle = math.radians(-90 + i * 72)
-        points.append((cx + int(12 * math.cos(angle)), cy + int(12 * math.sin(angle))))
-        angle2 = math.radians(-90 + i * 72 + 36)
-        points.append((cx + int(6 * math.cos(angle2)), cy + int(6 * math.sin(angle2))))
-    pygame.draw.polygon(surf, color, points)
-    pygame.draw.polygon(surf, (255, 255, 255), points, 1)
-    inner_color = (min(255, color[0] + 50), min(255, color[1] + 50), min(255, color[2] + 50))
-    pygame.draw.circle(surf, inner_color, (cx, cy), 4)
+
+    # 颜色定义（与场景版 badge_pickup 同源）
+    glow_color = (255, 210, 60)       # 光晕色
+    petal_color = (255, 215, 0)       # 花瓣主色
+    petal_highlight = (255, 235, 80)  # 花瓣高光
+    petal_shadow = (220, 180, 0)      # 花瓣暗色
+    diag_color = (240, 200, 40)       # 对角点缀
+    center_color = (255, 240, 120)    # 花蕊
+    center_bright = (255, 255, 200)   # 花蕊高光
+    center_peak = (255, 255, 230)     # 中心最亮点
+    outline = (180, 140, 0)           # 描边色
+
+    # 1. 金色光晕（淡金色圆形光晕，比场景版更大）
+    for y in range(s):
+        for x in range(s):
+            dx = x - cx
+            dy = y - cy
+            dist = math.sqrt(dx * dx + dy * dy)
+            if dist < 14:
+                alpha = int(40 * (1 - dist / 14))
+                # 叠加到已有像素（光晕是半透明的）
+                existing = surf.get_at((x, y))
+                if existing.a == 0:
+                    surf.set_at((x, y), (glow_color[0], glow_color[1], glow_color[2], alpha))
+
+    # 2. 描边层 - 十字形花瓣轮廓（深金色）
+    # 上花瓣描边
+    pygame.draw.rect(surf, outline, (cx - 3, cy - 13, 6, 10))
+    # 下花瓣描边
+    pygame.draw.rect(surf, outline, (cx - 3, cy + 4, 6, 10))
+    # 左花瓣描边
+    pygame.draw.rect(surf, outline, (cx - 13, cy - 3, 10, 6))
+    # 右花瓣描边
+    pygame.draw.rect(surf, outline, (cx + 4, cy - 3, 10, 6))
+
+    # 3. 花瓣填充（与场景版同源，等比放大）
+    # 上花瓣
+    pygame.draw.rect(surf, petal_color, (cx - 2, cy - 12, 4, 9))
+    pygame.draw.rect(surf, petal_highlight, (cx - 2, cy - 12, 4, 2))
+    pygame.draw.rect(surf, petal_shadow, (cx - 2, cy - 5, 4, 2))
+    # 下花瓣
+    pygame.draw.rect(surf, petal_color, (cx - 2, cy + 4, 4, 9))
+    pygame.draw.rect(surf, petal_highlight, (cx - 2, cy + 4, 4, 2))
+    pygame.draw.rect(surf, petal_shadow, (cx - 2, cy + 11, 4, 2))
+    # 左花瓣
+    pygame.draw.rect(surf, petal_color, (cx - 12, cy - 2, 9, 4))
+    pygame.draw.rect(surf, petal_highlight, (cx - 12, cy - 2, 2, 4))
+    pygame.draw.rect(surf, petal_shadow, (cx - 5, cy - 2, 2, 4))
+    # 右花瓣
+    pygame.draw.rect(surf, petal_color, (cx + 4, cy - 2, 9, 4))
+    pygame.draw.rect(surf, petal_highlight, (cx + 4, cy - 2, 2, 4))
+    pygame.draw.rect(surf, petal_shadow, (cx + 11, cy - 2, 2, 4))
+
+    # 4. 对角小花瓣（增加桂花层次感）
+    pygame.draw.rect(surf, diag_color, (cx - 8, cy - 8, 4, 4))
+    pygame.draw.rect(surf, diag_color, (cx + 5, cy - 8, 4, 4))
+    pygame.draw.rect(surf, diag_color, (cx - 8, cy + 5, 4, 4))
+    pygame.draw.rect(surf, diag_color, (cx + 5, cy + 5, 4, 4))
+
+    # 5. 花蕊中心
+    pygame.draw.rect(surf, center_color, (cx - 2, cy - 2, 4, 4))
+    pygame.draw.rect(surf, center_bright, (cx - 2, cy - 2, 2, 2))
+    pygame.draw.rect(surf, center_bright, (cx, cy, 2, 2))
+    # 中心最亮点
+    surf.set_at((cx - 1, cy - 1), center_peak)
+
+    # 6. 碎片编号标记 - 右下角小圆点（1-7个点表示编号）
+    dot_base_x = cx + 8
+    dot_base_y = cy + 8
+    for di in range(index):
+        dx = dot_base_x + (di % 3) * 2
+        dy = dot_base_y + (di // 3) * 2
+        if 0 <= dx < s and 0 <= dy < s:
+            surf.set_at((dx, dy), (200, 150, 0))
+
+    # 碎片7（核心碎片）额外发光效果
+    if index == 7:
+        pygame.draw.circle(surf, (255, 240, 150), (cx, cy), 3)
+
     pygame.image.save(surf, path)
 
 
@@ -196,13 +261,35 @@ def create_magnifier_icon(path, s=32):
 
 
 def create_badge_old_icon(path, s=32):
+    """旧校徽图标：圆形徽章，表面磨损，隐约可见桂花纹"""
     surf = pygame.Surface((s, s), pygame.SRCALPHA)
     surf.fill((0, 0, 0, 0))
     cx, cy = s // 2, s // 2
-    pygame.draw.circle(surf, (180, 160, 60), (cx, cy), 10)
-    pygame.draw.circle(surf, (200, 180, 80), (cx, cy), 8)
-    pygame.draw.circle(surf, (160, 140, 40), (cx, cy), 10, 2)
-    pygame.draw.circle(surf, (120, 100, 30), (cx, cy), 4, 1)
+
+    # 外圈描边
+    pygame.draw.circle(surf, (100, 80, 30), (cx, cy), 11)
+    # 主体填充 - 暗淡的铜色
+    pygame.draw.circle(surf, (160, 140, 60), (cx, cy), 10)
+    # 内圈
+    pygame.draw.circle(surf, (180, 160, 80), (cx, cy), 8)
+    # 磨损高光
+    pygame.draw.circle(surf, (200, 180, 100), (cx - 2, cy - 2), 5)
+    # 隐约的桂花纹（5个小点）
+    for i in range(5):
+        angle = math.radians(-90 + i * 72)
+        px = cx + int(4 * math.cos(angle))
+        py = cy + int(4 * math.sin(angle))
+        pygame.draw.circle(surf, (140, 120, 40), (px, py), 1)
+    # 中心点
+    pygame.draw.circle(surf, (140, 120, 40), (cx, cy), 2)
+    # 磨损痕迹 - 几条浅色划痕
+    pygame.draw.line(surf, (190, 170, 90), (cx - 5, cy - 6), (cx + 3, cy - 4), 1)
+    pygame.draw.line(surf, (190, 170, 90), (cx + 2, cy + 2), (cx + 7, cy + 5), 1)
+    # 边缘磨损
+    for angle in [30, 150, 210, 330]:
+        wx = cx + int(9 * math.cos(math.radians(angle)))
+        wy = cy + int(9 * math.sin(math.radians(angle)))
+        surf.set_at((wx, wy), (120, 100, 40))
     pygame.image.save(surf, path)
 
 
@@ -251,17 +338,37 @@ def create_bookmark_special_icon(path, s=32):
 
 
 def create_badge_pattern_icon(path, s=32):
+    """校徽暗纹图标：圆形徽章底+绿色发光桂花暗纹"""
     surf = pygame.Surface((s, s), pygame.SRCALPHA)
     surf.fill((0, 0, 0, 0))
     cx, cy = s // 2, s // 2
+
+    # 外圈描边
+    pygame.draw.circle(surf, (100, 80, 30), (cx, cy), 11)
+    # 主体填充 - 铜色底
     pygame.draw.circle(surf, (160, 140, 60), (cx, cy), 10)
-    pygame.draw.circle(surf, (180, 160, 80), (cx, cy), 8)
-    pygame.draw.circle(surf, (140, 120, 40), (cx, cy), 10, 2)
+    # 内圈
+    pygame.draw.circle(surf, (170, 150, 70), (cx, cy), 8)
+
+    # 绿色发光桂花暗纹（5花瓣+中心）
+    glow_color = (100, 255, 100)
+    glow_bright = (180, 255, 180)
+    for i in range(5):
+        angle = math.radians(-90 + i * 72)
+        px = cx + int(4 * math.cos(angle))
+        py = cy + int(4 * math.sin(angle))
+        pygame.draw.circle(surf, glow_color, (px, py), 2)
+        pygame.draw.circle(surf, glow_bright, (px, py), 1)
+    # 中心发光点
+    pygame.draw.circle(surf, glow_color, (cx, cy), 2)
+    pygame.draw.circle(surf, glow_bright, (cx, cy), 1)
+
+    # 外圈6个绿色小点装饰（符文图案）
     for angle in range(0, 360, 60):
-        px = cx + int(5 * math.cos(math.radians(angle)))
-        py = cy + int(5 * math.sin(math.radians(angle)))
-        pygame.draw.circle(surf, (100, 255, 100), (px, py), 1)
-    pygame.draw.circle(surf, (100, 255, 100), (cx, cy), 2)
+        px = cx + int(7 * math.cos(math.radians(angle)))
+        py = cy + int(7 * math.sin(math.radians(angle)))
+        surf.set_at((px, py), glow_color)
+
     pygame.image.save(surf, path)
 
 
@@ -547,6 +654,70 @@ def create_water_bottle_icon(path, s=32):
     pygame.image.save(surf, path)
 
 
+def create_stone_icon(path, s=32):
+    """博雅石图标：温润椭圆石头，表面刻有桂花纹路"""
+    surf = pygame.Surface((s, s), pygame.SRCALPHA)
+    surf.fill((0, 0, 0, 0))
+    cx, cy = s // 2, s // 2
+
+    # 石头轮廓 - 深色描边
+    outline_color = (80, 60, 35)
+    # 用椭圆近似（手绘感的不规则形状）
+    stone_points = []
+    for i in range(16):
+        angle = math.radians(i * 22.5)
+        # 不规则半径，让石头看起来自然
+        r = 11 + 2 * math.sin(angle * 3) + math.cos(angle * 2)
+        px = cx + int(r * math.cos(angle) * 1.1)  # 横向稍宽
+        py = cy + int(r * math.sin(angle) * 0.85)  # 纵向稍窄
+        stone_points.append((px, py))
+
+    # 描边
+    pygame.draw.polygon(surf, outline_color, stone_points)
+
+    # 石头主体 - 温润的米黄灰色
+    stone_dark = (155, 130, 95)
+    stone_mid = (175, 150, 115)
+    stone_light = (200, 178, 148)
+    stone_highlight = (220, 200, 175)
+
+    # 内层填充（比描边小1px）
+    inner_points = []
+    for i in range(16):
+        angle = math.radians(i * 22.5)
+        r = 10 + 2 * math.sin(angle * 3) + math.cos(angle * 2)
+        px = cx + int(r * math.cos(angle) * 1.1)
+        py = cy + int(r * math.sin(angle) * 0.85)
+        inner_points.append((px, py))
+    pygame.draw.polygon(surf, stone_mid, inner_points)
+
+    # 高光区域 - 左上方
+    pygame.draw.ellipse(surf, stone_light, (cx - 7, cy - 7, 10, 8))
+    pygame.draw.ellipse(surf, stone_highlight, (cx - 5, cy - 5, 5, 4))
+
+    # 桂花纹路 - 金色小桂花
+    flower_cx, flower_cy = cx + 1, cy + 1
+    petal_color = (255, 210, 70)
+    petal_bright = (255, 235, 120)
+    center_color = (200, 160, 40)
+    # 5个花瓣
+    for i in range(5):
+        angle = math.radians(-90 + i * 72)
+        px = flower_cx + int(3 * math.cos(angle))
+        py = flower_cy + int(3 * math.sin(angle))
+        pygame.draw.circle(surf, petal_color, (px, py), 2)
+        pygame.draw.circle(surf, petal_bright, (px, py), 1)
+    # 花心
+    pygame.draw.circle(surf, center_color, (flower_cx, flower_cy), 2)
+    pygame.draw.circle(surf, petal_color, (flower_cx, flower_cy), 1)
+
+    # 石头纹理 - 几条细微纹路
+    pygame.draw.line(surf, stone_dark, (cx - 6, cy + 4), (cx - 2, cy + 6), 1)
+    pygame.draw.line(surf, stone_dark, (cx + 3, cy + 5), (cx + 7, cy + 3), 1)
+
+    pygame.image.save(surf, path)
+
+
 if __name__ == "__main__":
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     ui_dir = os.path.join(base_dir, "assets", "ui", "sprites")
@@ -608,6 +779,7 @@ if __name__ == "__main__":
     create_sculpture_rubbing_icon(os.path.join(ui_dir, "sculpture_rubbing.png"))
     create_chili_sauce_icon(os.path.join(ui_dir, "chili_sauce.png"))
     create_water_bottle_icon(os.path.join(ui_dir, "water_bottle.png"))
+    create_stone_icon(os.path.join(ui_dir, "stone.png"))
 
     pygame.quit()
     print(f"UI sprites saved to {ui_dir}")

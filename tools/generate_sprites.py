@@ -471,59 +471,52 @@ def create_street_lamp(path):
 
 
 def create_bookshelf(path):
-    """书架: 32×48 - 更精致的三层书架，带装饰顶檐和分类标签"""
+    """书架: 32×48 - 简洁风格三层书架，暖棕色系书籍"""
     surf = make_surface(32, 48)
-    # 装饰顶檐
-    draw_rect_filled(surf, 0, 0, 32, 4, (80, 50, 25))
-    draw_rect_filled(surf, 1, 1, 30, 2, (120, 80, 40))
+    # 顶檐
+    draw_rect_filled(surf, 0, 0, 32, 3, (80, 50, 25))
+    draw_hline(surf, 0, 31, 3, (110, 72, 35))
     # 主体框架
-    draw_rect_filled(surf, 1, 4, 30, 40, (101, 67, 33))
+    draw_rect_filled(surf, 1, 3, 30, 42, (101, 67, 33))
     # 左右立柱
-    draw_rect_filled(surf, 1, 4, 3, 40, (80, 50, 25))
-    draw_rect_filled(surf, 28, 4, 3, 40, (80, 50, 25))
-    # 三层隔板
-    for shelf_y in [4, 17, 30, 43]:
-        draw_hline(surf, 1, 31, shelf_y, (90, 58, 28))
-        draw_hline(surf, 1, 31, shelf_y + 1, (120, 80, 40))
-    # 第一层书籍 (y=5 to y=16)
-    book_colors_1 = [(180, 50, 50), (50, 80, 160), (50, 140, 60), (200, 160, 40), (140, 40, 140), (180, 100, 60)]
-    x = 4
-    for i, color in enumerate(book_colors_1):
-        w = 3 if i % 2 == 0 else 4
-        draw_rect_filled(surf, x, 6, w, 10, color)
-        # 书脊高光
-        draw_vline(surf, x, 6, 15, (min(255, color[0]+50), min(255, color[1]+50), min(255, color[2]+50)))
-        # 书脊暗线
-        draw_vline(surf, x + w - 1, 6, 15, (max(0, color[0]-30), max(0, color[1]-30), max(0, color[2]-30)))
-        x += w + 1
-    # 第二层书籍 (y=18 to y=29)
-    book_colors_2 = [(60, 60, 140), (160, 80, 40), (80, 160, 80), (180, 60, 100), (100, 100, 40), (60, 120, 160)]
-    x = 4
-    for i, color in enumerate(book_colors_2):
-        w = 4 if i % 2 == 0 else 3
-        draw_rect_filled(surf, x, 19, w, 10, color)
-        draw_vline(surf, x, 19, 28, (min(255, color[0]+50), min(255, color[1]+50), min(255, color[2]+50)))
-        draw_vline(surf, x + w - 1, 19, 28, (max(0, color[0]-30), max(0, color[1]-30), max(0, color[2]-30)))
-        x += w + 1
-    # 第三层书籍 (y=31 to y=42)
-    book_colors_3 = [(140, 100, 60), (60, 120, 140), (160, 40, 80), (80, 80, 120), (120, 140, 60), (100, 60, 120)]
-    x = 4
-    for i, color in enumerate(book_colors_3):
-        w = 3 if i % 2 == 0 else 4
-        draw_rect_filled(surf, x, 32, w, 10, color)
-        draw_vline(surf, x, 32, 41, (min(255, color[0]+50), min(255, color[1]+50), min(255, color[2]+50)))
-        draw_vline(surf, x + w - 1, 32, 41, (max(0, color[0]-30), max(0, color[1]-30), max(0, color[2]-30)))
-        x += w + 1
-    # 底部装饰线
-    draw_hline(surf, 1, 31, 44, (90, 58, 28))
-    draw_hline(surf, 1, 31, 45, (120, 80, 40))
-    # 分类标签牌（右下角小木牌）
-    draw_rect_filled(surf, 22, 38, 8, 6, (240, 230, 200))
-    draw_rect_filled(surf, 22, 38, 8, 6, (0, 0, 0))  # 边框用黑色
-    draw_rect_filled(surf, 23, 39, 6, 4, (240, 230, 200))
-    # 标签文字线条
-    draw_hline(surf, 24, 28, 40, (60, 40, 20))
-    draw_hline(surf, 24, 27, 41, (60, 40, 20))
+    draw_rect_filled(surf, 1, 3, 2, 42, (80, 50, 25))
+    draw_rect_filled(surf, 29, 3, 2, 42, (80, 50, 25))
+    # 隔板（4条）
+    for sy in [3, 16, 29, 42]:
+        draw_hline(surf, 1, 31, sy, (80, 50, 25))
+        draw_hline(surf, 1, 31, sy + 1, (120, 80, 40))
+    # 第一层书籍 (y=5 to y=15)，3本宽7px间隔1px
+    shelf1 = [(160, 80, 50), (50, 70, 120), (140, 100, 50)]
+    x = 3
+    for color in shelf1:
+        draw_rect_filled(surf, x, 5, 7, 10, color)
+        draw_vline(surf, x + 7, 5, 14, (80, 50, 25))  # 书脊分隔线
+        x += 8  # 7px宽 + 1px间隔
+    # 第二层书籍 (y=18 to y=28)
+    shelf2 = [(60, 90, 130), (150, 70, 40), (80, 110, 70)]
+    x = 3
+    for color in shelf2:
+        draw_rect_filled(surf, x, 18, 7, 10, color)
+        draw_vline(surf, x + 7, 18, 27, (80, 50, 25))
+        x += 8
+    # 第三层书籍 (y=31 to y=41)，右侧留空放标签牌
+    shelf3 = [(130, 90, 50), (70, 80, 120), (160, 110, 50)]
+    x = 3
+    for color in shelf3:
+        draw_rect_filled(surf, x, 31, 7, 10, color)
+        draw_vline(surf, x + 7, 31, 40, (80, 50, 25))
+        x += 8
+    # 底板
+    draw_hline(surf, 1, 31, 44, (80, 50, 25))
+    draw_hline(surf, 1, 31, 45, (110, 72, 35))
+    # 分类标签牌 10×8，位于第三层右侧
+    draw_rect_filled(surf, 19, 33, 10, 8, (240, 230, 200))
+    draw_hline(surf, 19, 28, 33, (80, 50, 25))
+    draw_hline(surf, 19, 28, 40, (80, 50, 25))
+    draw_vline(surf, 19, 33, 40, (80, 50, 25))
+    draw_vline(surf, 28, 33, 40, (80, 50, 25))
+    draw_hline(surf, 21, 27, 36, (100, 70, 40))
+    draw_hline(surf, 21, 27, 38, (100, 70, 40))
     pygame.image.save(surf, path)
 
 
@@ -1425,6 +1418,100 @@ def create_magnifying_glass(path):
     pygame.image.save(surf, path)
 
 
+def create_floor_lamp(path):
+    """落地灯: 16×32"""
+    surf = make_surface(16, 32)
+    # 底座：深灰 4×2 在底部居中 (x=6, y=30)
+    draw_rect_filled(surf, 6, 30, 4, 2, (60, 60, 60))
+    # 灯杆：浅灰 2×22 从底座上方 (x=7, y=8)
+    draw_rect_filled(surf, 7, 8, 2, 22, (150, 150, 150))
+    # 灯罩：暖黄梯形
+    # 底部宽10 (x=3, y=2, w=10, h=2)
+    draw_rect_filled(surf, 3, 2, 10, 2, (240, 220, 150))
+    # 中部宽8 (x=4, y=4, w=8, h=2)
+    draw_rect_filled(surf, 4, 4, 8, 2, (240, 220, 150))
+    # 顶部宽6 (x=5, y=6, w=6, h=1)
+    draw_rect_filled(surf, 5, 6, 6, 1, (240, 220, 150))
+    # 灯罩边框：深棕 顶部和底部
+    draw_hline(surf, 3, 12, 2, (80, 60, 30))   # 底部边框
+    draw_hline(surf, 5, 10, 6, (80, 60, 30))   # 顶部边框
+    # 光晕：在灯罩下方画2行半透明黄色 宽8 (x=4)
+    for dy in range(2):
+        for dx in range(8):
+            draw_pixel(surf, 4 + dx, 4 + dy, (255, 240, 180, 30))
+    pygame.image.save(surf, path)
+
+
+def create_magazine_rack(path):
+    """杂志架: 16×24"""
+    surf = make_surface(16, 24)
+    # 主体填充：(101,67,33)
+    draw_rect_filled(surf, 1, 1, 14, 22, (101, 67, 33))
+    # 框架：深棕(80,50,25) 矩形边框
+    draw_hline(surf, 0, 15, 0, (80, 50, 25))
+    draw_hline(surf, 0, 15, 23, (80, 50, 25))
+    draw_vline(surf, 0, 0, 23, (80, 50, 25))
+    draw_vline(surf, 15, 0, 23, (80, 50, 25))
+    # 左右立柱：(80,50,25) 各2px宽
+    draw_rect_filled(surf, 1, 1, 2, 22, (80, 50, 25))
+    draw_rect_filled(surf, 13, 1, 2, 22, (80, 50, 25))
+    # 3层隔板
+    # 第1层隔板 y=6
+    draw_hline(surf, 1, 14, 6, (90, 58, 28))
+    draw_hline(surf, 1, 14, 7, (120, 80, 40))
+    # 第2层隔板 y=12
+    draw_hline(surf, 1, 14, 12, (90, 58, 28))
+    draw_hline(surf, 1, 14, 13, (120, 80, 40))
+    # 第3层隔板 y=18
+    draw_hline(surf, 1, 14, 18, (90, 58, 28))
+    draw_hline(surf, 1, 14, 19, (120, 80, 40))
+    # 每层放2本杂志（比书矮），宽3 高3
+    # 第1层 (y=2 to y=5)
+    draw_rect_filled(surf, 3, 3, 3, 3, (180, 60, 60))
+    draw_rect_filled(surf, 8, 3, 3, 3, (60, 100, 160))
+    # 第2层 (y=8 to y=11)
+    draw_rect_filled(surf, 3, 9, 3, 3, (60, 140, 80))
+    draw_rect_filled(surf, 8, 9, 3, 3, (180, 140, 40))
+    # 第3层 (y=14 to y=17)
+    draw_rect_filled(surf, 3, 15, 3, 3, (140, 60, 120))
+    draw_rect_filled(surf, 8, 15, 3, 3, (100, 80, 40))
+    # 底板：hline (80,50,25)
+    draw_hline(surf, 1, 14, 23, (80, 50, 25))
+    pygame.image.save(surf, path)
+
+
+def create_water_dispenser(path):
+    """饮水机: 16×32"""
+    surf = make_surface(16, 32)
+    # 顶部水桶：淡蓝(200,220,240) 圆角矩形 (x=3, y=2, w=10, h=8)
+    draw_rect_filled(surf, 3, 2, 10, 8, (200, 220, 240))
+    # 圆角效果：去掉四角像素
+    draw_pixel(surf, 3, 2, (0, 0, 0, 0))
+    draw_pixel(surf, 12, 2, (0, 0, 0, 0))
+    draw_pixel(surf, 3, 9, (0, 0, 0, 0))
+    draw_pixel(surf, 12, 9, (0, 0, 0, 0))
+    # 水桶边框：(150,170,190)
+    draw_hline(surf, 4, 11, 2, (150, 170, 190))
+    draw_hline(surf, 3, 12, 9, (150, 170, 190))
+    draw_vline(surf, 3, 3, 8, (150, 170, 190))
+    draw_vline(surf, 12, 3, 8, (150, 170, 190))
+    # 机身：白色(230,230,230) 矩形 (x=2, y=10, w=12, h=18)
+    draw_rect_filled(surf, 2, 10, 12, 18, (230, 230, 230))
+    # 机身边框：(180,180,180)
+    draw_hline(surf, 2, 13, 10, (180, 180, 180))
+    draw_hline(surf, 2, 13, 27, (180, 180, 180))
+    draw_vline(surf, 2, 10, 27, (180, 180, 180))
+    draw_vline(surf, 13, 10, 27, (180, 180, 180))
+    # 出水口：深灰(60,60,60) 小矩形 (x=6, y=16, w=4, h=3)
+    draw_rect_filled(surf, 6, 16, 4, 3, (60, 60, 60))
+    # 两个按钮：红(200,50,50) 和蓝(50,50,200) 各2×2 在出水口上方
+    draw_rect_filled(surf, 5, 13, 2, 2, (200, 50, 50))
+    draw_rect_filled(surf, 9, 13, 2, 2, (50, 50, 200))
+    # 接水盘：(150,150,150) (x=3, y=24, w=10, h=2)
+    draw_rect_filled(surf, 3, 24, 10, 2, (150, 150, 150))
+    pygame.image.save(surf, path)
+
+
 # ============================================================
 # 主函数
 # ============================================================
@@ -1491,6 +1578,9 @@ if __name__ == "__main__":
         ("water_bottle.png", create_water_bottle),
         ("old_badge.png", create_old_badge),
         ("magnifying_glass.png", create_magnifying_glass),
+        ("floor_lamp.png", create_floor_lamp),
+        ("magazine_rack.png", create_magazine_rack),
+        ("water_dispenser.png", create_water_dispenser),
     ]
 
     for filename, generator in object_generators:
