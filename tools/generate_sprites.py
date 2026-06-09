@@ -485,36 +485,56 @@ def create_bookshelf(path):
     for sy in [3, 16, 29, 42]:
         draw_hline(surf, 1, 31, sy, (80, 50, 25))
         draw_hline(surf, 1, 31, sy + 1, (120, 80, 40))
-    # 第一层书籍 (y=5 to y=15)，3本宽7px间隔1px
-    shelf1 = [(160, 80, 50), (50, 70, 120), (140, 100, 50)]
+    # 第一层书籍 (y=5 to y=15)，3本宽7px间隔1px，高度变化
+    shelf1 = [(160, 80, 50, 10), (50, 70, 120, 9), (140, 100, 50, 11)]
     x = 3
-    for color in shelf1:
-        draw_rect_filled(surf, x, 5, 7, 10, color)
-        draw_vline(surf, x + 7, 5, 14, (80, 50, 25))  # 书脊分隔线
-        x += 8  # 7px宽 + 1px间隔
-    # 第二层书籍 (y=18 to y=28)
-    shelf2 = [(60, 90, 130), (150, 70, 40), (80, 110, 70)]
-    x = 3
-    for color in shelf2:
-        draw_rect_filled(surf, x, 18, 7, 10, color)
-        draw_vline(surf, x + 7, 18, 27, (80, 50, 25))
+    for color_r, color_g, color_b, h in shelf1:
+        y = 15 - h  # 底部对齐到y=14
+        draw_rect_filled(surf, x, y, 7, h, (color_r, color_g, color_b))
+        draw_vline(surf, x + 7, y, y + h - 1, (80, 50, 25))  # 书脊分隔线
+        # 书脊纹理线（模拟书名）
+        spine_dark = (max(color_r - 40, 20), max(color_g - 30, 15), max(color_b - 30, 10))
+        draw_hline(surf, x + 1, x + 5, y + h // 3, spine_dark)
+        if h >= 10:
+            draw_hline(surf, x + 1, x + 5, y + 2 * h // 3, spine_dark)
         x += 8
-    # 第三层书籍 (y=31 to y=41)，右侧留空放标签牌
-    shelf3 = [(130, 90, 50), (70, 80, 120), (160, 110, 50)]
+    # 第二层书籍 (y=18 to y=28)，高度变化
+    shelf2 = [(60, 90, 130, 11), (150, 70, 40, 10), (80, 110, 70, 9)]
     x = 3
-    for color in shelf3:
-        draw_rect_filled(surf, x, 31, 7, 10, color)
-        draw_vline(surf, x + 7, 31, 40, (80, 50, 25))
+    for color_r, color_g, color_b, h in shelf2:
+        y = 28 - h  # 底部对齐到y=27
+        draw_rect_filled(surf, x, y, 7, h, (color_r, color_g, color_b))
+        draw_vline(surf, x + 7, y, y + h - 1, (80, 50, 25))
+        # 书脊纹理线（模拟书名）
+        spine_dark = (max(color_r - 40, 20), max(color_g - 30, 15), max(color_b - 30, 10))
+        draw_hline(surf, x + 1, x + 5, y + h // 3, spine_dark)
+        if h >= 10:
+            draw_hline(surf, x + 1, x + 5, y + 2 * h // 3, spine_dark)
+        x += 8
+    # 第三层书籍 (y=31 to y=41)，右侧留空放标签牌，高度变化
+    shelf3 = [(130, 90, 50, 9), (70, 80, 120, 10), (160, 110, 50, 11)]
+    x = 3
+    for color_r, color_g, color_b, h in shelf3:
+        y = 41 - h  # 底部对齐到y=40
+        draw_rect_filled(surf, x, y, 7, h, (color_r, color_g, color_b))
+        draw_vline(surf, x + 7, y, y + h - 1, (80, 50, 25))
+        # 书脊纹理线（模拟书名）
+        spine_dark = (max(color_r - 40, 20), max(color_g - 30, 15), max(color_b - 30, 10))
+        draw_hline(surf, x + 1, x + 5, y + h // 3, spine_dark)
+        if h >= 10:
+            draw_hline(surf, x + 1, x + 5, y + 2 * h // 3, spine_dark)
         x += 8
     # 底板
     draw_hline(surf, 1, 31, 44, (80, 50, 25))
     draw_hline(surf, 1, 31, 45, (110, 72, 35))
+    draw_hline(surf, 1, 31, 46, (130, 90, 50))  # 底板高光线
     # 分类标签牌 10×8，位于第三层右侧
     draw_rect_filled(surf, 19, 33, 10, 8, (240, 230, 200))
     draw_hline(surf, 19, 28, 33, (80, 50, 25))
     draw_hline(surf, 19, 28, 40, (80, 50, 25))
     draw_vline(surf, 19, 33, 40, (80, 50, 25))
     draw_vline(surf, 28, 33, 40, (80, 50, 25))
+    draw_hline(surf, 21, 27, 34, (100, 70, 40))
     draw_hline(surf, 21, 27, 36, (100, 70, 40))
     draw_hline(surf, 21, 27, 38, (100, 70, 40))
     pygame.image.save(surf, path)
@@ -552,32 +572,49 @@ def create_bulletin_board(path):
 def create_computer_terminal(path):
     """电脑终端: 24×20"""
     surf = make_surface(24, 20)
+    # 电脑终端精灵 - 24x20，更清晰的屏幕+键盘
     # 显示器外壳
-    draw_rect_filled(surf, 2, 0, 20, 14, (80, 80, 90))
-    draw_rect_filled(surf, 3, 1, 18, 12, (40, 40, 50))
+    pygame.draw.rect(surf, (60, 60, 70), (2, 0, 20, 12))
+    # 内框
+    pygame.draw.rect(surf, (40, 40, 50), (3, 1, 18, 10))
     # 屏幕
-    draw_rect_filled(surf, 4, 2, 16, 10, (10, 30, 10))
-    # 屏幕上的绿色文字
-    green = (0, 200, 0)
-    green_dim = (0, 140, 0)
-    for row in range(4):
-        y = 3 + row * 2
-        for col in range(6):
-            x = 5 + col * 2
-            if (row + col) % 3 != 0:
-                draw_pixel(surf, x, y, green)
-            else:
-                draw_pixel(surf, x, y, green_dim)
+    pygame.draw.rect(surf, (10, 30, 10), (4, 2, 16, 8))
+    # 文字行（绿色终端风格）
+    bright_green = (0, 200, 0)
+    dim_green = (0, 140, 0)
+    # 第1行
+    for dx in [5, 6, 8, 9, 11, 12]:
+        surf.set_at((dx, 3), bright_green if dx % 2 == 1 else dim_green)
+    # 第2行
+    for dx in [5, 6, 7, 9, 10, 12, 13]:
+        surf.set_at((dx, 4), dim_green if dx % 2 == 1 else bright_green)
+    # 第3行
+    for dx in [5, 7, 8, 10, 11, 13]:
+        surf.set_at((dx, 5), bright_green if dx % 2 == 0 else dim_green)
+    # 第4行
+    for dx in [5, 6, 8, 9, 11, 12, 14]:
+        surf.set_at((dx, 6), dim_green if dx % 2 == 1 else bright_green)
+    # 第5行
+    for dx in [5, 7, 8, 10, 11]:
+        surf.set_at((dx, 7), bright_green if dx % 2 == 1 else dim_green)
+    # 光标
+    surf.set_at((13, 7), (0, 255, 0))
     # 屏幕反光
-    draw_pixel(surf, 5, 3, (0, 220, 0))
-    draw_pixel(surf, 6, 3, (0, 220, 0))
+    surf.set_at((5, 2), (0, 220, 0))
+    surf.set_at((17, 3), (0, 220, 0))
     # 支架
-    draw_rect_filled(surf, 10, 14, 4, 3, (80, 80, 90))
+    pygame.draw.rect(surf, (60, 60, 70), (10, 12, 4, 4))
     # 底座
-    draw_rect_filled(surf, 7, 17, 10, 2, (80, 80, 90))
-    draw_rect_filled(surf, 8, 17, 8, 1, (100, 100, 110))
+    pygame.draw.rect(surf, (70, 70, 80), (7, 16, 10, 2))
+    pygame.draw.line(surf, (90, 90, 100), (7, 16), (16, 16))
     # 键盘
-    draw_rect_filled(surf, 4, 19, 16, 1, (60, 60, 70))
+    pygame.draw.rect(surf, (60, 60, 70), (5, 18, 14, 2))
+    # 按键纹理
+    for ky in [18, 19]:
+        for kx in range(6, 18, 2):
+            surf.set_at((kx, ky), (80, 80, 90))
+    # 鼠标
+    pygame.draw.rect(surf, (60, 60, 70), (20, 18, 3, 2))
     pygame.image.save(surf, path)
 
 
@@ -964,23 +1001,40 @@ def _draw_line_on_surf(surf, x0, y0, x1, y1, color):
 def create_dining_table(path):
     """餐桌: 24×16"""
     surf = make_surface(24, 16)
+    # 餐桌精灵 - 24x16，立体感+桌布+餐具
     # 桌面
-    draw_rect_filled(surf, 2, 4, 20, 4, (160, 110, 60))
-    draw_rect_filled(surf, 3, 4, 18, 3, (180, 130, 70))
-    # 桌面高光
-    draw_hline(surf, 4, 20, 5, (200, 150, 80))
+    pygame.draw.rect(surf, (160, 110, 60), (2, 3, 20, 5))
+    # 桌面内层
+    pygame.draw.rect(surf, (175, 125, 70), (3, 3, 18, 4))
+    # 桌面高光线
+    pygame.draw.line(surf, (195, 145, 85), (4, 4), (21, 4))
+    # 桌面暗边
+    pygame.draw.line(surf, (140, 95, 50), (2, 7), (21, 7))
+    # 桌布（浅蓝格子纹）
+    for gx in range(0, 18, 3):
+        pygame.draw.line(surf, (180, 200, 220), (3 + gx, 3), (3 + gx, 6))
+    for gy in range(3, 6, 3):
+        pygame.draw.line(surf, (180, 200, 220), (3, gy), (20, gy))
+    # 餐具：盘子
+    pygame.draw.rect(surf, (230, 230, 235), (6, 4, 3, 2))
+    pygame.draw.rect(surf, (210, 210, 215), (6, 4, 3, 2), 1)
+    # 筷子
+    pygame.draw.line(surf, (160, 120, 60), (10, 4), (12, 5))
+    # 碗
+    pygame.draw.rect(surf, (220, 220, 230), (15, 4, 3, 2))
+    pygame.draw.rect(surf, (200, 200, 210), (15, 4, 3, 2), 1)
     # 桌腿
-    draw_rect_filled(surf, 3, 8, 2, 7, (130, 90, 45))
-    draw_rect_filled(surf, 19, 8, 2, 7, (130, 90, 45))
-    # 桌腿内侧
-    draw_pixel(surf, 4, 9, (150, 105, 55))
-    draw_pixel(surf, 20, 9, (150, 105, 55))
-    # 桌上餐具
-    draw_pixel(surf, 8, 5, (200, 200, 200))  # 盘子
-    draw_pixel(surf, 9, 5, (200, 200, 200))
-    draw_pixel(surf, 8, 4, (220, 220, 220))
-    draw_pixel(surf, 15, 5, (180, 180, 180))  # 杯子
-    draw_pixel(surf, 15, 4, (200, 200, 220))
+    pygame.draw.rect(surf, (130, 90, 45), (3, 8, 2, 6))
+    pygame.draw.rect(surf, (130, 90, 45), (19, 8, 2, 6))
+    # 桌腿内侧高光
+    surf.set_at((4, 9), (150, 105, 55))
+    surf.set_at((20, 9), (150, 105, 55))
+    # 横撑
+    pygame.draw.rect(surf, (110, 75, 38), (4, 11, 16, 1))
+    # 阴影
+    shadow = pygame.Surface((20, 1), pygame.SRCALPHA)
+    shadow.fill((80, 50, 25, 80))
+    surf.blit(shadow, (2, 14))
     pygame.image.save(surf, path)
 
 
@@ -1421,94 +1475,109 @@ def create_magnifying_glass(path):
 def create_floor_lamp(path):
     """落地灯: 16×32"""
     surf = make_surface(16, 32)
-    # 底座：深灰 4×2 在底部居中 (x=6, y=30)
-    draw_rect_filled(surf, 6, 30, 4, 2, (60, 60, 60))
-    # 灯杆：浅灰 2×22 从底座上方 (x=7, y=8)
-    draw_rect_filled(surf, 7, 8, 2, 22, (150, 150, 150))
-    # 灯罩：暖黄梯形
-    # 底部宽10 (x=3, y=2, w=10, h=2)
-    draw_rect_filled(surf, 3, 2, 10, 2, (240, 220, 150))
-    # 中部宽8 (x=4, y=4, w=8, h=2)
-    draw_rect_filled(surf, 4, 4, 8, 2, (240, 220, 150))
-    # 顶部宽6 (x=5, y=6, w=6, h=1)
-    draw_rect_filled(surf, 5, 6, 6, 1, (240, 220, 150))
-    # 灯罩边框：深棕 顶部和底部
-    draw_hline(surf, 3, 12, 2, (80, 60, 30))   # 底部边框
-    draw_hline(surf, 5, 10, 6, (80, 60, 30))   # 顶部边框
-    # 光晕：在灯罩下方画2行半透明黄色 宽8 (x=4)
-    for dy in range(2):
-        for dx in range(8):
-            draw_pixel(surf, 4 + dx, 4 + dy, (255, 240, 180, 30))
+    # 落地灯精灵 - 16x32，弧形灯罩+增强光晕
+    # 灯罩（弧形，5层递减宽度矩形逼近）
+    pygame.draw.rect(surf, (200, 180, 50), (3, 2, 10, 2))
+    pygame.draw.rect(surf, (210, 190, 60), (4, 0, 8, 2))
+    pygame.draw.rect(surf, (190, 170, 40), (5, 4, 6, 1))
+    # 灯罩高光
+    pygame.draw.line(surf, (230, 210, 80), (4, 0), (11, 0))
+    # 灯杆（3px宽）
+    pygame.draw.rect(surf, (80, 80, 80), (6, 5, 3, 20))
+    # 灯杆高光
+    pygame.draw.line(surf, (110, 110, 110), (6, 5), (6, 24))
+    # 灯杆底座
+    pygame.draw.rect(surf, (70, 70, 70), (4, 25, 8, 2))
+    pygame.draw.rect(surf, (90, 90, 90), (4, 25, 8, 1))
+    # 光晕（增强，距离衰减）
+    for row in range(6):
+        alpha = int(60 * (1 - row / 6))
+        glow_row = pygame.Surface((14, 1), pygame.SRCALPHA)
+        glow_row.fill((255, 240, 180, alpha))
+        surf.blit(glow_row, (1, 5 + row))
+    # 底部阴影
+    shadow = pygame.Surface((8, 1), pygame.SRCALPHA)
+    shadow.fill((40, 40, 40, 60))
+    surf.blit(shadow, (4, 27))
     pygame.image.save(surf, path)
 
 
 def create_magazine_rack(path):
     """杂志架: 16×24"""
     surf = make_surface(16, 24)
-    # 主体填充：(101,67,33)
-    draw_rect_filled(surf, 1, 1, 14, 22, (101, 67, 33))
-    # 框架：深棕(80,50,25) 矩形边框
-    draw_hline(surf, 0, 15, 0, (80, 50, 25))
-    draw_hline(surf, 0, 15, 23, (80, 50, 25))
-    draw_vline(surf, 0, 0, 23, (80, 50, 25))
-    draw_vline(surf, 15, 0, 23, (80, 50, 25))
-    # 左右立柱：(80,50,25) 各2px宽
-    draw_rect_filled(surf, 1, 1, 2, 22, (80, 50, 25))
-    draw_rect_filled(surf, 13, 1, 2, 22, (80, 50, 25))
-    # 3层隔板
-    # 第1层隔板 y=6
-    draw_hline(surf, 1, 14, 6, (90, 58, 28))
-    draw_hline(surf, 1, 14, 7, (120, 80, 40))
-    # 第2层隔板 y=12
-    draw_hline(surf, 1, 14, 12, (90, 58, 28))
-    draw_hline(surf, 1, 14, 13, (120, 80, 40))
-    # 第3层隔板 y=18
-    draw_hline(surf, 1, 14, 18, (90, 58, 28))
-    draw_hline(surf, 1, 14, 19, (120, 80, 40))
-    # 每层放2本杂志（比书矮），宽3 高3
-    # 第1层 (y=2 to y=5)
-    draw_rect_filled(surf, 3, 3, 3, 3, (180, 60, 60))
-    draw_rect_filled(surf, 8, 3, 3, 3, (60, 100, 160))
-    # 第2层 (y=8 to y=11)
-    draw_rect_filled(surf, 3, 9, 3, 3, (60, 140, 80))
-    draw_rect_filled(surf, 8, 9, 3, 3, (180, 140, 40))
-    # 第3层 (y=14 to y=17)
-    draw_rect_filled(surf, 3, 15, 3, 3, (140, 60, 120))
-    draw_rect_filled(surf, 8, 15, 3, 3, (100, 80, 40))
-    # 底板：hline (80,50,25)
-    draw_hline(surf, 1, 14, 23, (80, 50, 25))
+    # 杂志架精灵 - 16x24，倾斜放置效果
+    # 主体框架
+    pygame.draw.rect(surf, (101, 67, 33), (2, 1, 12, 22))
+    pygame.draw.rect(surf, (80, 50, 25), (2, 1, 12, 22), 1)
+    # 倾斜展示面（3层）
+    # 第1层
+    pygame.draw.rect(surf, (220, 210, 190), (3, 2, 10, 5))
+    # 杂志（偏移1px模拟倾斜）
+    pygame.draw.rect(surf, (200, 50, 50), (4, 2, 4, 4))
+    pygame.draw.line(surf, (240, 240, 240), (4, 2), (7, 2))  # 白色标题条
+    pygame.draw.rect(surf, (50, 80, 200), (9, 3, 4, 4))
+    pygame.draw.line(surf, (240, 240, 240), (9, 3), (12, 3))
+    # 隔板线
+    pygame.draw.line(surf, (80, 50, 25), (2, 7), (14, 7))
+    # 第2层
+    pygame.draw.rect(surf, (220, 210, 190), (3, 8, 10, 5))
+    pygame.draw.rect(surf, (50, 160, 60), (4, 8, 4, 4))
+    pygame.draw.line(surf, (240, 240, 240), (4, 8), (7, 8))
+    pygame.draw.rect(surf, (220, 180, 40), (9, 9, 4, 4))
+    pygame.draw.line(surf, (240, 240, 240), (9, 9), (12, 9))
+    # 隔板线
+    pygame.draw.line(surf, (80, 50, 25), (2, 13), (14, 13))
+    # 第3层
+    pygame.draw.rect(surf, (220, 210, 190), (3, 14, 10, 5))
+    pygame.draw.rect(surf, (140, 40, 140), (4, 14, 4, 4))
+    pygame.draw.line(surf, (240, 240, 240), (4, 14), (7, 14))
+    pygame.draw.rect(surf, (230, 130, 50), (9, 15, 4, 4))
+    pygame.draw.line(surf, (240, 240, 240), (9, 15), (12, 15))
+    # 底板
+    pygame.draw.rect(surf, (80, 50, 25), (2, 19, 12, 1))
+    # 底部阴影
+    shadow = pygame.Surface((12, 1), pygame.SRCALPHA)
+    shadow.fill((60, 35, 15, 80))
+    surf.blit(shadow, (2, 20))
     pygame.image.save(surf, path)
 
 
 def create_water_dispenser(path):
     """饮水机: 16×32"""
     surf = make_surface(16, 32)
-    # 顶部水桶：淡蓝(200,220,240) 圆角矩形 (x=3, y=2, w=10, h=8)
-    draw_rect_filled(surf, 3, 2, 10, 8, (200, 220, 240))
-    # 圆角效果：去掉四角像素
-    draw_pixel(surf, 3, 2, (0, 0, 0, 0))
-    draw_pixel(surf, 12, 2, (0, 0, 0, 0))
-    draw_pixel(surf, 3, 9, (0, 0, 0, 0))
-    draw_pixel(surf, 12, 9, (0, 0, 0, 0))
-    # 水桶边框：(150,170,190)
-    draw_hline(surf, 4, 11, 2, (150, 170, 190))
-    draw_hline(surf, 3, 12, 9, (150, 170, 190))
-    draw_vline(surf, 3, 3, 8, (150, 170, 190))
-    draw_vline(surf, 12, 3, 8, (150, 170, 190))
-    # 机身：白色(230,230,230) 矩形 (x=2, y=10, w=12, h=18)
-    draw_rect_filled(surf, 2, 10, 12, 18, (230, 230, 230))
-    # 机身边框：(180,180,180)
-    draw_hline(surf, 2, 13, 10, (180, 180, 180))
-    draw_hline(surf, 2, 13, 27, (180, 180, 180))
-    draw_vline(surf, 2, 10, 27, (180, 180, 180))
-    draw_vline(surf, 13, 10, 27, (180, 180, 180))
-    # 出水口：深灰(60,60,60) 小矩形 (x=6, y=16, w=4, h=3)
-    draw_rect_filled(surf, 6, 16, 4, 3, (60, 60, 60))
-    # 两个按钮：红(200,50,50) 和蓝(50,50,200) 各2×2 在出水口上方
-    draw_rect_filled(surf, 5, 13, 2, 2, (200, 50, 50))
-    draw_rect_filled(surf, 9, 13, 2, 2, (50, 50, 200))
-    # 接水盘：(150,150,150) (x=3, y=24, w=10, h=2)
-    draw_rect_filled(surf, 3, 24, 10, 2, (150, 150, 150))
+    # 饮水机精灵 - 16x32，改进圆角+水位线+按钮
+    # 水桶（顶部，圆角改进：去掉6个角像素）
+    pygame.draw.rect(surf, (200, 220, 240), (3, 0, 10, 12))
+    # 圆角：去掉6个角像素
+    surf.set_at((3, 0), (0, 0, 0, 0))
+    surf.set_at((4, 0), (0, 0, 0, 0))
+    surf.set_at((12, 0), (0, 0, 0, 0))
+    surf.set_at((13, 0), (0, 0, 0, 0))
+    surf.set_at((3, 1), (0, 0, 0, 0))
+    surf.set_at((13, 1), (0, 0, 0, 0))
+    # 水位线
+    pygame.draw.line(surf, (160, 200, 230), (4, 5), (12, 5))
+    # 水桶高光
+    pygame.draw.line(surf, (230, 240, 255), (4, 2), (4, 10))
+    # 机身
+    pygame.draw.rect(surf, (200, 200, 210), (2, 12, 12, 16))
+    # 机身高光
+    pygame.draw.line(surf, (220, 220, 230), (2, 12), (2, 27))
+    # 出水口
+    pygame.draw.rect(surf, (160, 160, 170), (5, 15, 6, 3))
+    # 按钮（3x3）
+    pygame.draw.rect(surf, (200, 50, 50), (3, 20, 3, 3))
+    pygame.draw.rect(surf, (50, 50, 200), (10, 20, 3, 3))
+    # 品牌标识
+    pygame.draw.rect(surf, (180, 180, 190), (5, 25, 2, 1))
+    # 接水盘
+    pygame.draw.rect(surf, (170, 170, 180), (3, 28, 10, 2))
+    # 底座
+    pygame.draw.rect(surf, (150, 150, 160), (2, 30, 12, 2))
+    # 底座阴影
+    shadow = pygame.Surface((12, 1), pygame.SRCALPHA)
+    shadow.fill((100, 100, 110, 80))
+    surf.blit(shadow, (2, 31))
     pygame.image.save(surf, path)
 
 

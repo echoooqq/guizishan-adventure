@@ -650,7 +650,7 @@ GID_SCOREBOARD = 17
 GID_COMPUTER = 18
 GID_DOOR_INDOOR = 19
 GID_COLLISION_I = 20
-GID_KITCHEN_FLOOR = 21
+GID_KITCHEN_FLOOR = 70
 GID_RUG = 22
 GID_BLACKBOARD = 23
 GID_PLANT_INDOOR = 24
@@ -680,8 +680,20 @@ GID_SECRET_RUNE = 42     # 密室符文墙
 GID_SECRET_TORCH = 43    # 密室火把
 GID_LARGE_DESK_L = 45   # 大办公桌左半
 GID_LARGE_DESK_R = 46   # 大办公桌右半
+# 新增场景主题 tile
+GID_MENU_BOARD = 71       # 食堂菜单牌
+GID_DRINK_MACHINE = 72    # 食堂饮料机
+GID_RETURN_DESK = 73      # 图书馆还书台
+GID_NEWSPAPER_RACK = 74   # 图书馆报刊架
+GID_WHITEBOARD = 75       # 综合楼白板
+GID_FILE_CABINET = 76     # 综合楼文件柜
+GID_STONE_PEDESTAL = 77   # 密室石台
+GID_STONE_PILLAR_TOP = 78 # 密室石柱上部
+GID_STONE_PILLAR_BOT = 79 # 密室石柱下部
+GID_SPORTS_POSTER = 80    # 体育馆运动海报
+GID_FIRST_AID = 81        # 体育馆急救箱
 
-TILE_COUNT_I = 46
+TILE_COUNT_I = 82
 
 SOLID_GIDS_I = {
     GID_INDOOR_WALL, GID_INDOOR_WALL_TOP, GID_BOOKSHELF, GID_BOOKSHELF_TOP,
@@ -694,6 +706,10 @@ SOLID_GIDS_I = {
     GID_NANHU_WALL, GID_NANHU_WALL_TOP, GID_NANHU_ELEVATOR,
     GID_SECRET_WALL, GID_SECRET_WALL_TOP, GID_SECRET_RUNE, GID_SECRET_TORCH,
     GID_OFFICE_DESK, GID_LARGE_DESK_L, GID_LARGE_DESK_R,
+    GID_MENU_BOARD, GID_DRINK_MACHINE, GID_RETURN_DESK, GID_NEWSPAPER_RACK,
+    GID_WHITEBOARD, GID_FILE_CABINET, GID_STONE_PEDESTAL,
+    GID_STONE_PILLAR_TOP, GID_STONE_PILLAR_BOT,
+    GID_SPORTS_POSTER, GID_FIRST_AID,
 }
 
 
@@ -818,6 +834,13 @@ def design_nanhulou_f1():
                       "nanhu_campus", "nanhulou_exit")
     _add_spawn(trigger_objects, "nanhulou_entrance", 9, H - 4)
     _add_spawn(trigger_objects, "nanhulou_f1_stairs", 16, 2)
+
+    # 新增：中央区域白板
+    structures[5][9] = GID_WHITEBOARD
+    collision[5][9] = GID_COLLISION_I
+    # 新增：右下角文件柜
+    structures[10][17] = GID_FILE_CABINET
+    collision[10][17] = GID_COLLISION_I
 
     return W, H, ground, structures, decorations, collision, interactive_objects, trigger_objects
 
@@ -946,6 +969,10 @@ def design_nanhulou_f2():
     # 从密室返回F2的出生点（右墙书架旁，与书架同行）
     _add_spawn(trigger_objects, "nanhulou_f2_secret_return", W - 4, 9)
 
+    # 新增：左下角文件柜
+    structures[10][2] = GID_FILE_CABINET
+    collision[10][2] = GID_COLLISION_I
+
     return W, H, ground, structures, decorations, collision, interactive_objects, trigger_objects
 
 
@@ -1008,6 +1035,20 @@ def design_nanhulou_secret():
     )
 
     _add_spawn(trigger_objects, "nanhulou_secret_entrance", 7, 8)
+
+    # 新增：中央石台（符文墙下方）
+    structures[5][7] = GID_STONE_PEDESTAL
+    collision[5][7] = GID_COLLISION_I
+    # 新增：左侧石柱
+    structures[3][3] = GID_STONE_PILLAR_TOP
+    collision[3][3] = GID_COLLISION_I
+    structures[4][3] = GID_STONE_PILLAR_BOT
+    collision[4][3] = GID_COLLISION_I
+    # 新增：右侧石柱
+    structures[3][12] = GID_STONE_PILLAR_TOP
+    collision[3][12] = GID_COLLISION_I
+    structures[4][12] = GID_STONE_PILLAR_BOT
+    collision[4][12] = GID_COLLISION_I
 
     return W, H, ground, structures, decorations, collision, interactive_objects, trigger_objects
 

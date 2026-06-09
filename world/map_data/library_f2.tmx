@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<map version="1.5" orientation="orthogonal" renderorder="right-down" width="24" height="18" tilewidth="16" tileheight="16" infinite="0" nextobjectid="25" nextlayerid="7">
- <tileset firstgid="1" name="indoor_tileset" tilewidth="16" tileheight="16" tilecount="70" columns="70">
-  <image source="../../assets/tilesets/indoor_tileset.png" width="1120" height="16" />
+<map version="1.5" orientation="orthogonal" renderorder="right-down" width="24" height="18" tilewidth="16" tileheight="16" infinite="0" nextobjectid="6" nextlayerid="7">
+ <tileset firstgid="1" name="indoor_tileset" tilewidth="16" tileheight="16" tilecount="82" columns="82">
+  <image source="../../assets/tilesets/indoor_tileset.png" width="1312" height="16" />
   <tile id="4">
    <properties>
     <property name="solid" type="bool" value="true" />
@@ -252,19 +252,74 @@
     <property name="solid" type="bool" value="true" />
    </properties>
   </tile>
+  <tile id="70">
+   <properties>
+    <property name="solid" type="bool" value="true" />
+   </properties>
+  </tile>
+  <tile id="71">
+   <properties>
+    <property name="solid" type="bool" value="true" />
+   </properties>
+  </tile>
+  <tile id="72">
+   <properties>
+    <property name="solid" type="bool" value="true" />
+   </properties>
+  </tile>
+  <tile id="73">
+   <properties>
+    <property name="solid" type="bool" value="true" />
+   </properties>
+  </tile>
+  <tile id="74">
+   <properties>
+    <property name="solid" type="bool" value="true" />
+   </properties>
+  </tile>
+  <tile id="75">
+   <properties>
+    <property name="solid" type="bool" value="true" />
+   </properties>
+  </tile>
+  <tile id="76">
+   <properties>
+    <property name="solid" type="bool" value="true" />
+   </properties>
+  </tile>
+  <tile id="77">
+   <properties>
+    <property name="solid" type="bool" value="true" />
+   </properties>
+  </tile>
+  <tile id="78">
+   <properties>
+    <property name="solid" type="bool" value="true" />
+   </properties>
+  </tile>
+  <tile id="79">
+   <properties>
+    <property name="solid" type="bool" value="true" />
+   </properties>
+  </tile>
+  <tile id="80">
+   <properties>
+    <property name="solid" type="bool" value="true" />
+   </properties>
+  </tile>
  </tileset>
  <layer id="1" name="ground" width="24" height="18">
   <data encoding="csv">
-27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,22,22,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,22,22,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27
 </data>
  </layer>
  <layer id="2" name="structures" width="24" height="18">
   <data encoding="csv">
-26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,13,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,26,25,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,25,25,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,25,25,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,25,25,0,0,0,0,0,0,0,67,0,0,0,0,0,0,0,67,0,0,0,0,0,0,25,25,0,0,0,0,0,0,0,0,9,9,0,0,0,0,0,0,0,0,0,0,0,0,25,25,0,0,0,0,0,0,0,0,10,10,0,0,0,0,0,0,0,0,0,0,0,0,25,25,0,0,0,0,68,0,69,69,69,69,69,69,0,68,0,0,0,0,0,0,0,25,25,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,25,25,0,0,0,0,0,0,0,0,9,9,0,0,0,0,0,0,0,0,0,0,0,0,25,25,0,0,0,0,0,0,0,0,10,10,0,0,0,0,0,0,0,0,0,0,0,0,25,25,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,25,25,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,25,25,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,25,25,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,25,25,0,0,0,0,0,0,0,0,0,0,0,0,0,23,0,0,0,0,0,0,0,0,25,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,0
+26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,0,13,0,0,8,8,0,0,8,8,8,8,8,8,0,0,8,8,8,8,8,0,26,25,0,0,0,0,7,7,0,0,7,7,7,7,7,7,0,0,7,7,7,7,7,0,25,25,0,0,0,0,7,7,0,0,7,7,7,7,7,7,0,0,7,7,7,7,7,0,25,25,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,25,25,0,0,0,0,0,0,0,0,0,0,9,9,0,0,0,0,0,0,0,0,0,0,25,25,0,0,0,0,0,0,0,0,0,0,10,10,0,0,0,0,0,0,0,0,0,0,25,25,0,7,7,7,7,7,0,0,0,0,0,0,0,0,0,0,7,7,7,7,7,0,25,25,0,7,7,7,7,7,0,0,0,0,0,0,0,0,0,0,7,7,7,7,7,0,25,25,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,25,25,0,74,0,0,0,0,0,0,0,0,9,9,0,0,0,0,0,0,0,0,0,0,25,25,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,25,25,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,25,25,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,25,25,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,25,25,0,0,0,0,23,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,25,25,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,25,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26
 </data>
  </layer>
  <objectgroup id="3" name="objects">
-  <object id="1" x="16" y="16" width="16" height="16" type="stairs_down">
+  <object id="1" x="32" y="16" width="16" height="16" type="stairs_down">
    <properties>
     <property name="interactive_type" value="enter" />
     <property name="prompt_text" value="下楼" />
@@ -273,198 +328,35 @@
     <property name="transition_type" value="floor_change" />
    </properties>
   </object>
-  <object id="2" x="64" y="16" width="32" height="48" type="bookshelf">
+  <object id="2" x="80" y="240" width="16" height="16" type="blackboard">
    <properties>
-    <property name="call_number" value="K291.5/Z3" />
-    <property name="display_name" value="特藏书架" />
-    <property name="interactive_type" value="examine" />
-    <property name="prompt_text" value="查看书架" />
-    <property name="section" value="西北" />
-    <property name="sprite_key" value="bookshelf" />
-   </properties>
-  </object>
-  <object id="3" x="96" y="16" width="32" height="48" type="bookshelf">
-   <properties>
-    <property name="call_number" value="B821/L3" />
-    <property name="display_name" value="特藏书架" />
-    <property name="interactive_type" value="examine" />
-    <property name="prompt_text" value="查看书架" />
-    <property name="section" value="西北" />
-    <property name="sprite_key" value="bookshelf" />
-   </properties>
-  </object>
-  <object id="4" x="288" y="16" width="32" height="48" type="bookshelf">
-   <properties>
-    <property name="call_number" value="A123.4/W1" />
-    <property name="display_name" value="特藏书架" />
-    <property name="interactive_type" value="examine" />
-    <property name="prompt_text" value="查看书架" />
-    <property name="section" value="东北" />
-    <property name="sprite_key" value="bookshelf" />
-   </properties>
-  </object>
-  <object id="5" x="320" y="16" width="32" height="48" type="bookshelf">
-   <properties>
-    <property name="call_number" value="I242/Z7" />
-    <property name="display_name" value="特藏书架" />
-    <property name="interactive_type" value="examine" />
-    <property name="prompt_text" value="查看书架" />
-    <property name="section" value="东北" />
-    <property name="sprite_key" value="bookshelf" />
-   </properties>
-  </object>
-  <object id="6" x="64" y="208" width="32" height="48" type="bookshelf">
-   <properties>
-    <property name="call_number" value="O413/C2" />
-    <property name="display_name" value="特藏书架" />
-    <property name="interactive_type" value="examine" />
-    <property name="prompt_text" value="查看书架" />
-    <property name="section" value="西南" />
-    <property name="sprite_key" value="bookshelf" />
-   </properties>
-  </object>
-  <object id="7" x="96" y="208" width="32" height="48" type="bookshelf">
-   <properties>
-    <property name="call_number" value="P462/W5" />
-    <property name="display_name" value="特藏书架" />
-    <property name="interactive_type" value="examine" />
-    <property name="prompt_text" value="查看书架" />
-    <property name="section" value="西南" />
-    <property name="sprite_key" value="bookshelf" />
-   </properties>
-  </object>
-  <object id="8" x="288" y="208" width="32" height="48" type="bookshelf">
-   <properties>
-    <property name="call_number" value="Q949/L1" />
-    <property name="display_name" value="特藏书架" />
-    <property name="interactive_type" value="examine" />
-    <property name="prompt_text" value="查看书架" />
-    <property name="section" value="东南" />
-    <property name="sprite_key" value="bookshelf" />
-   </properties>
-  </object>
-  <object id="9" x="320" y="208" width="32" height="48" type="bookshelf">
-   <properties>
-    <property name="call_number" value="TU984/H6" />
-    <property name="display_name" value="特藏书架" />
-    <property name="interactive_type" value="examine" />
-    <property name="prompt_text" value="查看书架" />
-    <property name="section" value="东南" />
-    <property name="sprite_key" value="bookshelf" />
-   </properties>
-  </object>
-  <object id="10" x="224" y="256" width="16" height="16" type="blackboard">
-   <properties>
-    <property name="display_name" value="黑板" />
     <property name="interactive_type" value="examine" />
     <property name="prompt_text" value="查看黑板" />
+    <property name="display_name" value="黑板" />
    </properties>
   </object>
-  <object id="11" x="144" y="96" width="32" height="32" type="reading_table">
+  <object id="3" x="80" y="16" width="16" height="48" type="bookshelf">
    <properties>
-    <property name="display_name" value="阅读桌" />
-    <property name="invisible" type="bool" value="true" />
     <property name="interactive_type" value="examine" />
-    <property name="prompt_text" value="查看" />
+    <property name="prompt_text" value="查看书架" />
+    <property name="display_name" value="书架B" />
    </properties>
   </object>
-  <object id="12" x="144" y="160" width="32" height="32" type="reading_table">
-   <properties>
-    <property name="display_name" value="阅读桌" />
-    <property name="invisible" type="bool" value="true" />
-    <property name="interactive_type" value="examine" />
-    <property name="prompt_text" value="查看" />
-   </properties>
-  </object>
-  <object id="14" x="128" y="80" width="16" height="16" type="display_cabinet">
+  <object id="4" x="96" y="16" width="16" height="48" type="bookshelf">
    <properties>
     <property name="interactive_type" value="examine" />
-    <property name="prompt_text" value="查看" />
-    <property name="display_name" value="展示柜" />
-   </properties>
-  </object>
-  <object id="15" x="256" y="80" width="16" height="16" type="display_cabinet">
-   <properties>
-    <property name="interactive_type" value="examine" />
-    <property name="prompt_text" value="查看" />
-    <property name="display_name" value="展示柜" />
-   </properties>
-  </object>
-  <object id="16" x="80" y="128" width="16" height="16" type="potted_plant">
-   <properties>
-    <property name="interactive_type" value="examine" />
-    <property name="prompt_text" value="查看" />
-    <property name="display_name" value="盆栽" />
-   </properties>
-  </object>
-  <object id="17" x="240" y="128" width="16" height="16" type="potted_plant">
-   <properties>
-    <property name="interactive_type" value="examine" />
-    <property name="prompt_text" value="查看" />
-    <property name="display_name" value="盆栽" />
-   </properties>
-  </object>
-  <object id="18" x="112" y="128" width="96" height="16" type="sofa">
-   <properties>
-    <property name="interactive_type" value="examine" />
-    <property name="prompt_text" value="查看" />
-    <property name="display_name" value="沙发" />
-   </properties>
-  </object>
-  <object id="19" x="48" y="144" width="16" height="32" type="floor_lamp">
-   <properties>
-    <property name="interactive_type" value="examine" />
-    <property name="prompt_text" value="查看" />
-    <property name="display_name" value="落地灯" />
-    <property name="sprite_key" value="floor_lamp" />
-   </properties>
-  </object>
-  <object id="20" x="320" y="144" width="16" height="32" type="floor_lamp">
-   <properties>
-    <property name="interactive_type" value="examine" />
-    <property name="prompt_text" value="查看" />
-    <property name="display_name" value="落地灯" />
-    <property name="sprite_key" value="floor_lamp" />
-   </properties>
-  </object>
-  <object id="21" x="48" y="192" width="16" height="24" type="magazine_rack">
-   <properties>
-    <property name="interactive_type" value="examine" />
-    <property name="prompt_text" value="查看" />
-    <property name="display_name" value="杂志架" />
-    <property name="sprite_key" value="magazine_rack" />
-   </properties>
-  </object>
-  <object id="22" x="320" y="192" width="16" height="32" type="water_dispenser">
-   <properties>
-    <property name="interactive_type" value="examine" />
-    <property name="prompt_text" value="查看" />
-    <property name="display_name" value="饮水机" />
-    <property name="sprite_key" value="water_dispenser" />
-   </properties>
-  </object>
-  <object id="23" x="176" y="144" width="16" height="16" type="potted_plant">
-   <properties>
-    <property name="interactive_type" value="examine" />
-    <property name="prompt_text" value="查看" />
-    <property name="display_name" value="盆栽" />
-   </properties>
-  </object>
-  <object id="24" x="256" y="192" width="16" height="16" type="potted_plant">
-   <properties>
-    <property name="interactive_type" value="examine" />
-    <property name="prompt_text" value="查看" />
-    <property name="display_name" value="盆栽" />
+    <property name="prompt_text" value="查看书架" />
+    <property name="display_name" value="书架B" />
    </properties>
   </object>
  </objectgroup>
  <layer id="4" name="collision" width="24" height="18" visible="0">
   <data encoding="csv">
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20,20,0,0,0,0,0,0,0,0,0,0,0,0,20,20,0,0,0,0,0,0,0,0,20,20,0,0,0,0,0,0,0,0,0,0,0,0,20,20,0,0,0,0,0,0,0,0,20,20,0,0,0,0,0,0,0,0,0,0,0,0,20,20,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20,0,0,0,0,0,0,0,20,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20,20,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20,20,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20,0,20,20,20,20,20,20,0,20,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20,20,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20,20,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20,20,0,0,0,0,0,0,0,0,0,0,0,0,20,20,0,0,0,0,0,0,0,0,20,20,0,0,0,0,0,0,0,0,0,0,0,0,20,20,0,0,0,0,0,0,0,0,20,20,0,0,0,0,0,0,0,0,0,0,0,0,20,20,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20,20,0,0,20,20,20,20,20,20,0,0,20,20,20,20,20,0,0,0,0,0,0,0,20,20,0,0,20,20,20,20,20,20,0,0,20,20,20,20,20,0,0,0,0,0,0,0,20,20,0,0,20,20,20,20,20,20,0,0,20,20,20,20,20,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20,20,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20,20,0,0,0,0,0,0,0,0,0,0,0,0,0,20,20,20,20,20,0,0,0,0,0,0,0,0,0,0,20,20,20,20,20,0,0,0,0,20,20,20,20,20,0,0,0,0,0,0,0,0,0,0,20,20,20,20,20,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20,0,0,0,0,0,0,0,0,20,20,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
  <objectgroup id="5" name="triggers">
-  <object id="13" x="16" y="32" width="32" height="32" type="spawn">
+  <object id="5" x="48" y="32" width="32" height="32" type="spawn">
    <properties>
     <property name="spawn_id" value="library_f2_stairs" />
    </properties>

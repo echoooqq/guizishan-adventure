@@ -29,7 +29,7 @@ GID_SCOREBOARD = 17
 GID_COMPUTER = 18
 GID_DOOR_INDOOR = 19
 GID_COLLISION = 20
-GID_KITCHEN_FLOOR = 21
+GID_KITCHEN_FLOOR = 70
 GID_RUG = 22
 GID_BLACKBOARD = 23
 GID_PLANT_INDOOR = 24
@@ -84,8 +84,20 @@ GID_SECTION_SIGN = 66   # 分区标识牌（挂在墙上或立在书架旁）
 GID_DISPLAY_CABINET = 67  # 展示柜
 GID_POTTED_PLANT = 68     # 盆栽
 GID_SOFA = 69             # 沙发
+# ---- 新增 tile（GID 71+）----
+GID_MENU_BOARD = 71       # 食堂菜单牌
+GID_DRINK_MACHINE = 72    # 食堂饮料机
+GID_RETURN_DESK = 73      # 图书馆还书台
+GID_NEWSPAPER_RACK = 74   # 图书馆报刊架
+GID_WHITEBOARD = 75       # 综合楼白板
+GID_FILE_CABINET = 76     # 综合楼文件柜
+GID_STONE_PEDESTAL = 77   # 密室石台
+GID_STONE_PILLAR_TOP = 78 # 密室石柱上部
+GID_STONE_PILLAR_BOT = 79 # 密室石柱下部
+GID_SPORTS_POSTER = 80    # 体育馆运动海报
+GID_FIRST_AID = 81        # 体育馆急救箱
 
-TILE_COUNT = 70
+TILE_COUNT = 82
 
 SOLID_GIDS = {
     GID_INDOOR_WALL, GID_INDOOR_WALL_TOP, GID_BOOKSHELF, GID_BOOKSHELF_TOP,
@@ -104,6 +116,10 @@ SOLID_GIDS = {
     GID_GYM_WATER_TOP, GID_GYM_WATER_BOT,
     GID_GYM_BENCH_L, GID_GYM_BENCH_R,
     GID_GYM_EQUIP_L, GID_GYM_EQUIP_R,
+    GID_MENU_BOARD, GID_DRINK_MACHINE, GID_RETURN_DESK, GID_NEWSPAPER_RACK,
+    GID_WHITEBOARD, GID_FILE_CABINET, GID_STONE_PEDESTAL,
+    GID_STONE_PILLAR_TOP, GID_STONE_PILLAR_BOT,
+    GID_SPORTS_POSTER, GID_FIRST_AID,
 }
 
 
@@ -142,28 +158,67 @@ def _draw_tile(surface, gid, x):
             for bx in range(offset, TILE_SIZE, 8):
                 pygame.draw.line(surface, (155, 115, 65), (x + bx, yy), (x + bx, yy + 4))
     elif gid == GID_TILE_FLOOR:
+        # 瓷砖地面 - 带高光/阴影变化
         surface.fill((200, 200, 200), rect)
-        pygame.draw.line(surface, (180, 180, 180), (x, 0), (x + TILE_SIZE, 0))
-        pygame.draw.line(surface, (180, 180, 180), (x, 8), (x + TILE_SIZE, 8))
-        pygame.draw.line(surface, (180, 180, 180), (x, 0), (x, TILE_SIZE))
-        pygame.draw.line(surface, (180, 180, 180), (x + 8, 0), (x + 8, TILE_SIZE))
-        for dx, dy in [(2, 3), (10, 5), (5, 12), (13, 11)]:
-            surface.set_at((x + dx, dy), (190, 190, 190))
+        # 网格线：每4px一条
+        for yy in range(0, TILE_SIZE, 4):
+            pygame.draw.line(surface, (180, 180, 180), (x, yy), (x + TILE_SIZE, yy))
+        for xx in range(0, TILE_SIZE, 4):
+            pygame.draw.line(surface, (180, 180, 180), (x + xx, 0), (x + xx, TILE_SIZE))
+        # 每块瓷砖内部高光/暗面
+        for ty in range(4):
+            for tx in range(4):
+                dx = tx * 4
+                dy = ty * 4
+                # 左上角高光像素
+                surface.set_at((x + dx + 1, dy + 1), (215, 215, 215))
+                # 右下角暗面像素
+                surface.set_at((x + dx + 3, dy + 3), (190, 190, 190))
+        # 随机色点模拟瓷砖表面微小色差
+        for dx, dy in [(2, 3), (10, 5), (5, 12), (13, 11), (7, 1), (14, 14)]:
+            surface.set_at((x + dx, dy), (195, 195, 195))
+        # 瓷砖缝隙加深：网格线交叉点
+        for yy in range(0, TILE_SIZE, 4):
+            for xx in range(0, TILE_SIZE, 4):
+                surface.set_at((x + xx, yy), (170, 170, 170))
     elif gid == GID_CARPET_RED:
-        surface.fill((180, 140, 90), rect)
+        surface.fill((0, 0, 0, 0), rect)
         pygame.draw.rect(surface, (140, 30, 30), (x + 1, 1, 14, 14))
         pygame.draw.rect(surface, (160, 40, 40), (x + 2, 2, 12, 12))
         pygame.draw.rect(surface, (180, 50, 50), (x + 3, 3, 10, 10))
         pygame.draw.rect(surface, (140, 30, 30), (x + 5, 5, 6, 6))
     elif gid == GID_INDOOR_WALL:
+        # 通用墙壁 - 砖缝纹理
         surface.fill((220, 210, 190), rect)
-        pygame.draw.line(surface, (190, 180, 160), (x, TILE_SIZE - 1), (x + TILE_SIZE, TILE_SIZE - 1))
-        for bx in range(0, TILE_SIZE, 8):
-            pygame.draw.line(surface, (200, 190, 170), (x + bx, 0), (x + bx, TILE_SIZE))
+        # 砖缝纹理（交错排列）
+        for yy in [4, 8, 12]:
+            pygame.draw.line(surface, (200, 190, 170), (x, yy), (x + TILE_SIZE, yy))
+        # 奇数行竖线
+        for bx in [4, 12]:
+            pygame.draw.line(surface, (200, 190, 170), (x + bx, 0), (x + bx, 4))
+            pygame.draw.line(surface, (200, 190, 170), (x + bx, 8), (x + bx, 12))
+        # 偶数行竖线
+        pygame.draw.line(surface, (200, 190, 170), (x + 8, 4), (x + 8, 8))
+        pygame.draw.line(surface, (200, 190, 170), (x + 8, 12), (x + 8, 16))
+        # 底部暗线
+        pygame.draw.line(surface, (190, 180, 160), (x, 15), (x + TILE_SIZE, 15))
+        # 左上高光
+        pygame.draw.line(surface, (230, 220, 200), (x, 0), (x, 15))
     elif gid == GID_INDOOR_WALL_TOP:
+        # 通用墙壁顶部 - 顶部暗带+砖缝
         surface.fill((220, 210, 190), rect)
+        # 顶部3px暗带
         pygame.draw.rect(surface, (200, 190, 170), (x, 0, TILE_SIZE, 3))
-        pygame.draw.line(surface, (190, 180, 160), (x, TILE_SIZE - 1), (x + TILE_SIZE, TILE_SIZE - 1))
+        # 底部暗线
+        pygame.draw.line(surface, (190, 180, 160), (x, 15), (x + TILE_SIZE, 15))
+        # 砖缝（仅下半部分）
+        pygame.draw.line(surface, (200, 190, 170), (x, 8), (x + TILE_SIZE, 8))
+        pygame.draw.line(surface, (200, 190, 170), (x, 12), (x + TILE_SIZE, 12))
+        # 偶数行竖线
+        pygame.draw.line(surface, (200, 190, 170), (x + 8, 8), (x + 8, 12))
+        # 奇数行竖线
+        for bx in [4, 12]:
+            pygame.draw.line(surface, (200, 190, 170), (x + bx, 12), (x + bx, 16))
     elif gid == GID_BOOKSHELF:
         # 书架身体 - 更精致的三层书架
         surface.fill((0, 0, 0, 0), rect)  # 透明背景
@@ -221,47 +276,111 @@ def _draw_tile(surface, gid, x):
         pygame.draw.line(surface, (90, 58, 28), (x + 1, 9), (x + 15, 9))
         pygame.draw.line(surface, (120, 80, 40), (x + 1, 10), (x + 15, 10))
     elif gid == GID_TABLE:
-        surface.fill((180, 140, 90), rect)
-        # 桌面（与 dining_table 精灵配色一致）
-        pygame.draw.rect(surface, (160, 110, 60), (x + 2, 4, 12, 4))
-        pygame.draw.rect(surface, (180, 130, 70), (x + 3, 4, 10, 3))
+        # 桌子 - 透明背景，立体感
+        surface.fill((0, 0, 0, 0), rect)
+        # 桌面
+        pygame.draw.rect(surface, (160, 110, 60), (x + 2, 4, 12, 5))
+        # 桌面内层
+        pygame.draw.rect(surface, (175, 125, 70), (x + 3, 4, 10, 4))
         # 桌面高光线
-        pygame.draw.line(surface, (200, 150, 80), (x + 4, 5), (x + 12, 5))
+        pygame.draw.line(surface, (195, 145, 85), (x + 4, 5), (x + 13, 5))
+        # 桌面暗边
+        pygame.draw.line(surface, (140, 95, 50), (x + 2, 8), (x + 13, 8))
+        # 桌上物品：书本
+        pygame.draw.rect(surface, (50, 80, 140), (x + 5, 5, 4, 2))
+        # 书本高光
+        pygame.draw.line(surface, (70, 100, 160), (x + 5, 5), (x + 8, 5))
+        # 桌上物品：杯子
+        pygame.draw.rect(surface, (200, 200, 210), (x + 11, 5, 2, 2))
+        # 杯口高光
+        surface.set_at((x + 11, 5), (230, 230, 240))
         # 桌腿
-        pygame.draw.rect(surface, (130, 90, 45), (x + 3, 8, 2, 7))
-        pygame.draw.rect(surface, (130, 90, 45), (x + 11, 8, 2, 7))
+        pygame.draw.rect(surface, (130, 90, 45), (x + 3, 9, 2, 5))
+        pygame.draw.rect(surface, (130, 90, 45), (x + 11, 9, 2, 5))
         # 桌腿内侧高光
-        surface.set_at((x + 4, 9), (150, 105, 55))
-        surface.set_at((x + 12, 9), (150, 105, 55))
-        # 桌上餐具：盘子
-        surface.set_at((x + 6, 5), (200, 200, 200))
-        surface.set_at((x + 7, 5), (200, 200, 200))
-        surface.set_at((x + 6, 4), (220, 220, 220))
-        # 桌上餐具：杯子
-        surface.set_at((x + 10, 5), (180, 180, 180))
-        surface.set_at((x + 10, 4), (200, 200, 220))
+        surface.set_at((x + 4, 10), (150, 105, 55))
+        surface.set_at((x + 12, 10), (150, 105, 55))
+        # 横撑
+        pygame.draw.rect(surface, (110, 75, 38), (x + 4, 12, 8, 1))
+        # 底部阴影
+        shadow = pygame.Surface((12, 1), pygame.SRCALPHA)
+        shadow.fill((80, 50, 25, 80))
+        surface.blit(shadow, (x + 2, 14))
     elif gid == GID_CHAIR:
-        surface.fill((180, 140, 90), rect)
-        pygame.draw.rect(surface, (120, 80, 40), (x + 4, 6, 8, 6))
-        pygame.draw.rect(surface, (100, 65, 30), (x + 4, 4, 8, 3))
-        pygame.draw.rect(surface, (100, 65, 30), (x + 5, 12, 2, 3))
-        pygame.draw.rect(surface, (100, 65, 30), (x + 9, 12, 2, 3))
+        # 椅子 - 透明背景，立体感
+        surface.fill((0, 0, 0, 0), rect)
+        # 椅背
+        pygame.draw.rect(surface, (110, 70, 35), (x + 4, 2, 8, 4))
+        # 椅背高光
+        pygame.draw.line(surface, (135, 90, 50), (x + 4, 2), (x + 11, 2))
+        # 椅背纹理
+        pygame.draw.line(surface, (95, 58, 28), (x + 6, 3), (x + 6, 5))
+        pygame.draw.line(surface, (95, 58, 28), (x + 9, 3), (x + 9, 5))
+        # 椅面
+        pygame.draw.rect(surface, (130, 85, 42), (x + 3, 6, 10, 3))
+        # 椅面前沿高光
+        pygame.draw.line(surface, (155, 105, 55), (x + 3, 6), (x + 12, 6))
+        # 椅面暗边
+        pygame.draw.line(surface, (110, 70, 35), (x + 3, 8), (x + 12, 8))
+        # 椅腿
+        pygame.draw.rect(surface, (100, 65, 30), (x + 3, 9, 2, 5))
+        pygame.draw.rect(surface, (100, 65, 30), (x + 11, 9, 2, 5))
+        # 椅腿内侧高光
+        surface.set_at((x + 4, 10), (120, 80, 40))
+        surface.set_at((x + 12, 10), (120, 80, 40))
+        # 横撑
+        pygame.draw.rect(surface, (90, 55, 25), (x + 4, 12, 8, 1))
+        # 横撑高光
+        pygame.draw.line(surface, (110, 70, 35), (x + 5, 12), (x + 7, 12))
+        # 底部阴影
+        shadow = pygame.Surface((10, 1), pygame.SRCALPHA)
+        shadow.fill((60, 35, 15, 80))
+        surface.blit(shadow, (x + 3, 14))
     elif gid == GID_COUNTER:
-        surface.fill((180, 140, 90), rect)
-        pygame.draw.rect(surface, (160, 160, 160), (x, 4, TILE_SIZE, 8))
-        pygame.draw.rect(surface, (140, 140, 140), (x, 3, TILE_SIZE, 2))
-        pygame.draw.rect(surface, (130, 130, 130), (x, 12, TILE_SIZE, 2))
-        pygame.draw.rect(surface, (100, 100, 100), (x + 1, 5, 3, 5))
-        pygame.draw.rect(surface, (100, 100, 100), (x + 12, 5, 3, 5))
+        # 柜台 - 透明背景，不锈钢质感+玻璃隔断
+        surface.fill((0, 0, 0, 0), rect)
+        # 柜台主体
+        pygame.draw.rect(surface, (180, 180, 190), (x, 3, 16, 10))
+        # 顶部台面高光
+        pygame.draw.line(surface, (210, 210, 220), (x, 3), (x + 15, 3))
+        # 底部暗边
+        pygame.draw.line(surface, (150, 150, 160), (x, 12), (x + 15, 12))
+        # 玻璃隔断（上半部分）
+        glass = pygame.Surface((14, 3), pygame.SRCALPHA)
+        glass.fill((200, 220, 240, 120))
+        surface.blit(glass, (x + 1, 0))
+        # 玻璃反光
+        pygame.draw.line(surface, (230, 240, 255), (x + 2, 0), (x + 2, 2))
+        # 柜台内部菜品（透过玻璃可见）
+        pygame.draw.rect(surface, (200, 80, 60), (x + 3, 1, 3, 1))
+        pygame.draw.rect(surface, (80, 160, 60), (x + 7, 1, 3, 1))
+        pygame.draw.rect(surface, (200, 180, 60), (x + 11, 1, 3, 1))
+        # 左右柜门
+        pygame.draw.rect(surface, (160, 160, 170), (x + 1, 5, 5, 6))
+        pygame.draw.rect(surface, (160, 160, 170), (x + 10, 5, 5, 6))
+        # 门框线
+        pygame.draw.rect(surface, (140, 140, 150), (x + 1, 5, 5, 6), 1)
+        pygame.draw.rect(surface, (140, 140, 150), (x + 10, 5, 5, 6), 1)
+        # 拉手
+        surface.set_at((x + 5, 8), (200, 200, 210))
+        surface.set_at((x + 6, 8), (200, 200, 210))
+        surface.set_at((x + 9, 8), (200, 200, 210))
+        surface.set_at((x + 10, 8), (200, 200, 210))
+        # 底部踢脚线
+        pygame.draw.rect(surface, (130, 130, 140), (x, 13, 16, 1))
+        # 底部阴影
+        shadow = pygame.Surface((16, 1), pygame.SRCALPHA)
+        shadow.fill((100, 100, 110, 80))
+        surface.blit(shadow, (x, 14))
     elif gid == GID_FRIDGE:
-        surface.fill((180, 140, 90), rect)
+        surface.fill((0, 0, 0, 0), rect)
         pygame.draw.rect(surface, (200, 200, 210), (x + 2, 1, 12, 14))
         pygame.draw.rect(surface, (180, 180, 190), (x + 2, 1, 12, 14), 1)
         pygame.draw.line(surface, (160, 160, 170), (x + 2, 8), (x + 14, 8))
         pygame.draw.rect(surface, (150, 150, 160), (x + 12, 3, 1, 3))
         pygame.draw.rect(surface, (150, 150, 160), (x + 12, 10, 1, 3))
     elif gid == GID_STAIRS_DOWN:
-        surface.fill((180, 140, 90), rect)
+        surface.fill((0, 0, 0, 0), rect)
         for i in range(4):
             step_y = i * 4
             step_w = TILE_SIZE - i * 4
@@ -269,7 +388,7 @@ def _draw_tile(surface, gid, x):
             pygame.draw.line(surface, (140, 100, 55), (x, step_y + 3), (x + step_w, step_y + 3))
         pygame.draw.rect(surface, (120, 80, 40), (x, 0, TILE_SIZE, TILE_SIZE), 1)
     elif gid == GID_STAIRS_UP:
-        surface.fill((180, 140, 90), rect)
+        surface.fill((0, 0, 0, 0), rect)
         for i in range(4):
             step_y = TILE_SIZE - (i + 1) * 4
             step_w = TILE_SIZE - i * 4
@@ -277,11 +396,28 @@ def _draw_tile(surface, gid, x):
             pygame.draw.line(surface, (140, 100, 55), (x, step_y + 3), (x + step_w, step_y + 3))
         pygame.draw.rect(surface, (120, 80, 40), (x, 0, TILE_SIZE, TILE_SIZE), 1)
     elif gid == GID_COURT_FLOOR:
+        # 球场地面 - 木地板纹理+球场标线
         surface.fill((200, 160, 100), rect)
-        pygame.draw.line(surface, (180, 140, 80), (x, 0), (x + TILE_SIZE, 0))
-        pygame.draw.line(surface, (180, 140, 80), (x, TILE_SIZE - 1), (x + TILE_SIZE, TILE_SIZE - 1))
-        pygame.draw.line(surface, (220, 180, 120), (x + 8, 0), (x + 8, TILE_SIZE))
-        pygame.draw.arc(surface, (220, 180, 120), (x, 0, TILE_SIZE, TILE_SIZE), 0, 3.14, 1)
+        # 木地板纹理（交错竖线）
+        for yy in range(0, TILE_SIZE, 4):
+            pygame.draw.line(surface, (185, 145, 85), (x, yy), (x + TILE_SIZE, yy))
+        offset = 0
+        for yy in range(0, TILE_SIZE, 4):
+            for bx in range(offset, TILE_SIZE, 8):
+                pygame.draw.line(surface, (190, 150, 90), (x + bx, yy), (x + bx, yy + 4))
+            offset = 8 if offset == 0 else 0
+        # 球场标线（白色）
+        pygame.draw.line(surface, (240, 240, 240), (x, 0), (x + TILE_SIZE, 0))
+        pygame.draw.line(surface, (240, 240, 240), (x, 15), (x + TILE_SIZE, 15))
+        pygame.draw.line(surface, (240, 240, 240), (x + 8, 0), (x + 8, TILE_SIZE))
+        # 半圆弧（底部罚球区，用8个像素点逼近）
+        for angle_idx in range(8):
+            import math
+            a = math.pi * angle_idx / 7
+            px = int(8 + 6 * math.cos(a))
+            py = int(12 - 4 * math.sin(a))
+            if 0 <= px < TILE_SIZE and 0 <= py < TILE_SIZE:
+                surface.set_at((x + px, py), (240, 240, 240))
     elif gid == GID_HOOP_TOP:
         # 篮球架上部：篮板+篮筐+篮网+支柱顶部
         surface.fill((0, 0, 0, 0), rect)
@@ -328,12 +464,55 @@ def _draw_tile(surface, gid, x):
         # 底座阴影
         pygame.draw.rect(surface, (70, 70, 80), (x + 5, 15, 6, 1))
     elif gid == GID_SCOREBOARD:
-        # 使用墙壁背景色，让精灵覆盖显示
-        surface.fill((240, 240, 245), rect)
-        pygame.draw.rect(surface, (220, 220, 225), (x, 0, TILE_SIZE, 3))
-        pygame.draw.rect(surface, (40, 80, 160), (x, 5, TILE_SIZE, 2))
+        # 记分牌 - 透明背景，金属框+LED屏幕
+        surface.fill((0, 0, 0, 0), rect)
+        # 金属外框
+        pygame.draw.rect(surface, (80, 80, 90), (x + 1, 1, 14, 14))
+        # 顶部/左侧高光
+        pygame.draw.line(surface, (120, 120, 130), (x + 1, 1), (x + 14, 1))
+        pygame.draw.line(surface, (120, 120, 130), (x + 1, 1), (x + 1, 14))
+        # 底部/右侧阴影
+        pygame.draw.line(surface, (60, 60, 70), (x + 1, 14), (x + 14, 14))
+        pygame.draw.line(surface, (60, 60, 70), (x + 14, 1), (x + 14, 14))
+        # LED屏幕
+        pygame.draw.rect(surface, (20, 20, 30), (x + 2, 2, 12, 8))
+        # 左队分数（红色LED点阵）
+        for dy in range(3):
+            for dx in range(2):
+                surface.set_at((x + 3 + dx, 3 + dy), (200, 40, 40))
+                surface.set_at((x + 3 + dx, 3 + dy), (200, 40, 40))
+        pygame.draw.rect(surface, (200, 40, 40), (x + 3, 3, 2, 3))
+        pygame.draw.rect(surface, (200, 40, 40), (x + 5, 3, 1, 3))
+        # LED暗纹（未亮的LED点）
+        for dy in range(3):
+            for dx in range(2):
+                surface.set_at((x + 6 + dx, 3 + dy), (30, 30, 40))
+        # 冒号
+        surface.set_at((x + 8, 4), (200, 40, 40))
+        surface.set_at((x + 8, 6), (200, 40, 40))
+        # 右队分数（蓝色LED点阵）
+        pygame.draw.rect(surface, (40, 80, 200), (x + 9, 3, 2, 3))
+        pygame.draw.rect(surface, (40, 80, 200), (x + 11, 3, 1, 3))
+        # LED暗纹
+        for dy in range(3):
+            for dx in range(2):
+                surface.set_at((x + 12 + dx, 3 + dy), (30, 30, 40))
+        # 队名区
+        pygame.draw.rect(surface, (60, 20, 20), (x + 2, 10, 6, 2))
+        pygame.draw.rect(surface, (20, 20, 60), (x + 8, 10, 6, 2))
+        # 队名文字横线模拟
+        pygame.draw.line(surface, (100, 40, 40), (x + 3, 11), (x + 6, 11))
+        pygame.draw.line(surface, (40, 40, 100), (x + 9, 11), (x + 12, 11))
+        # 底部指示灯
+        surface.set_at((x + 4, 13), (200, 50, 50))
+        surface.set_at((x + 6, 13), (50, 200, 50))
+        surface.set_at((x + 9, 13), (200, 200, 50))
+        surface.set_at((x + 11, 13), (50, 50, 200))
+        # 顶部挂钩
+        surface.set_at((x + 4, 0), (100, 100, 110))
+        surface.set_at((x + 11, 0), (100, 100, 110))
     elif gid == GID_COMPUTER:
-        surface.fill((180, 140, 90), rect)
+        surface.fill((0, 0, 0, 0), rect)
         pygame.draw.rect(surface, (60, 60, 60), (x + 2, 1, 12, 9))
         pygame.draw.rect(surface, (80, 120, 180), (x + 3, 2, 10, 7))
         pygame.draw.rect(surface, (60, 60, 60), (x + 6, 10, 4, 2))
@@ -341,12 +520,12 @@ def _draw_tile(surface, gid, x):
         for dx, dy in [(5, 4), (8, 3), (11, 5)]:
             surface.set_at((x + dx, dy), (150, 200, 255))
     elif gid == GID_DOOR_INDOOR:
-        surface.fill((180, 140, 90), rect)
+        surface.fill((0, 0, 0, 0), rect)
         pygame.draw.rect(surface, (101, 67, 33), (x + 3, 1, 10, 14))
         pygame.draw.rect(surface, (80, 50, 25), (x + 3, 1, 10, 14), 1)
         pygame.draw.circle(surface, (200, 180, 50), (x + 11, 8), 1)
     elif gid == GID_COLLISION:
-        surface.fill((180, 140, 90), rect)
+        surface.fill((0, 0, 0, 0), rect)
         overlay = pygame.Surface((TILE_SIZE, TILE_SIZE), pygame.SRCALPHA)
         overlay.fill((255, 0, 0, 60))
         surface.blit(overlay, (x, 0))
@@ -359,14 +538,14 @@ def _draw_tile(surface, gid, x):
         pygame.draw.line(surface, (170, 170, 160), (x, 0), (x + TILE_SIZE, 0))
         pygame.draw.line(surface, (170, 170, 160), (x, 0), (x, TILE_SIZE))
     elif gid == GID_RUG:
-        surface.fill((180, 140, 90), rect)
+        surface.fill((0, 0, 0, 0), rect)
         pygame.draw.rect(surface, (100, 60, 30), (x + 1, 1, 14, 14))
         pygame.draw.rect(surface, (130, 80, 40), (x + 2, 2, 12, 12))
         pygame.draw.rect(surface, (160, 100, 50), (x + 4, 4, 8, 8))
         for dx, dy in [(5, 5), (9, 5), (5, 9), (9, 9)]:
             surface.set_at((x + dx, dy), (180, 120, 60))
     elif gid == GID_BLACKBOARD:
-        surface.fill((180, 140, 90), rect)
+        surface.fill((0, 0, 0, 0), rect)
         pygame.draw.rect(surface, (101, 67, 33), (x, 0, TILE_SIZE, TILE_SIZE))
         pygame.draw.rect(surface, (30, 80, 30), (x + 1, 1, 14, 12))
         pygame.draw.rect(surface, (101, 67, 33), (x, 13, TILE_SIZE, 3))
@@ -391,9 +570,16 @@ def _draw_tile(surface, gid, x):
         for bx in [4, 8, 12]:
             pygame.draw.line(surface, (190, 170, 130), (x + bx, 10), (x + bx, TILE_SIZE))
     elif gid == GID_LIB_WALL_TOP:
+        # 图书馆墙壁顶部 - 暖黄底色+护墙板分隔线延伸
         surface.fill((220, 200, 160), rect)
-        pygame.draw.rect(surface, (190, 170, 130), (x, 0, TILE_SIZE, 3))
+        # 顶部3px暗带（护墙板分隔线延伸）
+        pygame.draw.rect(surface, (200, 180, 140), (x, 0, TILE_SIZE, 3))
+        pygame.draw.line(surface, (190, 170, 130), (x, 2), (x + TILE_SIZE, 2))
+        # 底部暗线
         pygame.draw.line(surface, (180, 150, 100), (x, 15), (x + TILE_SIZE, 15))
+        # 护墙板竖线延伸
+        for bx in [4, 8, 12]:
+            pygame.draw.line(surface, (190, 170, 130), (x + bx, 3), (x + bx, TILE_SIZE))
     elif gid == GID_LIB_FLOOR:
         surface.fill((120, 80, 45), rect)
         for yy in range(0, TILE_SIZE, 4):
@@ -406,7 +592,7 @@ def _draw_tile(surface, gid, x):
         for dx, dy in [(3, 3), (11, 7), (7, 13)]:
             surface.set_at((x + dx, dy), (110, 75, 40))
     elif gid == GID_LIB_READING_LAMP:
-        surface.fill((120, 80, 45), rect)
+        surface.fill((0, 0, 0, 0), rect)
         # 灯柱
         pygame.draw.rect(surface, (80, 80, 80), (x + 7, 6, 2, 8))
         # 灯罩（三角形）
@@ -414,7 +600,7 @@ def _draw_tile(surface, gid, x):
                             [(x + 5, 3), (x + 10, 3), (x + 7, 1)])
         # 暖光光晕
         glow = pygame.Surface((6, 6), pygame.SRCALPHA)
-        pygame.draw.circle(glow, (255, 240, 180, 80), (3, 3), 3)
+        pygame.draw.circle(glow, (255, 240, 180, 55), (3, 3), 3)
         surface.blit(glow, (x + 5, 5))
     # 体育馆室内专属 tile
     elif gid == GID_GYM_WALL:
@@ -423,11 +609,14 @@ def _draw_tile(surface, gid, x):
         pygame.draw.rect(surface, (40, 80, 160), (x, 12, TILE_SIZE, 2))
         pygame.draw.line(surface, (230, 230, 235), (x + 8, 0), (x + 8, TILE_SIZE))
     elif gid == GID_GYM_WALL_TOP:
+        # 体育馆墙壁顶部 - 白色底+蓝色条纹延伸
         surface.fill((240, 240, 245), rect)
         pygame.draw.rect(surface, (220, 220, 225), (x, 0, TILE_SIZE, 3))
+        # 蓝色条纹延伸（2条蓝色横线）
         pygame.draw.rect(surface, (40, 80, 160), (x, 5, TILE_SIZE, 2))
+        pygame.draw.rect(surface, (40, 80, 160), (x, 12, TILE_SIZE, 2))
     elif gid == GID_GYM_LOCKER:
-        surface.fill((240, 240, 245), rect)
+        surface.fill((0, 0, 0, 0), rect)
         # 更衣柜主体
         pygame.draw.rect(surface, (180, 180, 190), (x + 2, 1, 12, 14))
         # 三扇柜门
@@ -449,8 +638,10 @@ def _draw_tile(surface, gid, x):
         pygame.draw.rect(surface, (230, 130, 50), (x, 8, TILE_SIZE, 2))
         pygame.draw.line(surface, (235, 235, 235), (x + 8, 0), (x + 8, TILE_SIZE))
     elif gid == GID_DINING_WALL_TOP:
+        # 食堂墙壁顶部 - 白色底+橙色腰线延伸
         surface.fill((245, 245, 245), rect)
         pygame.draw.rect(surface, (225, 225, 225), (x, 0, TILE_SIZE, 3))
+        # 橙色腰线延伸
         pygame.draw.rect(surface, (230, 130, 50), (x, 8, TILE_SIZE, 2))
     elif gid == GID_DINING_SERVING:
         surface.fill((245, 245, 245), rect)
@@ -469,16 +660,34 @@ def _draw_tile(surface, gid, x):
         pygame.draw.rect(surface, (180, 180, 185), (x, 13, TILE_SIZE, 3))
         pygame.draw.line(surface, (235, 235, 237), (x + 8, 0), (x + 8, TILE_SIZE))
     elif gid == GID_NANHU_WALL_TOP:
+        # 综合楼墙壁顶部 - 浅灰白底+灰色踢脚线延伸+横向装饰条
         surface.fill((240, 240, 242), rect)
         pygame.draw.rect(surface, (225, 225, 228), (x, 0, TILE_SIZE, 3))
+        # 横向装饰条
+        pygame.draw.line(surface, (230, 230, 232), (x, 6), (x + TILE_SIZE, 6))
+        # 灰色踢脚线延伸
         pygame.draw.rect(surface, (180, 180, 185), (x, 13, TILE_SIZE, 3))
     elif gid == GID_NANHU_FLOOR:
+        # 综合楼大理石地面 - 丰富纹路
         surface.fill((195, 195, 200), rect)
-        # 大理石纹路
-        pygame.draw.line(surface, (185, 185, 190), (x + 2, 2), (x + 8, 8))
-        pygame.draw.line(surface, (185, 185, 190), (x + 10, 4), (x + 14, 12))
+        # 大理石纹路（6条不同角度的斜线）
+        pygame.draw.line(surface, (185, 185, 190), (x + 1, 1), (x + 6, 6))
+        pygame.draw.line(surface, (188, 188, 193), (x + 9, 2), (x + 14, 10))
+        pygame.draw.line(surface, (183, 183, 188), (x + 3, 8), (x + 12, 14))
+        pygame.draw.line(surface, (186, 186, 191), (x + 0, 5), (x + 5, 15))
+        pygame.draw.line(surface, (190, 190, 195), (x + 10, 0), (x + 15, 7))
+        pygame.draw.line(surface, (184, 184, 189), (x + 7, 9), (x + 14, 15))
+        # 高光/暗面渐变像素
+        for dx, dy in [(1, 1), (6, 3), (12, 6), (3, 10), (9, 12), (14, 2), (7, 7), (2, 14)]:
+            surface.set_at((x + dx, dy), (205, 205, 210))
+        for dx, dy in [(4, 4), (10, 8), (13, 13), (0, 9)]:
+            surface.set_at((x + dx, dy), (180, 180, 185))
+        # 网格线（瓷砖缝）
         pygame.draw.line(surface, (190, 190, 195), (x + 8, 0), (x + 8, TILE_SIZE))
         pygame.draw.line(surface, (190, 190, 195), (x, 8), (x + TILE_SIZE, 8))
+        # 微小斑点模拟石材天然纹理
+        for dx, dy in [(5, 2), (11, 5), (3, 12), (14, 10)]:
+            surface.set_at((x + dx, dy), (175, 175, 180))
     elif gid == GID_NANHU_ELEVATOR:
         surface.fill((240, 240, 242), rect)
         # 电梯门
@@ -505,10 +714,15 @@ def _draw_tile(surface, gid, x):
         # 裂缝
         pygame.draw.line(surface, (60, 55, 50), (x + 5, 6), (x + 7, 9))
     elif gid == GID_SECRET_WALL_TOP:
+        # 密室墙壁顶部 - 深灰棕底+砖缝纹理延伸
         surface.fill((70, 65, 60), rect)
         pygame.draw.rect(surface, (55, 50, 45), (x, 0, TILE_SIZE, 3))
+        # 砖缝纹理延伸
         for yy in [4, 8]:
             pygame.draw.line(surface, (55, 50, 45), (x, yy), (x + TILE_SIZE, yy))
+        for bx in [4, 12]:
+            pygame.draw.line(surface, (55, 50, 45), (x + bx, 4), (x + bx, 8))
+        pygame.draw.line(surface, (55, 50, 45), (x + 8, 8), (x + 8, 12))
     elif gid == GID_SECRET_FLOOR:
         surface.fill((110, 100, 85), rect)
         # 散落碎石
@@ -1159,6 +1373,269 @@ def _draw_tile(surface, gid, x):
         # 腿
         pygame.draw.rect(surface, (80, 50, 25), (x + 2, 13, 2, 2))
         pygame.draw.rect(surface, (80, 50, 25), (x + 12, 13, 2, 2))
+    elif gid == GID_MENU_BOARD:
+        # 食堂菜单牌 - 透明背景
+        surface.fill((0, 0, 0, 0), rect)
+        # 悬挂支架
+        pygame.draw.line(surface, (80, 50, 25), (x + 4, 0), (x + 8, 3))
+        pygame.draw.line(surface, (80, 50, 25), (x + 11, 0), (x + 8, 3))
+        # 木框
+        pygame.draw.rect(surface, (120, 80, 40), (x + 2, 3, 12, 11))
+        # 内板
+        pygame.draw.rect(surface, (240, 230, 200), (x + 3, 4, 10, 9))
+        # 标题条
+        pygame.draw.rect(surface, (230, 130, 50), (x + 4, 5, 8, 2))
+        # 菜品文字线
+        for ty in range(4):
+            pygame.draw.line(surface, (100, 70, 40), (x + 4, 8 + ty * 2), (x + 9, 8 + ty * 2))
+        # 价格标记
+        surface.set_at((x + 11, 8), (200, 50, 50))
+        surface.set_at((x + 11, 10), (200, 50, 50))
+        surface.set_at((x + 11, 12), (200, 50, 50))
+    elif gid == GID_DRINK_MACHINE:
+        # 食堂饮料机 - 透明背景
+        surface.fill((0, 0, 0, 0), rect)
+        # 机身
+        pygame.draw.rect(surface, (180, 180, 190), (x + 3, 1, 10, 13))
+        # 顶部圆弧
+        pygame.draw.rect(surface, (190, 190, 200), (x + 4, 0, 8, 2))
+        # 透明门
+        glass = pygame.Surface((8, 6), pygame.SRCALPHA)
+        glass.fill((200, 220, 240, 120))
+        surface.blit(glass, (x + 4, 2))
+        # 反光竖线
+        pygame.draw.line(surface, (230, 240, 255), (x + 5, 2), (x + 5, 7))
+        # 饮料罐（门内可见）
+        pygame.draw.rect(surface, (200, 50, 50), (x + 5, 3, 2, 3))
+        pygame.draw.rect(surface, (220, 180, 40), (x + 7, 3, 2, 3))
+        pygame.draw.rect(surface, (50, 100, 200), (x + 9, 3, 2, 3))
+        # 出货口
+        pygame.draw.rect(surface, (60, 60, 70), (x + 5, 9, 6, 2))
+        # 按钮
+        surface.set_at((x + 4, 9), (200, 50, 50))
+        surface.set_at((x + 4, 10), (50, 200, 50))
+        surface.set_at((x + 4, 11), (50, 50, 200))
+        # 底座
+        pygame.draw.rect(surface, (150, 150, 160), (x + 3, 14, 10, 1))
+        # 阴影
+        shadow = pygame.Surface((10, 1), pygame.SRCALPHA)
+        shadow.fill((100, 100, 110, 80))
+        surface.blit(shadow, (x + 3, 15))
+    elif gid == GID_RETURN_DESK:
+        # 图书馆还书台 - 透明背景
+        surface.fill((0, 0, 0, 0), rect)
+        # 台面
+        pygame.draw.rect(surface, (110, 75, 40), (x + 1, 3, 14, 4))
+        # 高光
+        pygame.draw.line(surface, (135, 95, 55), (x + 1, 3), (x + 14, 3))
+        # 暗边
+        pygame.draw.line(surface, (90, 60, 30), (x + 1, 6), (x + 14, 6))
+        # 还书槽
+        pygame.draw.rect(surface, (40, 40, 50), (x + 5, 4, 6, 2))
+        # 槽口高光
+        pygame.draw.line(surface, (60, 60, 70), (x + 5, 4), (x + 10, 4))
+        # 电脑屏幕（台面右侧）
+        pygame.draw.rect(surface, (60, 60, 70), (x + 12, 2, 2, 1))
+        pygame.draw.rect(surface, (60, 60, 70), (x + 12, 0, 2, 2))
+        pygame.draw.rect(surface, (80, 120, 180), (x + 11, 0, 4, 2))
+        # 前面板
+        pygame.draw.rect(surface, (90, 60, 30), (x + 1, 7, 14, 5))
+        # 暗线
+        pygame.draw.line(surface, (80, 50, 25), (x + 1, 10), (x + 14, 10))
+        # 底部阴影
+        shadow = pygame.Surface((14, 1), pygame.SRCALPHA)
+        shadow.fill((60, 35, 15, 80))
+        surface.blit(shadow, (x + 1, 12))
+    elif gid == GID_NEWSPAPER_RACK:
+        # 图书馆报刊架 - 透明背景
+        surface.fill((0, 0, 0, 0), rect)
+        # 主体框架
+        pygame.draw.rect(surface, (101, 67, 33), (x + 2, 1, 12, 13))
+        # 边框
+        pygame.draw.rect(surface, (80, 50, 25), (x + 2, 1, 12, 13), 1)
+        # 倾斜展示面（3层）
+        pygame.draw.rect(surface, (220, 210, 190), (x + 3, 2, 10, 3))
+        # 杂志头
+        pygame.draw.rect(surface, (200, 50, 50), (x + 4, 2, 3, 2))
+        pygame.draw.rect(surface, (50, 80, 200), (x + 8, 2, 3, 2))
+        # 第2层
+        pygame.draw.rect(surface, (220, 210, 190), (x + 3, 6, 10, 3))
+        pygame.draw.rect(surface, (50, 160, 60), (x + 4, 6, 3, 2))
+        pygame.draw.rect(surface, (220, 180, 40), (x + 8, 6, 3, 2))
+        # 第3层
+        pygame.draw.rect(surface, (220, 210, 190), (x + 3, 10, 10, 3))
+        pygame.draw.rect(surface, (140, 40, 140), (x + 4, 10, 3, 2))
+        pygame.draw.rect(surface, (230, 130, 50), (x + 8, 10, 3, 2))
+        # 隔板线
+        pygame.draw.line(surface, (80, 50, 25), (x + 2, 5), (x + 14, 5))
+        pygame.draw.line(surface, (80, 50, 25), (x + 2, 9), (x + 14, 9))
+        # 底板
+        pygame.draw.rect(surface, (80, 50, 25), (x + 2, 13, 12, 1))
+        # 底部阴影
+        shadow = pygame.Surface((12, 1), pygame.SRCALPHA)
+        shadow.fill((60, 35, 15, 80))
+        surface.blit(shadow, (x + 2, 14))
+    elif gid == GID_WHITEBOARD:
+        # 综合楼白板 - 透明背景
+        surface.fill((0, 0, 0, 0), rect)
+        # 金属边框
+        pygame.draw.rect(surface, (160, 160, 170), (x + 1, 1, 14, 14))
+        # 高光
+        pygame.draw.line(surface, (190, 190, 200), (x + 1, 1), (x + 14, 1))
+        pygame.draw.line(surface, (190, 190, 200), (x + 1, 1), (x + 1, 14))
+        # 阴影
+        pygame.draw.line(surface, (130, 130, 140), (x + 1, 14), (x + 14, 14))
+        pygame.draw.line(surface, (130, 130, 140), (x + 14, 1), (x + 14, 14))
+        # 白色板面
+        pygame.draw.rect(surface, (245, 245, 250), (x + 2, 2, 12, 10))
+        # 彩色磁贴
+        pygame.draw.rect(surface, (220, 60, 60), (x + 3, 3, 2, 2))
+        pygame.draw.rect(surface, (60, 100, 200), (x + 7, 4, 2, 2))
+        pygame.draw.rect(surface, (60, 180, 80), (x + 11, 3, 2, 2))
+        # 马克笔痕迹
+        pygame.draw.line(surface, (200, 200, 210), (x + 3, 7), (x + 10, 7))
+        pygame.draw.line(surface, (200, 200, 210), (x + 5, 9), (x + 12, 9))
+        # 底部笔槽
+        pygame.draw.rect(surface, (150, 150, 160), (x + 2, 12, 12, 2))
+        # 3支笔
+        surface.set_at((x + 4, 12), (220, 50, 50))
+        surface.set_at((x + 7, 12), (50, 50, 220))
+        surface.set_at((x + 10, 12), (30, 30, 30))
+    elif gid == GID_FILE_CABINET:
+        # 综合楼文件柜 - 透明背景
+        surface.fill((0, 0, 0, 0), rect)
+        # 柜体
+        pygame.draw.rect(surface, (180, 180, 190), (x + 2, 1, 12, 13))
+        # 边框
+        pygame.draw.rect(surface, (140, 140, 150), (x + 2, 1, 12, 13), 1)
+        # 高光
+        pygame.draw.line(surface, (200, 200, 210), (x + 2, 1), (x + 2, 13))
+        # 4层抽屉
+        for i in range(4):
+            dy = 2 + i * 3
+            pygame.draw.rect(surface, (165, 165, 175), (x + 3, dy, 10, 2))
+            # 抽屉分隔线
+            pygame.draw.line(surface, (140, 140, 150), (x + 3, dy + 2), (x + 12, dy + 2))
+            # 拉手
+            surface.set_at((x + 7, dy), (200, 200, 210))
+            surface.set_at((x + 8, dy), (200, 200, 210))
+            # 标签槽
+            pygame.draw.rect(surface, (220, 220, 230), (x + 5, dy + 1, 3, 1))
+        # 底座
+        pygame.draw.rect(surface, (140, 140, 150), (x + 2, 14, 12, 1))
+        # 阴影
+        shadow = pygame.Surface((12, 1), pygame.SRCALPHA)
+        shadow.fill((100, 100, 110, 80))
+        surface.blit(shadow, (x + 2, 15))
+    elif gid == GID_STONE_PEDESTAL:
+        # 密室石台 - 透明背景
+        surface.fill((0, 0, 0, 0), rect)
+        # 台面
+        pygame.draw.rect(surface, (140, 138, 135), (x + 2, 2, 12, 3))
+        # 高光
+        pygame.draw.line(surface, (165, 163, 160), (x + 2, 2), (x + 13, 2))
+        # 暗面
+        pygame.draw.line(surface, (120, 118, 115), (x + 2, 4), (x + 13, 4))
+        # 台柱
+        pygame.draw.rect(surface, (130, 128, 125), (x + 5, 5, 6, 7))
+        # 纹理线
+        pygame.draw.line(surface, (120, 118, 115), (x + 7, 5), (x + 7, 11))
+        pygame.draw.line(surface, (120, 118, 115), (x + 9, 5), (x + 9, 11))
+        # 台座
+        pygame.draw.rect(surface, (140, 138, 135), (x + 3, 12, 10, 2))
+        # 暗面
+        pygame.draw.line(surface, (110, 108, 105), (x + 3, 13), (x + 12, 13))
+        # 台面物品（古书）
+        pygame.draw.rect(surface, (120, 90, 50), (x + 5, 1, 6, 2))
+        # 卷轴
+        pygame.draw.rect(surface, (200, 180, 140), (x + 11, 1, 3, 1))
+        # 绿色微光
+        glow = pygame.Surface((4, 4), pygame.SRCALPHA)
+        glow.fill((50, 180, 80, 40))
+        surface.blit(glow, (x + 6, 0))
+        surface.blit(glow, (x + 10, 2))
+        # 阴影
+        shadow = pygame.Surface((10, 1), pygame.SRCALPHA)
+        shadow.fill((70, 65, 60, 80))
+        surface.blit(shadow, (x + 3, 14))
+    elif gid == GID_STONE_PILLAR_TOP:
+        # 密室石柱上部 - 透明背景
+        surface.fill((0, 0, 0, 0), rect)
+        # 柱头装饰
+        pygame.draw.rect(surface, (130, 128, 125), (x + 3, 0, 10, 3))
+        # 柱头高光
+        pygame.draw.line(surface, (155, 153, 150), (x + 3, 0), (x + 12, 0))
+        # 柱头下沿暗线
+        pygame.draw.line(surface, (110, 108, 105), (x + 3, 2), (x + 12, 2))
+        # 柱身
+        pygame.draw.rect(surface, (120, 118, 115), (x + 5, 3, 6, 13))
+        # 纹理竖线
+        pygame.draw.line(surface, (110, 108, 105), (x + 7, 3), (x + 7, 15))
+        pygame.draw.line(surface, (110, 108, 105), (x + 9, 3), (x + 9, 15))
+        # 高光竖线
+        pygame.draw.line(surface, (135, 133, 130), (x + 5, 3), (x + 5, 15))
+        # 裂缝
+        pygame.draw.line(surface, (100, 95, 90), (x + 8, 5), (x + 9, 8))
+        pygame.draw.line(surface, (100, 95, 90), (x + 6, 10), (x + 7, 13))
+    elif gid == GID_STONE_PILLAR_BOT:
+        # 密室石柱下部 - 透明背景
+        surface.fill((0, 0, 0, 0), rect)
+        # 柱身延续
+        pygame.draw.rect(surface, (120, 118, 115), (x + 5, 0, 6, 10))
+        # 纹理竖线
+        pygame.draw.line(surface, (110, 108, 105), (x + 7, 0), (x + 7, 9))
+        pygame.draw.line(surface, (110, 108, 105), (x + 9, 0), (x + 9, 9))
+        # 高光竖线
+        pygame.draw.line(surface, (135, 133, 130), (x + 5, 0), (x + 5, 9))
+        # 柱基
+        pygame.draw.rect(surface, (130, 128, 125), (x + 3, 10, 10, 4))
+        # 柱基高光
+        pygame.draw.line(surface, (155, 153, 150), (x + 3, 10), (x + 12, 10))
+        # 柱基暗面
+        pygame.draw.line(surface, (100, 98, 95), (x + 3, 13), (x + 12, 13))
+        # 阴影
+        shadow = pygame.Surface((10, 1), pygame.SRCALPHA)
+        shadow.fill((70, 65, 60, 80))
+        surface.blit(shadow, (x + 3, 14))
+    elif gid == GID_SPORTS_POSTER:
+        # 体育馆运动海报 - 透明背景
+        surface.fill((0, 0, 0, 0), rect)
+        # 海报纸
+        pygame.draw.rect(surface, (240, 240, 245), (x + 2, 1, 12, 14))
+        # 边框
+        pygame.draw.rect(surface, (200, 200, 210), (x + 2, 1, 12, 14), 1)
+        # 蓝色标题条
+        pygame.draw.rect(surface, (40, 80, 160), (x + 3, 2, 10, 3))
+        # 人物剪影（跑步人形）
+        for dx, dy in [(6, 6), (7, 5), (7, 7), (8, 6), (8, 8), (9, 7)]:
+            surface.set_at((x + dx, dy), (60, 60, 70))
+        # 文字横线
+        pygame.draw.line(surface, (100, 100, 120), (x + 4, 10), (x + 10, 10))
+        pygame.draw.line(surface, (100, 100, 120), (x + 4, 12), (x + 10, 12))
+        pygame.draw.line(surface, (100, 100, 120), (x + 4, 13), (x + 8, 13))
+        # 图钉
+        surface.set_at((x + 4, 1), (200, 50, 50))
+        surface.set_at((x + 11, 1), (50, 50, 200))
+    elif gid == GID_FIRST_AID:
+        # 体育馆急救箱 - 透明背景
+        surface.fill((0, 0, 0, 0), rect)
+        # 箱体
+        pygame.draw.rect(surface, (220, 220, 230), (x + 2, 2, 12, 11))
+        # 边框
+        pygame.draw.rect(surface, (180, 180, 190), (x + 2, 2, 12, 11), 1)
+        # 红十字标志
+        pygame.draw.rect(surface, (220, 50, 50), (x + 5, 5, 6, 2))
+        pygame.draw.rect(surface, (220, 50, 50), (x + 7, 4, 2, 4))
+        # 把手
+        pygame.draw.rect(surface, (160, 160, 170), (x + 6, 1, 4, 1))
+        # 箱门分隔线
+        pygame.draw.line(surface, (180, 180, 190), (x + 2, 8), (x + 13, 8))
+        # 下层
+        pygame.draw.rect(surface, (210, 210, 220), (x + 3, 9, 10, 3))
+        # 阴影
+        shadow = pygame.Surface((12, 1), pygame.SRCALPHA)
+        shadow.fill((140, 140, 150, 80))
+        surface.blit(shadow, (x + 2, 13))
 
 
 def _fill_layer(layer, w, h, gid):
@@ -1365,6 +1842,13 @@ def design_library_f1():
     _add_spawn(trigger_objects, "library_entrance", 11, H - 4)
     _add_spawn(trigger_objects, "library_f1_stairs", 20, 2)
 
+    # 新增：中央区域还书台
+    structures[10][10] = GID_RETURN_DESK
+    collision[10][10] = GID_COLLISION
+    # 新增：右下角报刊架
+    structures[10][21] = GID_NEWSPAPER_RACK
+    collision[10][21] = GID_COLLISION
+
     return W, H, ground, structures, decorations, collision, interactive_objects, trigger_objects
 
 
@@ -1488,6 +1972,10 @@ def design_library_f2():
         })
 
     _add_spawn(trigger_objects, "library_f2_stairs", 3, 2)
+
+    # 新增：左下角报刊架
+    structures[10][2] = GID_NEWSPAPER_RACK
+    collision[10][2] = GID_COLLISION
 
     return W, H, ground, structures, decorations, collision, interactive_objects, trigger_objects
 
@@ -1619,8 +2107,8 @@ def design_gym():
     decorations[5][4] = GID_GYM_MAT_M
     decorations[5][5] = GID_GYM_MAT_R
 
-    # 冰箱（底部区域）
-    structures[16][5] = GID_FRIDGE
+    # 急救箱（底部区域，原冰箱位置）
+    structures[16][5] = GID_FIRST_AID
     collision[16][5] = GID_COLLISION
 
     # 器材柜（底部中央偏左，2格宽）
@@ -1671,6 +2159,13 @@ def design_gym():
     _add_exit_trigger(trigger_objects, 14, H - 2, 2, 1,
                       "main_campus", "gym_exit")
     _add_spawn(trigger_objects, "gym_entrance", 14, H - 4)
+
+    # 新增：左墙运动海报
+    structures[6][1] = GID_SPORTS_POSTER
+    collision[6][1] = GID_COLLISION
+    # 新增：右墙运动海报
+    structures[6][28] = GID_SPORTS_POSTER
+    collision[6][28] = GID_COLLISION
 
     return W, H, ground, structures, decorations, collision, interactive_objects, trigger_objects
 
@@ -1762,6 +2257,13 @@ def design_dining_hall_f1():
     _add_spawn(trigger_objects, "dining_entrance", 10, H - 4)
     _add_spawn(trigger_objects, "dining_f1_stairs", 3, 2)
 
+    # 新增：取餐窗口旁的菜单牌
+    structures[1][5] = GID_MENU_BOARD
+    collision[1][5] = GID_COLLISION
+    # 新增：冰箱旁的饮料机
+    structures[5][16] = GID_DRINK_MACHINE
+    collision[5][16] = GID_COLLISION
+
     return W, H, ground, structures, decorations, collision, interactive_objects, trigger_objects
 
 
@@ -1848,6 +2350,13 @@ def design_dining_hall_f2():
         })
 
     _add_spawn(trigger_objects, "dining_f2_stairs", 3, 2)
+
+    # 新增：楼梯旁菜单牌
+    structures[1][5] = GID_MENU_BOARD
+    collision[1][5] = GID_COLLISION
+    # 新增：后厨区旁饮料机
+    structures[6][16] = GID_DRINK_MACHINE
+    collision[6][16] = GID_COLLISION
 
     return W, H, ground, structures, decorations, collision, interactive_objects, trigger_objects
 
