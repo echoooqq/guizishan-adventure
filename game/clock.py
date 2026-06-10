@@ -219,4 +219,11 @@ NPC_SCHEDULES = {
     "senior_student": [PERIOD_DAY, PERIOD_DUSK, PERIOD_NIGHT],
     "passing_student": [PERIOD_DAY, PERIOD_DUSK, PERIOD_NIGHT],
     "guardian": [PERIOD_DAY, PERIOD_DUSK, PERIOD_NIGHT],
+    # 新增引导NPC
+    "morning_student": [PERIOD_DAY, PERIOD_DUSK],
+    "returning_student": [PERIOD_DAY],
+    "sketch_student": [PERIOD_DAY, PERIOD_DUSK],
+    "sport_student": [PERIOD_DAY, PERIOD_DUSK],
+    "waiting_student": [PERIOD_DAY, PERIOD_DUSK, PERIOD_NIGHT],
+    "shuttle_student": [PERIOD_DAY, PERIOD_DUSK],
 }

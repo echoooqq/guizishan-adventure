@@ -1,0 +1,19 @@
+{
+  "default": [
+    {"speaker": "等车同学", "text": "嗨。"},
+    {"type": "choice", "options": [
+      {"text": "南湖校区那边有什么？", "next": "guide_nanhu"},
+      {"text": "校车多久一班？", "next": "guide_bus"},
+      {"text": "好的", "next": "goodbye"}
+    ]}
+  ],
+  "guide_nanhu": [
+    {"speaker": "等车同学", "text": "南湖那边有综合楼，挺气派的，值得去看看。"}
+  ],
+  "guide_bus": [
+    {"speaker": "等车同学", "text": "挺方便的，随时都能坐。"}
+  ],
+  "goodbye": [
+    {"speaker": "等车同学", "text": "嗯，有空去南湖看看！"}
+  ]
+}

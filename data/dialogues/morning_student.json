@@ -1,0 +1,24 @@
+{
+  "default": [
+    {"speaker": "晨读学姐", "text": "嗯？你好呀。"},
+    {"type": "choice", "options": [
+      {"text": "你好，我刚来学校，还不太熟悉……", "next": "guide_library"},
+      {"text": "校园里有什么有趣的地方吗？", "next": "guide_boya"},
+      {"text": "我先走了", "next": "goodbye"}
+    ]}
+  ],
+  "guide_library": [
+    {"speaker": "晨读学姐", "text": "新同学呀！图书馆就在西边不远，最近在办读书答题活动，"},
+    {"speaker": "晨读学姐", "text": "你从这条路往西走，看到一栋庄重的大楼就是了。"}
+  ],
+  "guide_boya": [
+    {"speaker": "晨读学姐", "text": "博雅广场的雕塑挺有名的，据说晚上地砖还会发光呢……"},
+    {"speaker": "晨读学姐", "text": "不过我一般晚上不来这边。广场在校园东北方向。"}
+  ],
+  "goodbye": [
+    {"speaker": "晨读学姐", "text": "好的，有空来图书馆坐坐！"}
+  ],
+  "after_library_solved": [
+    {"speaker": "晨读学姐", "text": "听说图书馆的答题已经有人全部答对了，真厉害！"}
+  ]
+}

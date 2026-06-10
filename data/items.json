@@ -65,7 +65,7 @@
   "lab_key": {
     "name": "实验室钥匙",
     "category": "tool",
-    "description": "一把普通的钥匙，上面标着'实验室'。",
+    "description": "一把标着'实验室'的钥匙，似乎能打开综合楼2楼的某扇门。",
     "droppable": true,
     "combinable_with": [],
     "combine_result": "",
@@ -110,7 +110,7 @@
   "boya_stone": {
     "name": "博雅石",
     "category": "material",
-    "description": "花坛角落发现的温润石头，上面隐约刻着桂花纹路，似乎蕴含着博雅广场的灵气。",
+    "description": "花坛角落发现的温润石头，上面刻着与雕塑底座同源的桂花纹路，似乎是封印阵法的外围基石碎片。",
     "droppable": true,
     "combinable_with": [],
     "combine_result": "",
@@ -138,7 +138,7 @@
   "osmanthus_branch": {
     "name": "桂花枝",
     "category": "material",
-    "description": "一枝散发着淡淡清香的桂花枝，花瓣金黄细密。",
+    "description": "一枝从桂花树上落下的枝条，散发着淡淡的清香。桂花是桂子山灵力的天然媒介。",
     "droppable": true,
     "combinable_with": ["old_bookmark"],
     "combine_result": "osmanthus_bookmark",
@@ -147,7 +147,7 @@
   "old_bookmark": {
     "name": "古旧书签",
     "category": "material",
-    "description": "一枚古旧的竹制书签，表面光滑，似乎可以夹入桂花枝。",
+    "description": "一枚古旧的竹制书签，表面刻着模糊的桂花纹路，似乎可以夹入桂花枝。",
     "droppable": true,
     "combinable_with": ["osmanthus_branch"],
     "combine_result": "osmanthus_bookmark",
@@ -156,7 +156,7 @@
   "old_badge": {
     "name": "旧校徽",
     "category": "material",
-    "description": "一枚旧版校徽，表面有些磨损，也许用放大镜能看到隐藏的信息。",
+    "description": "一枚旧版校徽，背面似乎有微雕痕迹，也许用放大镜能看到隐藏的信息。",
     "droppable": true,
     "combinable_with": ["magnifying_glass"],
     "combine_result": "badge_pattern",
@@ -165,7 +165,7 @@
   "magnifying_glass": {
     "name": "放大镜",
     "category": "tool",
-    "description": "一把普通的放大镜，也许能发现肉眼看不到的细节。",
+    "description": "一把放大镜，也许能发现肉眼看不到的细节，比如旧校徽上的微雕。",
     "droppable": true,
     "combinable_with": ["old_badge"],
     "combine_result": "badge_pattern",
@@ -174,7 +174,7 @@
   "osmanthus_bookmark": {
     "name": "桂花书签",
     "category": "key_item",
-    "description": "将桂花枝嵌入古旧书签制成的精美书签，散发着持久不散的桂花清香。",
+    "description": "将桂花枝嵌入古旧书签制成的精美书签，保留着最原始的封印纹路设计手稿，散发着持久不散的桂花灵力。",
     "droppable": false,
     "combinable_with": [],
     "combine_result": "",
@@ -183,7 +183,7 @@
   "badge_pattern": {
     "name": "校徽暗纹",
     "category": "key_item",
-    "description": "用放大镜观察旧校徽发现的隐藏暗纹，似乎是某种古老的符文图案。",
+    "description": "用放大镜观察旧校徽发现的隐藏暗纹，是封印阵法的排列线索，与喷泉基座的凹槽相对应。",
     "droppable": false,
     "combinable_with": [],
     "combine_result": "",

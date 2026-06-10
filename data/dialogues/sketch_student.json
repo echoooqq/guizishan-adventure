@@ -1,0 +1,24 @@
+{
+  "default": [
+    {"speaker": "写生同学", "text": "嗯？你好。"},
+    {"type": "choice", "options": [
+      {"text": "你在画什么？", "next": "guide_gym"},
+      {"text": "这个广场有什么特别的？", "next": "guide_night"},
+      {"text": "再见", "next": "goodbye"}
+    ]}
+  ],
+  "guide_gym": [
+    {"speaker": "写生同学", "text": "在画博雅广场的雕塑。"},
+    {"speaker": "写生同学", "text": "对了，你有没有去过体育馆？那边的建筑也很有特色，体育老师好像在搞什么活动。"}
+  ],
+  "guide_night": [
+    {"speaker": "写生同学", "text": "白天看就是普通广场，但有人说晚上地砖会发光……我胆子小，晚上不敢来。"},
+    {"speaker": "写生同学", "text": "你要是好奇，可以晚上来看看，不过最好先找广场舞阿姨聊聊，她晚上经常在这边跳舞。"}
+  ],
+  "goodbye": [
+    {"speaker": "写生同学", "text": "嗯，再见！"}
+  ],
+  "after_boya_solved": [
+    {"speaker": "写生同学", "text": "广场的地砖好像不发光了……是不是有人解开了什么？"}
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "default": [
+    {"speaker": "等餐同学", "text": "嗯？你好。"},
+    {"type": "choice", "options": [
+      {"text": "食堂怎么样？", "next": "guide_card"},
+      {"text": "校园还有什么地方值得逛逛？", "next": "guide_nanhu"},
+      {"text": "谢了", "next": "goodbye"}
+    ]}
+  ],
+  "guide_card": [
+    {"speaker": "等餐同学", "text": "还不错！不过食堂阿姨最近好像在找丢失的饭卡，看起来挺着急的。"}
+  ],
+  "guide_nanhu": [
+    {"speaker": "等餐同学", "text": "南湖校区那边风景不错，你可以去校车接驳站坐车过去看看。"},
+    {"speaker": "等餐同学", "text": "接驳站在校园南边。"}
+  ],
+  "goodbye": [
+    {"speaker": "等餐同学", "text": "不客气！"}
+  ]
+}

@@ -27,6 +27,13 @@ NPC_SPRITE_MAP = {
     "cafeteria_auntie": "cafeteria_auntie_sheet.png",
     "guardian": "guardian_sheet.png",
     "passing_student": "passing_student_sheet.png",
+    # 新增引导NPC
+    "morning_student": "morning_student_sheet.png",
+    "returning_student": "returning_student_sheet.png",
+    "sketch_student": "sketch_student_sheet.png",
+    "sport_student": "sport_student_sheet.png",
+    "waiting_student": "waiting_student_sheet.png",
+    "shuttle_student": "shuttle_student_sheet.png",
 }
 
 # 精灵表缓存

@@ -1,0 +1,21 @@
+{
+  "default": [
+    {"speaker": "运动同学", "text": "嘿！"},
+    {"type": "choice", "options": [
+      {"text": "体育馆里有什么活动？", "next": "guide_challenge"},
+      {"text": "肚子饿了，附近有吃饭的地方吗？", "next": "guide_dining"},
+      {"text": "加油", "next": "goodbye"}
+    ]}
+  ],
+  "guide_challenge": [
+    {"speaker": "运动同学", "text": "体育老师在搞投篮挑战，挺有意思的！我试了好几次都没过……"},
+    {"speaker": "运动同学", "text": "你去试试吧。"}
+  ],
+  "guide_dining": [
+    {"speaker": "运动同学", "text": "学子食堂！食堂阿姨人超好，不过最近她好像在找什么东西……"},
+    {"speaker": "运动同学", "text": "食堂在校园东边，那栋两层楼的就是。"}
+  ],
+  "goodbye": [
+    {"speaker": "运动同学", "text": "谢谢！"}
+  ]
+}

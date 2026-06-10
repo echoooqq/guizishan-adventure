@@ -1,0 +1,24 @@
+{
+  "default": [
+    {"speaker": "还书同学", "text": "哦，你好。"},
+    {"type": "choice", "options": [
+      {"text": "你也刚来图书馆？", "next": "guide_quiz"},
+      {"text": "附近还有什么好逛的？", "next": "guide_nearby"},
+      {"text": "谢谢", "next": "goodbye"}
+    ]}
+  ],
+  "guide_quiz": [
+    {"speaker": "还书同学", "text": "嗯，来还书。管理员最近在搞读书答题挑战，答对三题就能借一本特别的书！"},
+    {"speaker": "还书同学", "text": "我上次差一题没过……你试试看吧。"}
+  ],
+  "guide_nearby": [
+    {"speaker": "还书同学", "text": "博雅广场的雕塑挺壮观的，可以去看看。"},
+    {"speaker": "还书同学", "text": "对了，体育馆那边体育老师好像也有什么特别活动，在校园西边。"}
+  ],
+  "goodbye": [
+    {"speaker": "还书同学", "text": "不客气！"}
+  ],
+  "after_library_solved": [
+    {"speaker": "还书同学", "text": "答题挑战好像已经结束了，不过图书馆还是值得逛逛的。"}
+  ]
+}

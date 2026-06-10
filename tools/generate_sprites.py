@@ -55,6 +55,31 @@ COLOR_PASSING_STUDENT_BODY = (120, 100, 160)
 COLOR_PASSING_STUDENT_BODY_DARK = (90, 75, 130)
 COLOR_PASSING_STUDENT_HAIR = (50, 30, 20)
 
+# 新增引导NPC颜色
+COLOR_MORNING_STUDENT_BODY = (160, 120, 180)
+COLOR_MORNING_STUDENT_BODY_DARK = (130, 90, 150)
+COLOR_MORNING_STUDENT_HAIR = (40, 30, 20)
+
+COLOR_RETURNING_STUDENT_BODY = (120, 140, 160)
+COLOR_RETURNING_STUDENT_BODY_DARK = (90, 110, 130)
+COLOR_RETURNING_STUDENT_HAIR = (50, 30, 20)
+
+COLOR_SKETCH_STUDENT_BODY = (140, 160, 120)
+COLOR_SKETCH_STUDENT_BODY_DARK = (110, 130, 90)
+COLOR_SKETCH_STUDENT_HAIR = (60, 40, 20)
+
+COLOR_SPORT_STUDENT_BODY = (100, 160, 100)
+COLOR_SPORT_STUDENT_BODY_DARK = (70, 130, 70)
+COLOR_SPORT_STUDENT_HAIR = (40, 30, 20)
+
+COLOR_WAITING_STUDENT_BODY = (160, 140, 120)
+COLOR_WAITING_STUDENT_BODY_DARK = (130, 110, 90)
+COLOR_WAITING_STUDENT_HAIR = (50, 30, 20)
+
+COLOR_SHUTTLE_STUDENT_BODY = (120, 120, 160)
+COLOR_SHUTTLE_STUDENT_BODY_DARK = (90, 90, 130)
+COLOR_SHUTTLE_STUDENT_HAIR = (40, 30, 20)
+
 # 通用
 COLOR_SKIN = (240, 210, 180)
 COLOR_SKIN_SHADE = (220, 190, 160)
@@ -290,6 +315,18 @@ def draw_npc_base(surf, ox, oy, body_color, body_dark, hair_color, has_glasses=F
             draw_rect_filled(surf, cx - 4, oy + 1, 8, 2, hair_color)
             draw_pixel(surf, cx - 5, oy + 2, hair_color)
             draw_pixel(surf, cx + 4, oy + 2, hair_color)
+        elif hair_style == "long":
+            # 基础短发
+            draw_rect_filled(surf, cx - 4, oy + 1, 8, 3, hair_color)
+            draw_pixel(surf, cx - 5, oy + 2, hair_color)
+            draw_pixel(surf, cx + 4, oy + 2, hair_color)
+            draw_vline(surf, cx - 5, oy + 3, oy + 5, hair_color)
+            draw_vline(surf, cx + 4, oy + 3, oy + 5, hair_color)
+            # 两侧长发垂下
+            draw_vline(surf, cx - 5, oy + 6, oy + 11, hair_color)
+            draw_vline(surf, cx + 4, oy + 6, oy + 11, hair_color)
+            draw_pixel(surf, cx - 4, oy + 8, hair_color)
+            draw_pixel(surf, cx + 3, oy + 8, hair_color)
 
         # 发网
         if has_hairnet and hairnet_color:
@@ -1617,6 +1654,19 @@ if __name__ == "__main__":
          (0, 0, 0), {"has_hood": True, "hood_color": COLOR_GUARDIAN_CLOAK, "eye_glow": True}),
         ("passing_student_sheet.png", COLOR_PASSING_STUDENT_BODY, COLOR_PASSING_STUDENT_BODY_DARK,
          COLOR_PASSING_STUDENT_HAIR, {"hair_style": "short"}),
+        # 新增引导NPC
+        ("morning_student_sheet.png", COLOR_MORNING_STUDENT_BODY, COLOR_MORNING_STUDENT_BODY_DARK,
+         COLOR_MORNING_STUDENT_HAIR, {"hair_style": "long"}),
+        ("returning_student_sheet.png", COLOR_RETURNING_STUDENT_BODY, COLOR_RETURNING_STUDENT_BODY_DARK,
+         COLOR_RETURNING_STUDENT_HAIR, {"hair_style": "short"}),
+        ("sketch_student_sheet.png", COLOR_SKETCH_STUDENT_BODY, COLOR_SKETCH_STUDENT_BODY_DARK,
+         COLOR_SKETCH_STUDENT_HAIR, {"hair_style": "short"}),
+        ("sport_student_sheet.png", COLOR_SPORT_STUDENT_BODY, COLOR_SPORT_STUDENT_BODY_DARK,
+         COLOR_SPORT_STUDENT_HAIR, {"hair_style": "very_short"}),
+        ("waiting_student_sheet.png", COLOR_WAITING_STUDENT_BODY, COLOR_WAITING_STUDENT_BODY_DARK,
+         COLOR_WAITING_STUDENT_HAIR, {"hair_style": "short"}),
+        ("shuttle_student_sheet.png", COLOR_SHUTTLE_STUDENT_BODY, COLOR_SHUTTLE_STUDENT_BODY_DARK,
+         COLOR_SHUTTLE_STUDENT_HAIR, {"hair_style": "short"}),
     ]
 
     for filename, body, body_dark, hair, kwargs in npc_configs:

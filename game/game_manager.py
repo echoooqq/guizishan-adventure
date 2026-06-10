@@ -126,6 +126,8 @@ class GameManager:
         self._outro_fade_alpha = 0
         self._outro_ending_type = "normal"  # normal/good/true
         self._outro_text_shown = False
+        # 结局彩蛋状态
+        self._outro_egg_items = []  # 持有的彩蛋道具列表
 
         self._create_title_ui()
 
@@ -334,75 +336,103 @@ class GameManager:
         }
         self.interactive_objects.append(test_obj)
 
-        pickup_obj1 = InteractiveObject(
-            x=spawn_x - 32, y=spawn_y - 32,
-            width=12, height=12,
-            interactive_type="pickup",
-            properties={
-                "prompt_text": "拾取桂花枝",
-                "color": (180, 160, 60),
-                "sprite_key": "osmanthus_branch",
-                "item_id": "osmanthus_branch",
-                "pickup_text": "拾取了桂花枝！散发着淡淡的桂花清香。",
-            },
-        )
-        self.interactive_objects.append(pickup_obj1)
+        if not self._dialog_flags.get("picked_up_water_bottle", False):
+            pickup_obj3 = InteractiveObject(
+                x=spawn_x + 16, y=spawn_y - 24,
+                width=12, height=12,
+                interactive_type="pickup",
+                properties={
+                    "prompt_text": "拾取水壶",
+                    "color": (100, 160, 220),
+                    "sprite_key": "water_bottle",
+                    "item_id": "water_bottle",
+                    "pickup_text": "拾取了水壶！可以恢复体力。",
+                },
+            )
+            self.interactive_objects.append(pickup_obj3)
 
-        pickup_obj2 = InteractiveObject(
-            x=spawn_x - 56, y=spawn_y - 32,
-            width=12, height=12,
-            interactive_type="pickup",
+        # 还书同学 - 图书馆入口旁（main_campus地图坐标约 304, 256）
+        returning_student = NPC(
+            x=304 + 32, y=256 + 48,
+            npc_id="returning_student",
+            dialogue_id="returning_student",
             properties={
-                "prompt_text": "拾取古旧书签",
-                "color": (140, 100, 60),
-                "sprite_key": "old_bookmark",
-                "item_id": "old_bookmark",
-                "pickup_text": "拾取了古旧书签！一枚精致的竹制书签。",
+                "direction": "left",
+                "body_color": (120, 140, 160),
+                "hair_color": (50, 30, 20),
             },
         )
-        self.interactive_objects.append(pickup_obj2)
 
-        pickup_obj3 = InteractiveObject(
-            x=spawn_x + 32, y=spawn_y - 32,
-            width=12, height=12,
-            interactive_type="pickup",
-            properties={
-                "prompt_text": "拾取水壶",
-                "color": (100, 160, 220),
-                "sprite_key": "water_bottle",
-                "item_id": "water_bottle",
-                "pickup_text": "拾取了水壶！可以恢复体力。",
-            },
-        )
-        self.interactive_objects.append(pickup_obj3)
+        def on_returning_student_interact(npc_self):
+            if self.puzzle_manager.get_state("library") == PuzzleState.SOLVED:
+                dialogue_data = self._load_dialogue("returning_student")
+                if dialogue_data and "after_library_solved" in dialogue_data:
+                    return {
+                        "type": "dialog",
+                        "dialogue_data": dialogue_data,
+                        "start_key": "after_library_solved",
+                    }
+            return {"type": "dialog", "dialogue_id": "returning_student", "dialogue_data": None}
 
-        pickup_obj4 = InteractiveObject(
-            x=spawn_x + 56, y=spawn_y - 32,
-            width=12, height=12,
-            interactive_type="pickup",
-            properties={
-                "prompt_text": "拾取旧校徽",
-                "color": (180, 180, 60),
-                "sprite_key": "old_badge",
-                "item_id": "old_badge",
-                "pickup_text": "拾取了旧校徽！表面似乎有隐藏的纹路。",
-            },
-        )
-        self.interactive_objects.append(pickup_obj4)
+        returning_student.on_interact = on_returning_student_interact
+        self.npcs.append(returning_student)
 
-        pickup_obj5 = InteractiveObject(
-            x=spawn_x + 80, y=spawn_y - 32,
-            width=12, height=12,
-            interactive_type="pickup",
+        # 运动同学 - 体育馆入口旁（main_campus地图坐标约 288, 960）
+        sport_student = NPC(
+            x=288 + 32, y=960 + 48,
+            npc_id="sport_student",
+            dialogue_id="sport_student",
             properties={
-                "prompt_text": "拾取放大镜",
-                "color": (160, 200, 220),
-                "sprite_key": "magnifying_glass",
-                "item_id": "magnifying_glass",
-                "pickup_text": "拾取了放大镜！也许能发现隐藏的细节。",
+                "direction": "left",
+                "body_color": (100, 160, 100),
+                "hair_color": (40, 30, 20),
             },
         )
-        self.interactive_objects.append(pickup_obj5)
+
+        sport_student.on_interact = lambda npc_self: {
+            "type": "dialog",
+            "dialogue_id": "sport_student",
+            "dialogue_data": None,
+        }
+        self.npcs.append(sport_student)
+
+        # 等餐同学 - 食堂入口旁（main_campus地图坐标约 1504, 928）
+        waiting_student = NPC(
+            x=1504 + 32, y=928 + 48,
+            npc_id="waiting_student",
+            dialogue_id="waiting_student",
+            properties={
+                "direction": "left",
+                "body_color": (160, 140, 120),
+                "hair_color": (50, 30, 20),
+            },
+        )
+
+        waiting_student.on_interact = lambda npc_self: {
+            "type": "dialog",
+            "dialogue_id": "waiting_student",
+            "dialogue_data": None,
+        }
+        self.npcs.append(waiting_student)
+
+        # 等车同学 - 校车接驳站旁（main_campus地图坐标约 896, 1088）
+        shuttle_student = NPC(
+            x=896 + 32, y=1088 + 16,
+            npc_id="shuttle_student",
+            dialogue_id="shuttle_student",
+            properties={
+                "direction": "left",
+                "body_color": (120, 120, 160),
+                "hair_color": (40, 30, 20),
+            },
+        )
+
+        shuttle_student.on_interact = lambda npc_self: {
+            "type": "dialog",
+            "dialogue_id": "shuttle_student",
+            "dialogue_data": None,
+        }
+        self.npcs.append(shuttle_student)
 
         self._setup_guizhong_entities()
         self._setup_boya_entities()
@@ -512,6 +542,66 @@ class GameManager:
             self._create_guizhong_badge_pickup()
             return
 
+        # 晨读学姐 - 桂中路中段路西侧
+        from entities.npc import NPC
+        if tree_positions:
+            morning_x = tree_positions[2][0] - 32
+            morning_y = tree_positions[2][1] + 48
+        else:
+            morning_x = 60 * TILE_SIZE - 48
+            morning_y = 38 * TILE_SIZE + 16
+
+        morning_student = NPC(
+            x=morning_x, y=morning_y,
+            npc_id="morning_student",
+            dialogue_id="morning_student",
+            properties={
+                "direction": "right",
+                "body_color": (160, 120, 180),
+                "hair_color": (40, 30, 20),
+            },
+        )
+
+        gm_ref = self
+
+        def on_morning_student_interact(npc_self):
+            if gm_ref.puzzle_manager.get_state("library") == PuzzleState.SOLVED:
+                dialogue_data = gm_ref._load_dialogue("morning_student")
+                if dialogue_data and "after_library_solved" in dialogue_data:
+                    return {
+                        "type": "dialog",
+                        "dialogue_data": dialogue_data,
+                        "start_key": "after_library_solved",
+                    }
+            return {"type": "dialog", "dialogue_id": "morning_student", "dialogue_data": None}
+
+        morning_student.on_interact = on_morning_student_interact
+        self.npcs.append(morning_student)
+
+        # 桂花枝拾取物 - 放在第1棵桂花树旁
+        if tree_positions:
+            branch_x = tree_positions[0][0] - 16  # 树的左侧
+            branch_y = tree_positions[0][1] + 8   # 树的下方偏移
+        else:
+            # 降级：桂中路中心
+            branch_x = 60 * TILE_SIZE - 48
+            branch_y = 38 * TILE_SIZE
+
+        if not self._dialog_flags.get("picked_up_osmanthus_branch", False):
+            branch_obj = InteractiveObject(
+                x=branch_x, y=branch_y,
+                width=12, height=12,
+                interactive_type="pickup",
+                properties={
+                    "prompt_text": "拾取桂花枝",
+                    "color": (180, 160, 60),
+                    "sprite_key": "osmanthus_branch",
+                    "item_id": "osmanthus_branch",
+                    "pickup_text": "拾取了桂花枝！散发着淡淡的桂花清香。",
+                },
+            )
+            self.interactive_objects.append(branch_obj)
+
     def _create_guizhong_badge_pickup(self):
         from entities.interactive_object import InteractiveObject
 
@@ -615,6 +705,22 @@ class GameManager:
             bulletin.on_interact = on_bulletin_interact
             self.interactive_objects.append(bulletin)
 
+        # 旧校徽拾取物 - 放在公告栏旁的角落
+        if not self._dialog_flags.get("picked_up_old_badge", False):
+            badge_old_obj = InteractiveObject(
+                x=spawn_x - 48 + 32, y=spawn_y - 16 + 16,  # 公告栏右下方
+                width=12, height=12,
+                interactive_type="pickup",
+                properties={
+                    "prompt_text": "拾取旧校徽",
+                    "color": (180, 180, 60),
+                    "sprite_key": "old_badge",
+                    "item_id": "old_badge",
+                    "pickup_text": "角落里遗落着一枚旧版校徽……拾取了旧校徽！",
+                },
+            )
+            self.interactive_objects.append(badge_old_obj)
+
     def _setup_nanhulou_f2_entities(self):
         from entities.interactive_object import InteractiveObject
 
@@ -623,6 +729,22 @@ class GameManager:
         if self.nanhulou_puzzle.secret_room_open:
             self._add_secret_room_entrance(spawn_x, spawn_y)
             return
+
+        # 实验室钥匙拾取物 - 放在2楼办公桌旁
+        if not self._dialog_flags.get("picked_up_lab_key", False):
+            lab_key_obj = InteractiveObject(
+                x=spawn_x + 48, y=spawn_y - 48,
+                width=12, height=12,
+                interactive_type="pickup",
+                properties={
+                    "prompt_text": "拾取实验室钥匙",
+                    "color": (160, 160, 140),
+                    "sprite_key": "lab_key",
+                    "item_id": "lab_key",
+                    "pickup_text": "办公桌抽屉里有一把钥匙，上面标着'实验室'……拾取了实验室钥匙！",
+                },
+            )
+            self.interactive_objects.append(lab_key_obj)
 
         computer = InteractiveObject(
             x=spawn_x, y=spawn_y - 16,
@@ -666,6 +788,48 @@ class GameManager:
         self.interactive_objects.append(bookshelf)
         self._nanhulou_bookshelf_obj = bookshelf
         self._nanhulou_bookshelf_base_x = bookshelf.x
+
+        # 实验室门 - 需要实验室钥匙才能打开
+        lab_door = InteractiveObject(
+            x=spawn_x - 64, y=spawn_y - 48,
+            width=16, height=24,
+            interactive_type="examine",
+            properties={
+                "prompt_text": "查看实验室门",
+                "color": (120, 100, 80),
+                "sprite_key": "door_entrance",
+            },
+        )
+
+        gm_ref = self
+
+        def on_lab_door_interact(obj):
+            if gm_ref._dialog_flags.get("lab_door_opened", False):
+                return {"type": "dialog", "dialogue_data": {
+                    "default": [
+                        {"speaker": "", "text": "实验桌上放着一本旧实验日志……"},
+                        {"speaker": "", "text": "'第47次实验：桂花徽章的共振频率测试……'"},
+                        {"speaker": "", "text": "'七枚碎片同时激活时，借助桂花灵力布下的封印将完全解除，混沌之力将被彻底净化。'"},
+                        {"speaker": "", "text": "'这股灵力远比想象中更纯净。'"},
+                    ]
+                }}
+            if gm_ref.player.inventory.has_item("lab_key"):
+                gm_ref._dialog_flags["lab_door_opened"] = True
+                return {"type": "dialog", "dialogue_data": {
+                    "default": [
+                        {"speaker": "", "text": "你用实验室钥匙打开了门……"},
+                        {"speaker": "", "text": "实验桌上放着一本旧实验日志，封面已经泛黄。"},
+                        {"speaker": "", "text": "'第47次实验：桂花徽章的共振频率测试……'"},
+                        {"speaker": "", "text": "'七枚碎片同时激活时，借助桂花灵力布下的封印将完全解除，混沌之力将被彻底净化。'"},
+                        {"speaker": "", "text": "'这股灵力远比想象中更纯净。'"},
+                    ]
+                }}
+            return {"type": "dialog", "dialogue_data": {
+                "default": [{"speaker": "", "text": "门锁着，需要钥匙才能打开。"}]
+            }}
+
+        lab_door.on_interact = on_lab_door_interact
+        self.interactive_objects.append(lab_door)
 
     def _add_secret_room_entrance(self, spawn_x, spawn_y):
         from entities.interactive_object import InteractiveObject
@@ -746,6 +910,16 @@ class GameManager:
         puzzle_ref = self.dining_puzzle
 
         def on_auntie_interact(npc_self):
+            # 辣椒酱特殊对话
+            if self.player.inventory.has_item("chili_sauce"):
+                if not self._dialog_flags.get("auntie_chili_shown", False):
+                    self._dialog_flags["auntie_chili_shown"] = True
+                    dialogue_data = self._load_dialogue("cafeteria_auntie")
+                    return {
+                        "type": "dialog",
+                        "dialogue_data": dialogue_data,
+                        "start_key": "chili_sauce_shown",
+                    }
             if puzzle_ref.card_found and not puzzle_ref.card_returned:
                 dialogue_data = self._load_dialogue("cafeteria_auntie")
                 if dialogue_data and "card_returned" in dialogue_data:
@@ -773,6 +947,23 @@ class GameManager:
         self.npcs.append(auntie)
 
         self.puzzle_manager.discover("dining_hall")
+
+        # 辣椒酱拾取物 - 放在食堂1楼餐桌旁
+        from entities.interactive_object import InteractiveObject
+        if not self._dialog_flags.get("picked_up_chili_sauce", False):
+            chili_obj = InteractiveObject(
+                x=spawn_x + 64, y=spawn_y + 16,
+                width=12, height=12,
+                interactive_type="pickup",
+                properties={
+                    "prompt_text": "拾取辣椒酱",
+                    "color": (200, 60, 40),
+                    "sprite_key": "chili_sauce",
+                    "item_id": "chili_sauce",
+                    "pickup_text": "餐桌旁放着一瓶辣椒酱……拾取了辣椒酱！",
+                },
+            )
+            self.interactive_objects.append(chili_obj)
 
     def _setup_dining_hall_f2_entities(self):
         from entities.interactive_object import InteractiveObject
@@ -895,6 +1086,17 @@ class GameManager:
         sculpture_center_y = sculpture.y + sculpture.height / 2
 
         def on_sculpture_interact(obj):
+            # 博雅石特殊交互
+            if gm.player.inventory.has_item("boya_stone"):
+                if not gm._dialog_flags.get("boya_stone_used", False):
+                    gm._dialog_flags["boya_stone_used"] = True
+                    return {"type": "dialog", "dialogue_data": {
+                        "default": [
+                            {"speaker": "", "text": "你将博雅石放在雕塑底座旁……"},
+                            {"speaker": "", "text": "石上的桂花纹路竟然与底座上的纹路完美契合！"},
+                            {"speaker": "", "text": "这块石头上的桂花灵力印记，似乎本就属于这座阵法。"},
+                        ]
+                    }}
             inscription = gm.boya_puzzle.get_inscription_hint()
             if gm.puzzle_manager.get_state("boya") == PuzzleState.SOLVED:
                 return {"type": "dialog", "dialogue_data": {
@@ -998,6 +1200,32 @@ class GameManager:
 
         flowerbed.on_interact = on_flowerbed_interact
         self.interactive_objects.append(flowerbed)
+
+        # 写生同学 - 博雅广场雕塑东南侧
+        sketch_student = NPC(
+            x=sculpture_center_x + 48, y=sculpture_center_y + 48,
+            npc_id="sketch_student",
+            dialogue_id="sketch_student",
+            properties={
+                "direction": "up",
+                "body_color": (140, 160, 120),
+                "hair_color": (60, 40, 20),
+            },
+        )
+
+        def on_sketch_student_interact(npc_self):
+            if self.puzzle_manager.get_state("boya") == PuzzleState.SOLVED:
+                dialogue_data = self._load_dialogue("sketch_student")
+                if dialogue_data and "after_boya_solved" in dialogue_data:
+                    return {
+                        "type": "dialog",
+                        "dialogue_data": dialogue_data,
+                        "start_key": "after_boya_solved",
+                    }
+            return {"type": "dialog", "dialogue_id": "sketch_student", "dialogue_data": None}
+
+        sketch_student.on_interact = on_sketch_student_interact
+        self.npcs.append(sketch_student)
 
     def _create_boya_badge_pickup(self):
         """解谜完成后在雕塑前方生成徽章碎片拾取物，并隐藏雕塑"""
@@ -1115,6 +1343,16 @@ class GameManager:
                         {"speaker": "秘境守护者", "text": "集齐六枚徽章碎片后，再来找我吧。"},
                     ]
                 }}
+            # 校徽暗纹特殊对话
+            if gm.player.inventory.has_item("badge_pattern"):
+                if not gm._dialog_flags.get("guardian_pattern_shown", False):
+                    gm._dialog_flags["guardian_pattern_shown"] = True
+                    dialogue_data = gm._load_dialogue("guardian")
+                    return {
+                        "type": "dialog",
+                        "dialogue_data": dialogue_data,
+                        "start_key": "badge_pattern_shown",
+                    }
             return {"type": "dialog", "dialogue_id": npc_self.dialogue_id, "npc": npc_self}
 
         guardian.on_interact = on_guardian_interact
@@ -1140,12 +1378,24 @@ class GameManager:
         puzzle_ref = self.library_puzzle
 
         def on_librarian_interact(npc_self):
+            # 桂花书签特殊对话
+            if gm.player.inventory.has_item("osmanthus_bookmark"):
+                if not gm._dialog_flags.get("librarian_bookmark_shown", False):
+                    gm._dialog_flags["librarian_bookmark_shown"] = True
+                    dialogue_data = gm._load_dialogue("librarian")
+                    return {
+                        "type": "dialog",
+                        "dialogue_data": dialogue_data,
+                        "start_key": "bookmark_shown",
+                    }
             if gm.puzzle_manager.get_state("library") == PuzzleState.SOLVED:
                 return {"type": "dialog", "dialogue_id": "librarian", "dialogue_data": None}
             if gm.library_puzzle.quiz_passed:
                 return {"type": "dialog", "dialogue_data": {
                     "default": [
-                        {"speaker": "图书管理员", "text": "便签上的编号就是书架位置，1楼电脑查得到。"},
+                        {"speaker": "图书管理员", "text": "便签上写着索书号'K291.5/Z3'。"},
+                        {"speaker": "图书管理员", "text": "K是分类号——1楼终端可以查到分类含义。"},
+                        {"speaker": "图书管理员", "text": "2楼每个区域入口都有分类标识牌，找到对应分类就能找到书架。"},
                     ]
                 }}
             gm._pending_library_quiz = True
@@ -1165,31 +1415,70 @@ class GameManager:
                 def on_terminal_interact(term_obj):
                     return {"type": "dialog", "dialogue_data": {
                         "default": [
-                            {"speaker": "", "text": "屏幕上显示着2楼特藏阅览室索书号分布图——"},
-                            {"speaker": "", "text": "西北角：B 哲学 / K 历史、地理"},
-                            {"speaker": "", "text": "东北角：A 马列 / I 文学"},
-                            {"speaker": "", "text": "西南角：O 数理 / P 天文地球"},
-                            {"speaker": "", "text": "东南角：Q 生物 / TU 建筑"},
+                            {"speaker": "", "text": "屏幕上显示着图书馆分类检索系统——"},
+                            {"speaker": "", "text": "A: 马列主义、毛泽东思想"},
+                            {"speaker": "", "text": "B: 哲学"},
+                            {"speaker": "", "text": "C: 社会科学总论"},
+                            {"speaker": "", "text": "H: 语言、文字"},
+                            {"speaker": "", "text": "I: 文学"},
+                            {"speaker": "", "text": "K: 历史、地理"},
+                            {"speaker": "", "text": "O: 数理科学和化学"},
+                            {"speaker": "", "text": "P: 天文学、地球科学"},
+                            {"speaker": "", "text": "Q: 生物科学"},
+                            {"speaker": "", "text": "TU: 建筑科学"},
                         ]
                     }}
                 obj.on_interact = on_terminal_interact
-            # 1楼书架也使用精灵渲染
-            if obj.properties.get("type") == "bookshelf" and not obj.sprite_key:
-                obj.sprite_key = "bookshelf"
+            # 1楼书架已有tile渲染，不需要精灵覆盖
 
         self.puzzle_manager.discover("library")
 
-    # 图书馆2楼8个书架的索书号配置
+        # 古旧书签拾取物 - 放在图书馆1楼右上角书架旁
+        from entities.interactive_object import InteractiveObject
+        if not self._dialog_flags.get("picked_up_old_bookmark", False):
+            bookmark_obj = InteractiveObject(
+                x=spawn_x + 96, y=spawn_y - 64,
+                width=12, height=12,
+                interactive_type="pickup",
+                properties={
+                    "prompt_text": "拾取古旧书签",
+                    "color": (140, 100, 60),
+                    "sprite_key": "old_bookmark",
+                    "item_id": "old_bookmark",
+                    "pickup_text": "书架缝隙中夹着一枚古旧书签……拾取了古旧书签！",
+                },
+            )
+            self.interactive_objects.append(bookmark_obj)
+
+        # 放大镜拾取物 - 放在图书馆1楼左侧阅览区
+        if not self._dialog_flags.get("picked_up_magnifying_glass", False):
+            magnifier_obj = InteractiveObject(
+                x=spawn_x - 48, y=spawn_y - 32,
+                width=12, height=12,
+                interactive_type="pickup",
+                properties={
+                    "prompt_text": "拾取放大镜",
+                    "color": (160, 200, 220),
+                    "sprite_key": "magnifying_glass",
+                    "item_id": "magnifying_glass",
+                    "pickup_text": "阅览桌上留有一把放大镜……拾取了放大镜！",
+                },
+            )
+            self.interactive_objects.append(magnifier_obj)
+
+    # 图书馆2楼10个书架的索书号配置
     # key: 书架在TMX中的call_number属性值, value: (索书号显示文本, 分类提示, 所在区域)
     LIBRARY_F2_CALL_NUMBERS = {
-        "A123.4/W1": ("A123.4/W1", "哲学类", "东北"),
-        "B821/L3": ("B821/L3", "宗教类", "西北"),
-        "K291.5/Z3": ("K291.5/Z3", "历史地理类", "西北"),
-        "I242/Z7": ("I242/Z7", "文学类", "东北"),
-        "O413/C2": ("O413/C2", "数理科学类", "西南"),
-        "P462/W5": ("P462/W5", "天文地球类", "西南"),
-        "Q949/L1": ("Q949/L1", "生物科学类", "东南"),
-        "TU984/H6": ("TU984/H6", "建筑科学类", "东南"),
+        "A123.4/W1": ("A123.4/W1", "马列类", "上中"),
+        "B821/L3": ("B821/L3", "哲学类", "上左"),
+        "C912/D4": ("C912/D4", "社科类", "上右"),
+        "H119/Z4": ("H119/Z4", "语言类", "上左"),
+        "K291.5/Z3": ("K291.5/Z3", "历史地理类", "上右"),
+        "I242/Z7": ("I242/Z7", "文学类", "上中"),
+        "O413/C2": ("O413/C2", "数理科学类", "下左"),
+        "P462/W5": ("P462/W5", "天文地球类", "下左"),
+        "Q949/L1": ("Q949/L1", "生物科学类", "下右"),
+        "TU984/H6": ("TU984/H6", "建筑科学类", "下右"),
     }
     # 正确书架的索书号
     LIBRARY_CORRECT_CALL_NUMBER = "K291.5/Z3"
@@ -1261,7 +1550,16 @@ class GameManager:
         # 设置2楼装饰物交互
         for obj in self.interactive_objects:
             obj_type = obj.properties.get("type", "")
-            if obj_type == "display_cabinet":
+            if obj_type == "section_sign":
+                section_text = obj.properties.get("section_text", "")
+                def make_sign_callback(sign_text):
+                    def on_sign_interact(sign_obj):
+                        return {"type": "dialog", "dialogue_data": {
+                            "default": [{"speaker": "", "text": f"标识牌上写着：{sign_text}"}]
+                        }}
+                    return on_sign_interact
+                obj.on_interact = make_sign_callback(section_text)
+            elif obj_type == "display_cabinet":
                 def on_cabinet_interact(cab_obj):
                     return {"type": "dialog", "dialogue_data": {
                         "default": [{"speaker": "", "text": "展示柜里陈列着校史文献。"}]
@@ -1475,7 +1773,8 @@ class GameManager:
                     {"default": [
                         {"speaker": "", "text": "全部答对！管理员递给你一本古旧典籍和一张索书号便签。"},
                         {"speaker": "", "text": "便签上写着：'K291.5/Z3'。"},
-                        {"speaker": "", "text": "这本书在2楼特藏区，1楼电脑上可以查位置。"},
+                        {"speaker": "", "text": "K是分类号，1楼终端可以查分类含义。"},
+                        {"speaker": "", "text": "2楼每个区域入口都有分类标识牌，找到对应分类就能找到书架。"},
                     ]},
                     start_key="default",
                     on_complete=self._on_dialog_complete,
@@ -1512,6 +1811,14 @@ class GameManager:
         elif puzzle is self.fountain_puzzle:
             if self.fountain_puzzle.solved:
                 self.game_clock.dispel_realm()
+                # 检测彩蛋道具
+                self._outro_egg_items = []
+                if self.player.inventory.has_item("osmanthus_bookmark"):
+                    self._outro_egg_items.append("osmanthus_bookmark")
+                if self.player.inventory.has_item("badge_pattern"):
+                    self._outro_egg_items.append("badge_pattern")
+                if self.player.inventory.has_item("boya_stone"):
+                    self._outro_egg_items.append("boya_stone")
                 # 根据收集情况决定结局类型
                 self._determine_ending_type()
                 self.state = GameState.OUTRO
@@ -1906,6 +2213,8 @@ class GameManager:
                 item_data = get_item_data(item_id)
                 item_name = item_data.get("name", item_id) if item_data else item_id
                 if self.player.inventory.add_item(item_id):
+                    # 标记已拾取，防止切换地图后重复刷新
+                    self._dialog_flags[f"picked_up_{item_id}"] = True
                     # 播放拾取音效
                     sfx_name = "badge_get" if (item_data and item_data.get("category") == "key_item") else "pickup"
                     self.audio_manager.play_sfx(sfx_name)
@@ -3985,6 +4294,39 @@ class GameManager:
                 centerx=INTERNAL_WIDTH // 2, centery=INTERNAL_HEIGHT - 15
             )
             self.internal_surface.blit(hint, hint_rect)
+
+        # 彩蛋文字：根据持有的彩蛋道具追加
+        egg_count = len(self._outro_egg_items)
+        if egg_count > 0:
+            # 确定彩蛋旁白
+            if egg_count == 1:
+                item = self._outro_egg_items[0]
+                if item == "osmanthus_bookmark":
+                    egg_lines = ["百年前的笔触，至今仍在低语……"]
+                elif item == "badge_pattern":
+                    egg_lines = ["隐于毫厘之间的守护，跨越了岁月。"]
+                else:  # boya_stone
+                    egg_lines = ["基石虽碎，阵法犹存。"]
+            elif egg_count == 2:
+                egg_lines = ["桂花年年开，守护代代传。百年封印，终得归位。"]
+            else:  # 3件
+                egg_lines = [
+                    "桂花年年开，守护代代传。百年封印，终得归位。",
+                    "从古至今，总有人在默默守护这片桂子山。",
+                ]
+            # 在结局文字之后追加彩蛋文字
+            egg_start_y = y + 8  # 空一行
+            egg_base_delay = len(lines) * 1.5 + 3.0  # 在结局文字全部显示后延迟1秒
+            for i, egg_line in enumerate(egg_lines):
+                line_delay = egg_base_delay + i * 1.5
+                if self._outro_timer > line_delay:
+                    alpha = min(255, int((self._outro_timer - line_delay) * 80))
+                    egg_surf = self.info_font.render(egg_line, True, (200, 180, 100))
+                    egg_surf.set_alpha(alpha)
+                    egg_rect = egg_surf.get_rect(
+                        centerx=INTERNAL_WIDTH // 2, centery=egg_start_y + i * 16
+                    )
+                    self.internal_surface.blit(egg_surf, egg_rect)
 
     def _resize_window(self, new_width, new_height):
         """调整窗口大小"""

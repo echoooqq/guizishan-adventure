@@ -1764,11 +1764,17 @@ def design_library_f1():
     structures[4][13] = GID_LIB_READING_LAMP
     collision[4][13] = GID_COLLISION
 
-    structures[10][2] = GID_COMPUTER
+    # 左侧查询终端（桌子+电脑）
+    structures[10][2] = GID_TABLE
     collision[10][2] = GID_COLLISION
+    structures[9][2] = GID_COMPUTER
+    collision[9][2] = GID_COLLISION
 
-    structures[10][21] = GID_COMPUTER
+    # 右侧查询终端（桌子+电脑）
+    structures[10][21] = GID_TABLE
     collision[10][21] = GID_COLLISION
+    structures[9][21] = GID_COMPUTER
+    collision[9][21] = GID_COLLISION
 
     ground[9][11] = GID_CARPET_RED
     ground[9][12] = GID_CARPET_RED
@@ -1811,6 +1817,8 @@ def design_library_f1():
             "interactive_type": "examine",
             "prompt_text": "查看电脑",
             "display_name": "查询终端",
+            "terminal_type": "call_number_guide",
+            "invisible": "true",
         }
     })
 
@@ -1822,6 +1830,7 @@ def design_library_f1():
             "interactive_type": "examine",
             "prompt_text": "查看电脑",
             "display_name": "查询终端",
+            "invisible": "true",
         }
     })
 
@@ -1834,6 +1843,7 @@ def design_library_f1():
                 "interactive_type": "examine",
                 "prompt_text": "查看书架",
                 "display_name": "书架A",
+                "invisible": "true",
             }
         })
 
@@ -1842,12 +1852,25 @@ def design_library_f1():
     _add_spawn(trigger_objects, "library_entrance", 11, H - 4)
     _add_spawn(trigger_objects, "library_f1_stairs", 20, 2)
 
-    # 新增：中央区域还书台
-    structures[10][10] = GID_RETURN_DESK
+    # 新增：中央区域还书台（2x1长桌，自带电脑图案）
+    structures[10][9] = GID_TABLE
+    structures[10][10] = GID_TABLE
+    collision[10][9] = GID_COLLISION
     collision[10][10] = GID_COLLISION
-    # 新增：右下角报刊架
-    structures[10][21] = GID_NEWSPAPER_RACK
-    collision[10][21] = GID_COLLISION
+    # 新增：右下角报刊架（移到不覆盖电脑的位置）
+    structures[14][14] = GID_NEWSPAPER_RACK
+    collision[14][14] = GID_COLLISION
+    # 报刊架交互对象
+    interactive_objects.append({
+        "x": 14 * TILE_SIZE, "y": 14 * TILE_SIZE,
+        "width": TILE_SIZE, "height": TILE_SIZE,
+        "type": "magazine_rack",
+        "properties": {
+            "interactive_type": "examine",
+            "prompt_text": "查看报刊架",
+            "display_name": "报刊架",
+        }
+    })
 
     return W, H, ground, structures, decorations, collision, interactive_objects, trigger_objects
 
@@ -1866,7 +1889,8 @@ def design_library_f2():
         structures[y][0] = GID_LIB_WALL
         structures[y][W - 1] = GID_LIB_WALL
 
-    for x in range(2, 7):
+    # 上左区域书架（x=5-6, y=1-3）：哲学 B + 语言 H
+    for x in range(5, 7):
         structures[1][x] = GID_BOOKSHELF_TOP
         structures[2][x] = GID_BOOKSHELF
         structures[3][x] = GID_BOOKSHELF
@@ -1874,7 +1898,8 @@ def design_library_f2():
         collision[2][x] = GID_COLLISION
         collision[3][x] = GID_COLLISION
 
-    for x in range(9, 15):
+    # 上中区域书架（x=11-12, y=1-3）：马列 A + 文学 I
+    for x in range(11, 13):
         structures[1][x] = GID_BOOKSHELF_TOP
         structures[2][x] = GID_BOOKSHELF
         structures[3][x] = GID_BOOKSHELF
@@ -1882,7 +1907,8 @@ def design_library_f2():
         collision[2][x] = GID_COLLISION
         collision[3][x] = GID_COLLISION
 
-    for x in range(17, 22):
+    # 上右区域书架（x=18-19, y=1-3）：社科 C + 历史 K
+    for x in range(18, 20):
         structures[1][x] = GID_BOOKSHELF_TOP
         structures[2][x] = GID_BOOKSHELF
         structures[3][x] = GID_BOOKSHELF
@@ -1890,13 +1916,15 @@ def design_library_f2():
         collision[2][x] = GID_COLLISION
         collision[3][x] = GID_COLLISION
 
-    for x in range(2, 7):
+    # 下左区域书架（x=4-5, y=7-8）：数理 O + 天文 P
+    for x in range(4, 6):
         structures[7][x] = GID_BOOKSHELF
         structures[8][x] = GID_BOOKSHELF
         collision[7][x] = GID_COLLISION
         collision[8][x] = GID_COLLISION
 
-    for x in range(17, 22):
+    # 下右区域书架（x=18-19, y=7-8）：生物 Q + 建筑 TU
+    for x in range(18, 20):
         structures[7][x] = GID_BOOKSHELF
         structures[8][x] = GID_BOOKSHELF
         collision[7][x] = GID_COLLISION
@@ -1959,23 +1987,211 @@ def design_library_f2():
         }
     })
 
-    for x in range(5, 7):
-        interactive_objects.append({
-            "x": x * TILE_SIZE, "y": 1 * TILE_SIZE,
-            "width": TILE_SIZE, "height": 3 * TILE_SIZE,
-            "type": "bookshelf",
-            "properties": {
-                "interactive_type": "examine",
-                "prompt_text": "查看书架",
-                "display_name": "书架B",
-            }
-        })
+    # 10个书架交互对象（5个区域，每区2个，带索书号）
+    # 上左区域：哲学 B + 语言 H
+    interactive_objects.append({
+        "x": 5 * TILE_SIZE, "y": 2 * TILE_SIZE,
+        "width": TILE_SIZE, "height": 2 * TILE_SIZE,
+        "type": "bookshelf",
+        "properties": {
+            "interactive_type": "examine",
+            "prompt_text": "查看书架",
+            "display_name": "书架·哲学",
+            "call_number": "B821/L3",
+        }
+    })
+    interactive_objects.append({
+        "x": 6 * TILE_SIZE, "y": 2 * TILE_SIZE,
+        "width": TILE_SIZE, "height": 2 * TILE_SIZE,
+        "type": "bookshelf",
+        "properties": {
+            "interactive_type": "examine",
+            "prompt_text": "查看书架",
+            "display_name": "书架·语言",
+            "call_number": "H119/Z4",
+        }
+    })
+    # 上中区域：马列 A + 文学 I
+    interactive_objects.append({
+        "x": 11 * TILE_SIZE, "y": 2 * TILE_SIZE,
+        "width": TILE_SIZE, "height": 2 * TILE_SIZE,
+        "type": "bookshelf",
+        "properties": {
+            "interactive_type": "examine",
+            "prompt_text": "查看书架",
+            "display_name": "书架·马列",
+            "call_number": "A123.4/W1",
+        }
+    })
+    interactive_objects.append({
+        "x": 12 * TILE_SIZE, "y": 2 * TILE_SIZE,
+        "width": TILE_SIZE, "height": 2 * TILE_SIZE,
+        "type": "bookshelf",
+        "properties": {
+            "interactive_type": "examine",
+            "prompt_text": "查看书架",
+            "display_name": "书架·文学",
+            "call_number": "I242/Z7",
+        }
+    })
+    # 上右区域：社科 C + 历史 K（正确书架在此区域）
+    interactive_objects.append({
+        "x": 18 * TILE_SIZE, "y": 2 * TILE_SIZE,
+        "width": TILE_SIZE, "height": 2 * TILE_SIZE,
+        "type": "bookshelf",
+        "properties": {
+            "interactive_type": "examine",
+            "prompt_text": "查看书架",
+            "display_name": "书架·社科",
+            "call_number": "C912/D4",
+        }
+    })
+    interactive_objects.append({
+        "x": 19 * TILE_SIZE, "y": 2 * TILE_SIZE,
+        "width": TILE_SIZE, "height": 2 * TILE_SIZE,
+        "type": "bookshelf",
+        "properties": {
+            "interactive_type": "examine",
+            "prompt_text": "查看书架",
+            "display_name": "书架·历史",
+            "call_number": "K291.5/Z3",
+        }
+    })
+    # 下左区域：数理 O + 天文 P
+    interactive_objects.append({
+        "x": 4 * TILE_SIZE, "y": 7 * TILE_SIZE,
+        "width": TILE_SIZE, "height": 2 * TILE_SIZE,
+        "type": "bookshelf",
+        "properties": {
+            "interactive_type": "examine",
+            "prompt_text": "查看书架",
+            "display_name": "书架·数理",
+            "call_number": "O413/C2",
+        }
+    })
+    interactive_objects.append({
+        "x": 5 * TILE_SIZE, "y": 7 * TILE_SIZE,
+        "width": TILE_SIZE, "height": 2 * TILE_SIZE,
+        "type": "bookshelf",
+        "properties": {
+            "interactive_type": "examine",
+            "prompt_text": "查看书架",
+            "display_name": "书架·天文",
+            "call_number": "P462/W5",
+        }
+    })
+    # 下右区域：生物 Q + 建筑 TU
+    interactive_objects.append({
+        "x": 18 * TILE_SIZE, "y": 7 * TILE_SIZE,
+        "width": TILE_SIZE, "height": 2 * TILE_SIZE,
+        "type": "bookshelf",
+        "properties": {
+            "interactive_type": "examine",
+            "prompt_text": "查看书架",
+            "display_name": "书架·生物",
+            "call_number": "Q949/L1",
+        }
+    })
+    interactive_objects.append({
+        "x": 19 * TILE_SIZE, "y": 7 * TILE_SIZE,
+        "width": TILE_SIZE, "height": 2 * TILE_SIZE,
+        "type": "bookshelf",
+        "properties": {
+            "interactive_type": "examine",
+            "prompt_text": "查看书架",
+            "display_name": "书架·建筑",
+            "call_number": "TU984/H6",
+        }
+    })
+
+    # 5个分类标识牌 tile + 交互对象
+    # 上左标识牌
+    structures[4][4] = GID_SECTION_SIGN
+    collision[4][4] = GID_COLLISION
+    interactive_objects.append({
+        "x": 4 * TILE_SIZE, "y": 4 * TILE_SIZE,
+        "width": TILE_SIZE, "height": TILE_SIZE,
+        "type": "section_sign",
+        "properties": {
+            "interactive_type": "examine",
+            "prompt_text": "查看标识牌",
+            "display_name": "分类标识牌",
+            "section_text": "哲学 B · 语言 H",
+        }
+    })
+    # 上中标识牌
+    structures[4][10] = GID_SECTION_SIGN
+    collision[4][10] = GID_COLLISION
+    interactive_objects.append({
+        "x": 10 * TILE_SIZE, "y": 4 * TILE_SIZE,
+        "width": TILE_SIZE, "height": TILE_SIZE,
+        "type": "section_sign",
+        "properties": {
+            "interactive_type": "examine",
+            "prompt_text": "查看标识牌",
+            "display_name": "分类标识牌",
+            "section_text": "马列 A · 文学 I",
+        }
+    })
+    # 上右标识牌
+    structures[4][17] = GID_SECTION_SIGN
+    collision[4][17] = GID_COLLISION
+    interactive_objects.append({
+        "x": 17 * TILE_SIZE, "y": 4 * TILE_SIZE,
+        "width": TILE_SIZE, "height": TILE_SIZE,
+        "type": "section_sign",
+        "properties": {
+            "interactive_type": "examine",
+            "prompt_text": "查看标识牌",
+            "display_name": "分类标识牌",
+            "section_text": "社科 C · 历史 K",
+        }
+    })
+    # 下左标识牌
+    structures[9][3] = GID_SECTION_SIGN
+    collision[9][3] = GID_COLLISION
+    interactive_objects.append({
+        "x": 3 * TILE_SIZE, "y": 9 * TILE_SIZE,
+        "width": TILE_SIZE, "height": TILE_SIZE,
+        "type": "section_sign",
+        "properties": {
+            "interactive_type": "examine",
+            "prompt_text": "查看标识牌",
+            "display_name": "分类标识牌",
+            "section_text": "数理 O · 天文 P",
+        }
+    })
+    # 下右标识牌
+    structures[9][18] = GID_SECTION_SIGN
+    collision[9][18] = GID_COLLISION
+    interactive_objects.append({
+        "x": 18 * TILE_SIZE, "y": 9 * TILE_SIZE,
+        "width": TILE_SIZE, "height": TILE_SIZE,
+        "type": "section_sign",
+        "properties": {
+            "interactive_type": "examine",
+            "prompt_text": "查看标识牌",
+            "display_name": "分类标识牌",
+            "section_text": "生物 Q · 建筑 TU",
+        }
+    })
 
     _add_spawn(trigger_objects, "library_f2_stairs", 3, 2)
 
     # 新增：左下角报刊架
     structures[10][2] = GID_NEWSPAPER_RACK
     collision[10][2] = GID_COLLISION
+    # 报刊架交互对象
+    interactive_objects.append({
+        "x": 2 * TILE_SIZE, "y": 10 * TILE_SIZE,
+        "width": TILE_SIZE, "height": TILE_SIZE,
+        "type": "magazine_rack",
+        "properties": {
+            "interactive_type": "examine",
+            "prompt_text": "查看报刊架",
+            "display_name": "报刊架",
+        }
+    })
 
     return W, H, ground, structures, decorations, collision, interactive_objects, trigger_objects
 
