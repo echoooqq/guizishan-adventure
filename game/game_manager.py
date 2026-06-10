@@ -330,7 +330,7 @@ class GameManager:
             "dialogue_id": "_builtin",
             "dialogue_data": {
                 "default": [
-                    {"speaker": "", "text": "告示牌上写着：欢迎来到桂子山！请注意校园内的安全提示。"},
+                    {"speaker": "", "text": "告示牌上写着：校园须知——夜间请勿独自前往偏僻区域。如遇桂花异常飘落或不明光源，请及时联系校园管理处。"},
                 ]
             },
         }
