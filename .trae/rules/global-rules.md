@@ -81,8 +81,8 @@
 | 技术 | 用途 |
 |------|------|
 | Python 3 | 主语言 |
-| Pygame | 渲染引擎、输入处理 |
-| pygame_gui | UI 交互框架（布局、事件、窗口管理） |
+| Pygame | 渲染引擎、输入处理、UI 自定义渲染 |
+| pygame_gui | 已初始化但 UI 模块未实际使用（当前采用纯 Pygame 自定义渲染） |
 | pytmx | 加载 Tiled Map Editor 导出的 TMX 地图 |
 | Tiled Map Editor | 地图编辑工具 |
 | JSON | 数据驱动（对话、道具、谜题、存档） |
@@ -109,9 +109,11 @@ guizishan_adventure/
 ├── config.py                # 全局配置
 ├── game/
 │   ├── game_manager.py      # 游戏主循环、状态机
+│   ├── game_state.py        # 游戏状态枚举
 │   ├── camera.py            # 摄像机系统
-│   ├── clock.py             # 游戏时钟（昼夜循环）
-│   └── save_manager.py      # 存档管理
+│   ├── clock.py             # 游戏时钟（昼夜循环+NPC时段）
+│   ├── save_manager.py      # 存档管理
+│   └── audio_manager.py     # 音频管理
 ├── player/
 │   ├── player.py            # 玩家逻辑
 │   └── inventory.py         # 背包系统
@@ -135,10 +137,11 @@ guizishan_adventure/
 │   └── fountain_puzzle.py   # 喷泉广场谜题
 ├── ui/
 │   ├── hud.py               # HUD
-│   ├── dialog_box.py        # 对话框
+│   ├── dialog_box.py        # 对话框+全局9-slice工具
 │   ├── inventory_ui.py      # 背包界面
-│   ├── minimap.py           # 小地图
-│   └── menu.py              # 菜单
+│   ├── minimap.py           # 小地图+全屏地图
+│   ├── menu.py              # 菜单
+│   └── quest_log.py         # 任务日志
 ├── assets/
 │   ├── sprites/             # 精灵图
 │   ├── tilesets/            # 地块贴图集
@@ -148,7 +151,9 @@ guizishan_adventure/
 ├── data/
 │   ├── dialogues/           # 对话数据 (JSON)
 │   ├── items.json           # 道具数据
-│   └── puzzles.json         # 谜题数据
+│   ├── puzzles.json         # 谜题数据
+│   └── library_questions.json # 图书馆问答题库
+├── tools/                   # 开发工具脚本
 └── saves/                   # 存档文件
 ```
 
@@ -227,6 +232,7 @@ guizishan_adventure/
 | `MAP_VIEW` | 全局地图 | 校园地图 |
 | `DIALOG` | 对话框 | — |
 | `PUZZLE` | 谜题界面 | 各谜题名称 |
+| `QUEST_LOG` | 任务日志 | 任务日志 |
 | `OUTRO` | 结局动画 | — |
 
 ### 5.2 状态转换
@@ -236,6 +242,7 @@ TITLE ──开始──→ INTRO ──完成──→ PLAYING
 PLAYING ──Esc──→ PAUSED ──继续──→ PLAYING
 PLAYING ──Tab/I──→ INVENTORY ──关闭──→ PLAYING
 PLAYING ──M──→ MAP_VIEW ──关闭──→ PLAYING
+PLAYING ──J──→ QUEST_LOG ──关闭──→ PLAYING
 PLAYING ──互动NPC──→ DIALOG ──结束──→ PLAYING
 PLAYING ──互动谜题──→ PUZZLE ──完成/退出──→ PLAYING
 PLAYING ──通关──→ OUTRO
@@ -265,7 +272,9 @@ PAUSED ──返回标题──→ TITLE
 | 拾取 | `"按 F 拾取"` |
 | 使用 | `"按 F 使用"` |
 | 机关操作 | `"按 F 操作"` |
-| 摇树 | `"按 F 摇树"` |
+| 进入 | `"按 F 进入"` |
+| 切换楼层 | `"按 F 切换楼层"` |
+| 乘校车 | `"按 F 乘校车"` |
 
 ### 6.3 背包系统
 
@@ -279,21 +288,23 @@ PAUSED ──返回标题──→ TITLE
 | 元素 | 中文文本 |
 |------|---------|
 | 面板标题 | `"背包"` |
-| 使用按钮 | `"使用"` |
-| 丢弃按钮 | `"丢弃"` |
-| 组合按钮 | `"组合"` |
-| 返回按钮 | `"返回"` |
-| 关闭按钮 | `"关闭"` |
+| 使用按钮 | `"使用(F)"` |
+| 丢弃按钮 | `"丢弃(D)"` |
+| 组合按钮 | `"组合(C)"` |
+| 关闭提示 | `"关闭(Tab)"` |
 | 空格子提示 | `"空"` |
 
 ### 6.4 对话系统
 
 - 对话数据存储在 `data/dialogues/` 目录下的 JSON 文件中
-- 每个NPC一个JSON文件
-- 对话框底部显示，左侧说话者头像+名称
+- 每个NPC/场景一个JSON文件
+- 对话框底部显示（高度80px），左侧说话者头像（28×28）+名称
 - 文字逐字显示（打字机效果，每字间隔 50ms）
-- 按F/空格加速显示或跳到下一句
-- 支持选项分支（方向键选择，F确认）
+- 按F/空格/回车加速显示或跳到下一句
+- 支持选项分支（方向键/WASD选择，F/空格/回车确认）
+- 支持条件显示（`condition`字段：字符串键值、字典条件如`has_item`、谜题状态等）
+- 支持游戏状态检查（`game_state`字段）
+- 自动换行（按字符宽度逐字测试，超宽自动换行）
 - 所有对话文本必须使用中文
 
 对话数据格式：
@@ -303,7 +314,7 @@ PAUSED ──返回标题──→ TITLE
     "default": [
       {"speaker": "图书管理员", "text": "欢迎来到图书馆，有什么需要帮助的吗？"},
       {"type": "choice", "options": [
-        {"text": "我想借书", "next": "borrow_book"},
+        {"text": "我想借书", "next": "borrow_book", "condition": {"has_item": "osmanthus_bookmark"}},
         {"text": "只是看看", "next": "just_looking"}
       ]}
     ]
@@ -329,13 +340,13 @@ PAUSED ──返回标题──→ TITLE
 
 ### 6.6 昼夜循环
 
-- 游戏内 1 天 = 现实 10 分钟（600 秒）
+- 游戏内 1 天 = 现实 6 分钟（360 秒，由 `config.py` 中 `DAY_DURATION = 360` 定义）
 - 时段划分：白天(6:00-18:00) → 黄昏(18:00-19:30) → 夜晚(19:30-6:00)
 - 光照实现：全局色调叠加渐变（关键帧插值法，11个关键帧线性插值）
   - 白天：无色调叠加（秘境蛰伏态叠加淡绿alpha≈10）
   - 黄昏：橘红→紫蓝渐变过渡
-  - 夜晚：深蓝色层 + 路灯/窗户发光（秘境觉醒态叠加绿色脉冲alpha 20-50）
-  - 秘境双态：蛰伏态(白天)极淡暖绿，觉醒态(夜晚)幽绿脉冲+路灯发绿光
+  - 夜晚：深蓝色层（秘境觉醒态叠加绿色脉冲alpha 12-18）
+  - 秘境双态：蛰伏态(白天)极淡暖绿，觉醒态(夜晚)幽绿脉冲
   - 通关后秘境消散，恢复正常昼夜
 
 ### 6.7 体力系统
@@ -351,6 +362,7 @@ PAUSED ──返回标题──→ TITLE
 - 1 个自动存档槽 + 2 个手动存档槽
 - 自动存档触发点：退出游戏、进/出室内、跨校区、解谜、拾取关键道具
 - 存档时写临时文件再重命名，避免写入中断导致数据损坏
+- 存档字段包括：version, save_time, play_time, player, current_map, spawn_point, inventory, puzzles, clock, dialog_flags, visited_nanhu, realm_triggered, realm_first_night_shown, tutorial_step, tutorial_completed, explored_areas, audio_settings
 
 ### 6.9 地图过渡
 
@@ -367,19 +379,21 @@ PAUSED ──返回标题──→ TITLE
 
 ### 7.1 UI 技术架构
 
-采用三层架构：
+**实际实现**：由于 pygame_gui 对中文像素风支持有限，项目采用**纯 Pygame 自定义渲染**方案：
 
-1. **pygame_gui**：负责交互逻辑（布局、点击、悬停、焦点、滚动、窗口管理）
-2. **自定义渲染层**：负责像素风外观（9-slice 边框、像素图标、动画效果）
-3. **自定义主题 (theme.json)**：像素风字体、颜色/间距配置、按钮图片路径
+1. **自定义渲染层**：各 UI 模块（`menu.py`、`inventory_ui.py`、`dialog_box.py`、`minimap.py`、`quest_log.py`）均使用原生 Pygame 手工处理事件、布局和渲染
+2. **9-slice 边框**：`dialog_box.py` 提供全局 `draw_nine_slice()` 函数，已被 `inventory_ui.py`、`quest_log.py` 等模块复用
+3. **自定义主题配置**：`config.py` 定义字体路径（Zpix/SimHei 降级）和颜色常量；`theme.json` 仅包含基础颜色，未配置完整的像素风主题
 
-### 7.2 UI 三阶段实现路径
+> 注：`game_manager.py` 中仍初始化了 `pygame_gui.UIManager` 并加载 `theme.json`，但实际 UI 模块未使用 pygame_gui 控件系统。
 
-| 阶段 | 对应日程 | 内容 |
-|------|---------|------|
-| 阶段1 | Day 1-11 | 基础功能 UI，pygame_gui 纯色边框，矩形占位 |
-| 阶段2 | Day 12-13 | 素材替换，9-slice 分层渲染，Zpix 字体，道具图标 |
-| 阶段3 | Day 14 | 精细打磨，体力条桂花主题，小地图羊皮纸质感，动画效果 |
+### 7.2 UI 三阶段实现路径（当前状态：阶段1末期/阶段2初期）
+
+| 阶段 | 对应日程 | 内容 | 状态 |
+|------|---------|------|------|
+| 阶段1 | Day 1-11 | 基础功能 UI，纯色边框，矩形占位，Pygame 手工渲染 | ✅ 已完成 |
+| 阶段2 | Day 12-13 | 素材替换，9-slice 分层渲染，Zpix 字体，道具图标 | 🔄 部分完成 |
+| 阶段3 | Day 14 | 精细打磨，体力条桂花主题，小地图羊皮纸质感，动画效果 | ⏳ 待开始 |
 
 ### 7.3 HUD 布局
 
@@ -412,11 +426,13 @@ PAUSED ──返回标题──→ TITLE
 
 | 菜单 | 中文标题 | 菜单项 |
 |------|---------|--------|
-| 暂停菜单 | `"暂停"` | `"继续游戏"` / `"背包"` / `"校园地图"` / `"存档"` / `"设置"` / `"返回标题"` |
+| 暂停菜单 | `"暂停"` | `"继续游戏"` / `"背包"` / `"任务日志"` / `"校园地图"` / `"存档"` / `"读档"` / `"设置"` / `"返回标题"` |
 | 设置菜单 | `"设置"` | `"音量调节"` / `"窗口大小"` / `"操作说明"` / `"返回"` |
+| 音量子菜单 | `"音量调节"` | `"主音量"` / `"背景音乐"` / `"音效"`（滑块调节，←→步进5%） |
 | 存档菜单 | `"存档"` | `"自动存档"` / `"存档槽 1"` / `"存档槽 2"` / `"返回"` |
-| 任务日志 | `"任务日志"` | 线索卡片式布局 |
-| 全局地图 | `"校园地图"` | 手绘风校园地图 |
+| 读档菜单 | `"读档"` | `"自动存档"` / `"存档槽 1"` / `"存档槽 2"` / `"返回"` |
+| 任务日志 | `"任务日志"` | 谜题进度列表 + 已获线索卡片式布局 |
+| 全局地图 | `"校园地图"` | 真实图层采样+迷雾+地标中文标注 |
 
 ### 7.6 操作键位
 
@@ -424,12 +440,17 @@ PAUSED ──返回标题──→ TITLE
 |------|------|---------|
 | 移动 | WASD / ↑↓←→ | `"移动"` |
 | 冲刺 | Shift（按住） | `"冲刺"` |
-| 互动 | F / 空格 | `"互动"` |
+| 互动 | F / 空格 / 回车 | `"互动"` |
 | 背包 | Tab / I | `"背包"` |
 | 地图 | M | `"地图"` |
+| 任务日志 | J | `"任务日志"` |
 | 菜单 | Esc | `"菜单"` |
-| 对话跳过 | F / 空格 | `"跳过"` |
-| 选项切换 | ↑↓ + F | `"选择"` |
+| 对话跳过 | F / 空格 / 回车 | `"跳过"` |
+| 选项切换 | ↑↓ / WS + F/空格/回车 | `"选择"` |
+| 背包光标 | 方向键 | `"移动选择"` |
+| 背包使用 | F / 回车 | `"使用"` |
+| 背包组合 | C | `"组合"` |
+| 背包丢弃 | D | `"丢弃"` |
 
 ---
 
@@ -474,7 +495,7 @@ PAUSED ──返回标题──→ TITLE
 
 ### 8.4 对话数据 (`data/dialogues/`)
 
-每个 NPC 一个 JSON 文件，格式见 6.4 节。需编写的对话文件：
+每个 NPC/场景一个 JSON 文件，格式见 6.4 节。实际存在的对话文件：
 - `senior_student.json` — 神秘学长
 - `librarian.json` — 图书管理员
 - `dancing_auntie.json` — 广场舞阿姨
@@ -482,6 +503,14 @@ PAUSED ──返回标题──→ TITLE
 - `cafeteria_auntie.json` — 食堂阿姨
 - `guardian.json` — 秘境守护者
 - `tutorial.json` — 教程引导对话
+- `morning_student.json` — 晨读学姐（引导NPC）
+- `returning_student.json` — 还书同学（引导NPC）
+- `sketch_student.json` — 写生同学（引导NPC）
+- `sport_student.json` — 运动同学（引导NPC）
+- `waiting_student.json` — 等餐同学（引导NPC）
+- `shuttle_student.json` — 等车同学（引导NPC）
+- `nanhu_intro.json` — 南湖校区首次到达对话
+- `passing_student.json` — 路过的学生
 
 ---
 
