@@ -124,12 +124,67 @@ class Menu:
         self._window_size_index = 0  # 当前选中的窗口大小索引
         self._current_window_size = (960, 540)  # 当前窗口大小
 
+        # 昼夜时段（影响遮罩色调）
+        self._period_name = "白天"
+
+        # 按钮精灵图
+        self._btn_normal = None
+        self._btn_hover = None
+        self._btn_pressed = None
+        self._load_button_sprites()
+
         # 边框素材
         self._border_image = create_border_surface(
             size=24, border_width=3,
             border_color=MENU_BORDER_COLOR,
             bg_color=(20, 20, 40, 220),
         )
+
+    def _load_button_sprites(self):
+        """加载按钮精灵图，加载失败则降级为纯色"""
+        try:
+            base_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "assets", "ui", "sprites")
+            normal_path = os.path.join(base_dir, "button_normal.png")
+            hover_path = os.path.join(base_dir, "button_hover.png")
+            pressed_path = os.path.join(base_dir, "button_pressed.png")
+            if os.path.exists(normal_path):
+                self._btn_normal = pygame.image.load(normal_path).convert_alpha()
+            if os.path.exists(hover_path):
+                self._btn_hover = pygame.image.load(hover_path).convert_alpha()
+            if os.path.exists(pressed_path):
+                self._btn_pressed = pygame.image.load(pressed_path).convert_alpha()
+        except Exception:
+            # 加载失败，降级为纯色绘制
+            self._btn_normal = None
+            self._btn_hover = None
+            self._btn_pressed = None
+
+    def set_period(self, period_name):
+        """设置当前昼夜时段，影响菜单遮罩色调"""
+        self._period_name = period_name
+
+    def _get_overlay_color(self):
+        """根据昼夜时段返回遮罩颜色"""
+        if self._period_name == "黄昏":
+            return (30, 10, 0, 170)
+        elif self._period_name == "夜晚":
+            return (0, 5, 20, 180)
+        else:
+            return MENU_BG_COLOR  # 白天: (0, 0, 0, 160)
+
+    def _draw_button_bg(self, surface, rect, is_selected):
+        """绘制菜单项背景，优先使用精灵图，降级为纯色"""
+        if is_selected and self._btn_hover:
+            scaled = pygame.transform.scale(self._btn_hover, (rect.width, rect.height))
+            surface.blit(scaled, rect.topleft)
+        elif not is_selected and self._btn_normal:
+            scaled = pygame.transform.scale(self._btn_normal, (rect.width, rect.height))
+            surface.blit(scaled, rect.topleft)
+        else:
+            # 降级：纯色背景
+            bg_surf = pygame.Surface((rect.width, rect.height), pygame.SRCALPHA)
+            bg_surf.fill(MENU_ITEM_HOVER_BG if is_selected else (0, 0, 0, 0))
+            surface.blit(bg_surf, rect.topleft)
 
     def open(self, menu_type="pause"):
         """打开菜单"""
@@ -419,11 +474,11 @@ class Menu:
         if not self.active:
             return
 
-        # 半透明遮罩
+        # 半透明遮罩（根据昼夜时段调整色调）
         overlay = pygame.Surface(
             (INTERNAL_WIDTH, INTERNAL_HEIGHT), pygame.SRCALPHA
         )
-        overlay.fill(MENU_BG_COLOR)
+        overlay.fill(self._get_overlay_color())
         surface.blit(overlay, (0, 0))
 
         if self.current_menu == "pause":
@@ -467,16 +522,11 @@ class Menu:
             y = start_y + i * (item_height + item_spacing)
             is_selected = (i == self.selected_index)
 
-            if is_selected:
-                bg_rect = pygame.Rect(
-                    INTERNAL_WIDTH // 2 - 50, y - 1,
-                    100, item_height + 2,
-                )
-                bg_surf = pygame.Surface(
-                    (bg_rect.width, bg_rect.height), pygame.SRCALPHA
-                )
-                bg_surf.fill(MENU_ITEM_HOVER_BG)
-                surface.blit(bg_surf, bg_rect.topleft)
+            bg_rect = pygame.Rect(
+                INTERNAL_WIDTH // 2 - 50, y - 1,
+                100, item_height + 2,
+            )
+            self._draw_button_bg(surface, bg_rect, is_selected)
 
             color = MENU_ITEM_HOVER_COLOR if is_selected else MENU_ITEM_COLOR
             if is_selected:
@@ -506,16 +556,11 @@ class Menu:
             y = start_y + i * (item_height + item_spacing)
             is_selected = (i == self.selected_index)
 
-            if is_selected:
-                bg_rect = pygame.Rect(
-                    INTERNAL_WIDTH // 2 - 70, y - 1,
-                    140, item_height + 2,
-                )
-                bg_surf = pygame.Surface(
-                    (bg_rect.width, bg_rect.height), pygame.SRCALPHA
-                )
-                bg_surf.fill(MENU_ITEM_HOVER_BG)
-                surface.blit(bg_surf, bg_rect.topleft)
+            bg_rect = pygame.Rect(
+                INTERNAL_WIDTH // 2 - 70, y - 1,
+                140, item_height + 2,
+            )
+            self._draw_button_bg(surface, bg_rect, is_selected)
 
             color = MENU_ITEM_HOVER_COLOR if is_selected else MENU_ITEM_COLOR
             if is_selected:
@@ -580,11 +625,13 @@ class Menu:
                     INTERNAL_WIDTH // 2 - 70, y - 1,
                     140, item_height + 2,
                 )
-                bg_surf = pygame.Surface(
-                    (bg_rect.width, bg_rect.height), pygame.SRCALPHA
+                self._draw_button_bg(surface, bg_rect, is_selected)
+            elif is_selected:
+                bg_rect = pygame.Rect(
+                    INTERNAL_WIDTH // 2 - 70, y - 1,
+                    140, item_height + 2,
                 )
-                bg_surf.fill(MENU_ITEM_HOVER_BG)
-                surface.blit(bg_surf, bg_rect.topleft)
+                self._draw_button_bg(surface, bg_rect, is_selected)
 
             # 颜色：空槽位灰显
             if is_empty:
@@ -678,16 +725,11 @@ class Menu:
             y = start_y + i * (item_height + item_spacing)
             is_selected = (i == self.selected_index)
 
-            if is_selected:
-                bg_rect = pygame.Rect(
-                    INTERNAL_WIDTH // 2 - 50, y - 1,
-                    100, item_height + 2,
-                )
-                bg_surf = pygame.Surface(
-                    (bg_rect.width, bg_rect.height), pygame.SRCALPHA
-                )
-                bg_surf.fill(MENU_ITEM_HOVER_BG)
-                surface.blit(bg_surf, bg_rect.topleft)
+            bg_rect = pygame.Rect(
+                INTERNAL_WIDTH // 2 - 50, y - 1,
+                100, item_height + 2,
+            )
+            self._draw_button_bg(surface, bg_rect, is_selected)
 
             color = MENU_ITEM_HOVER_COLOR if is_selected else MENU_ITEM_COLOR
 
@@ -743,16 +785,11 @@ class Menu:
             y = start_y + i * (item_height + item_spacing)
             is_selected = (i == self.selected_index)
 
-            if is_selected:
-                bg_rect = pygame.Rect(
-                    INTERNAL_WIDTH // 2 - 80, y - 1,
-                    160, item_height + 2,
-                )
-                bg_surf = pygame.Surface(
-                    (bg_rect.width, bg_rect.height), pygame.SRCALPHA
-                )
-                bg_surf.fill(MENU_ITEM_HOVER_BG)
-                surface.blit(bg_surf, bg_rect.topleft)
+            bg_rect = pygame.Rect(
+                INTERNAL_WIDTH // 2 - 80, y - 1,
+                160, item_height + 2,
+            )
+            self._draw_button_bg(surface, bg_rect, is_selected)
 
             if is_selected:
                 self._draw_indicator(surface, INTERNAL_WIDTH // 2 - 86, y, MENU_TITLE_COLOR)
@@ -828,11 +865,7 @@ class Menu:
                     INTERNAL_WIDTH // 2 - 70, y - 1,
                     140, item_height + 2,
                 )
-                bg_surf = pygame.Surface(
-                    (bg_rect.width, bg_rect.height), pygame.SRCALPHA
-                )
-                bg_surf.fill(MENU_ITEM_HOVER_BG)
-                surface.blit(bg_surf, bg_rect.topleft)
+                self._draw_button_bg(surface, bg_rect, is_selected)
 
             if is_selected:
                 self._draw_indicator(surface, INTERNAL_WIDTH // 2 - 76, y, MENU_TITLE_COLOR)

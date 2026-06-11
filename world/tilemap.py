@@ -173,21 +173,29 @@ class TileMap:
             return
 
         start_row, end_row, start_col, end_col = camera.visible_tile_range
+        # 预计算相机偏移量，避免每个 tile 重复调用 camera.apply()
+        offset_x = int(-camera.x)
+        offset_y = int(-camera.y)
+        tile_size = TILE_SIZE
+        get_tile_image = self.tmx_data.get_tile_image_by_gid
+
         for layer_index in self._visible_layers:
             layer = self.tmx_data.layers[layer_index]
             if not isinstance(layer, pytmx.TiledTileLayer):
                 continue
+            layer_data = layer.data
             for row in range(start_row, end_row):
+                # 预计算该行的屏幕 Y 坐标
+                sy = offset_y + row * tile_size
+                row_data = layer_data[row]
                 for col in range(start_col, end_col):
-                    gid = layer.data[row][col]
+                    gid = row_data[col]
                     if gid == 0:
                         continue
-                    tile_image = self.tmx_data.get_tile_image_by_gid(gid)
+                    tile_image = get_tile_image(gid)
                     if tile_image:
-                        sx, sy = camera.apply(
-                            col * TILE_SIZE, row * TILE_SIZE
-                        )
-                        surface.blit(tile_image, (int(sx), int(sy)))
+                        sx = offset_x + col * tile_size
+                        surface.blit(tile_image, (sx, sy))
 
     def get_spawn_position(self, spawn_id="default"):
         if spawn_id in self.spawn_points:

@@ -2380,6 +2380,7 @@ class GameManager:
 
         elif self.state == GameState.PLAYING:
             self.game_clock.update(dt)
+            self.hud.update(dt)
             self._update_npc_visibility()
 
             if self._tutorial_step == TUTORIAL_NONE and not self._tutorial_completed:
@@ -2575,6 +2576,7 @@ class GameManager:
                 self._draw_title()
             else:
                 self._draw_game()
+            self.menu.set_period(self.game_clock.get_period_name())
             self.menu.draw(self.internal_surface)
         elif self.state == GameState.DIALOG:
             self._draw_game()
@@ -2719,6 +2721,88 @@ class GameManager:
             self.current_map_id, self.player, self.camera,
         )
 
+    def _draw_prompt_bubble(self, surface, text_surf, center_x, bottom_y):
+        """绘制像素风圆角提示气泡，带金色边框、底部箭头和浮动动画。
+
+        Args:
+            surface: 目标绘制表面
+            text_surf: 已渲染的文本表面
+            center_x: 气泡中心X坐标（整数）
+            bottom_y: 气泡底部Y坐标（不含箭头，整数）
+        """
+        # 浮动动画：sin 波上下微移
+        float_offset = int(1.5 * math.sin(pygame.time.get_ticks() / 400.0))
+        bottom_y += float_offset
+
+        # 气泡主体尺寸（含内边距）
+        pad_x, pad_y = 8, 5
+        bubble_w = text_surf.get_width() + pad_x * 2
+        bubble_h = text_surf.get_height() + pad_y * 2
+
+        # 箭头参数
+        arrow_w = 4  # 箭头底边宽
+        arrow_h = 3  # 箭头高度
+
+        # 气泡主体矩形（bottom_y 是气泡底边位置）
+        bubble_rect = pygame.Rect(0, 0, bubble_w, bubble_h)
+        bubble_rect.centerx = int(center_x)
+        bubble_rect.bottom = int(bottom_y)
+
+        # 绘制气泡主体（含箭头区域的总表面）
+        total_h = bubble_h + arrow_h
+        total_surf = pygame.Surface((bubble_w, total_h), pygame.SRCALPHA)
+
+        # 深蓝半透明圆角背景
+        pygame.draw.rect(
+            total_surf,
+            (20, 20, 40, 180),
+            (0, 0, bubble_w, bubble_h),
+            border_radius=3,
+        )
+        # 金色圆角边框
+        pygame.draw.rect(
+            total_surf,
+            (255, 220, 100, 200),
+            (0, 0, bubble_w, bubble_h),
+            width=1,
+            border_radius=3,
+        )
+
+        # 底部箭头（向下三角形）
+        arrow_cx = bubble_w // 2
+        pygame.draw.polygon(
+            total_surf,
+            (20, 20, 40, 180),
+            [
+                (arrow_cx - arrow_w // 2, bubble_h - 1),
+                (arrow_cx + arrow_w // 2, bubble_h - 1),
+                (arrow_cx, bubble_h + arrow_h - 1),
+            ],
+        )
+        # 箭头左右金色边线
+        pygame.draw.line(
+            total_surf,
+            (255, 220, 100, 200),
+            (arrow_cx - arrow_w // 2, bubble_h - 1),
+            (arrow_cx, bubble_h + arrow_h - 1),
+            width=1,
+        )
+        pygame.draw.line(
+            total_surf,
+            (255, 220, 100, 200),
+            (arrow_cx + arrow_w // 2, bubble_h - 1),
+            (arrow_cx, bubble_h + arrow_h - 1),
+            width=1,
+        )
+
+        # 文本居中绘制到气泡主体内
+        text_x = (bubble_w - text_surf.get_width()) // 2
+        text_y = (bubble_h - text_surf.get_height()) // 2
+        total_surf.blit(text_surf, (text_x, text_y))
+
+        # 绘制到目标表面（位置以气泡主体为准，箭头向下延伸）
+        surface.blit(total_surf, bubble_rect.topleft)
+
     def _draw_interaction_prompts(self):
         if self._nearby_interactable is not None:
             if self._nearby_type == "trigger":
@@ -2737,14 +2821,9 @@ class GameManager:
                 else:
                     prompt = "按 F 进入"
                 text_surf = self.info_font.render(prompt, True, (255, 255, 255))
-                text_rect = text_surf.get_rect(centerx=int(sx), bottom=int(sy))
-                bg_rect = text_rect.inflate(6, 4)
-                bg_surf = pygame.Surface(
-                    (bg_rect.width, bg_rect.height), pygame.SRCALPHA
+                self._draw_prompt_bubble(
+                    self.internal_surface, text_surf, int(sx), int(sy)
                 )
-                bg_surf.fill((0, 0, 0, 160))
-                self.internal_surface.blit(bg_surf, bg_rect.topleft)
-                self.internal_surface.blit(text_surf, text_rect)
             elif self._nearby_interactable in self._guizhong_tree_objs:
                 self._draw_guizhong_tree_prompt()
             else:
@@ -2765,14 +2844,9 @@ class GameManager:
             return
         sx, sy = self.camera.apply(obj.center_x, obj.y - 4)
         text_surf = self.info_font.render(prompt, True, (255, 255, 255))
-        text_rect = text_surf.get_rect(centerx=int(sx), bottom=int(sy))
-        bg_rect = text_rect.inflate(6, 4)
-        bg_surf = pygame.Surface(
-            (bg_rect.width, bg_rect.height), pygame.SRCALPHA
+        self._draw_prompt_bubble(
+            self.internal_surface, text_surf, int(sx), int(sy)
         )
-        bg_surf.fill((0, 0, 0, 160))
-        self.internal_surface.blit(bg_surf, bg_rect.topleft)
-        self.internal_surface.blit(text_surf, text_rect)
 
     def _draw_tutorial_prompt(self):
         """绘制教程提示框或开场动画"""
