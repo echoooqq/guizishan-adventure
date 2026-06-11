@@ -1,9 +1,34 @@
 # Python 缓存
 __pycache__/
 *.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
 
 # 存档文件
 saves/
+save_data.json
+
+# 临时/测试文件
+temp_*.png
+test_*.png
 
 # IDE
 .vscode/
+.trae/
+*.swp
+*.swo
+
+# 系统文件
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 虚拟环境
+venv/
+.venv/
+env/
+
+# 分发
+*.egg
