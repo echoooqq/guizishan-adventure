@@ -156,26 +156,34 @@ body {
   display: inline-block;
   background: linear-gradient(135deg, var(--green), var(--green-dark));
   color: var(--gold-light);
-  font-size: 13px;
-  padding: 4px 16px;
+  font-size: 15px;
+  padding: 5px 18px;
   border-radius: 20px;
-  border: 1px solid rgba(212, 168, 67, 0.3);
-  margin-bottom: 16px;
+  border: 1px solid rgba(212, 168, 67, 0.5);
+  margin-bottom: 10px;
   letter-spacing: 2px;
   font-family: 'ZCOOL QingKe HuangYou', sans-serif;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
 }
 
 .story-tag {
   display: inline-block;
-  background: rgba(212, 168, 67, 0.1);
+  background: rgba(212, 168, 67, 0.15);
   color: var(--gold);
-  font-size: 13px;
-  padding: 4px 14px;
+  font-size: 15px;
+  padding: 5px 16px 5px 20px;
   border-radius: 20px;
-  border: 1px solid rgba(212, 168, 67, 0.25);
-  margin-bottom: 12px;
+  border: 1px solid rgba(212, 168, 67, 0.4);
+  margin-bottom: 14px;
   letter-spacing: 1px;
   font-family: 'ZCOOL QingKe HuangYou', sans-serif;
+  border-left: 3px solid var(--gold);
+  box-shadow: 0 2px 8px rgba(212, 168, 67, 0.15);
+}
+
+.story-intro {
+  word-break: keep-all;
+  overflow-wrap: break-word;
 }
 
 .card-grid {
@@ -530,7 +538,7 @@ body {
   margin-bottom: 24px;
 }
 
-.stat-item { text-align: center; min-width: 100px; }
+.stat-item { display: inline-flex; align-items: baseline; min-width: 100px; justify-content: center; }
 
 .stat-num {
   font-family: 'ZCOOL QingKe HuangYou', sans-serif;
@@ -540,7 +548,7 @@ body {
   text-shadow: 0 0 20px rgba(212, 168, 67, 0.3);
 }
 
-.stat-label { font-size: 12px; color: var(--text-dim); margin-top: 5px; }
+.stat-label { font-size: 12px; color: var(--text-dim); margin-left: 3px; }
 
 /* 进度条 */
 .progress-bar {
@@ -604,10 +612,10 @@ body {
 .campus-visual {
   position: relative;
   width: 100%;
-  max-width: 600px;
-  height: 280px;
+  max-width: 720px;
+  height: 340px;
   margin: 0 auto;
-  perspective: 800px;
+  perspective: 900px;
   overflow: hidden;
 }
 
@@ -617,8 +625,9 @@ body {
   left: 50%;
   transform: translateX(-50%) rotateX(55deg);
   transform-origin: bottom center;
-  width: 500px;
-  height: 400px;
+  transform-style: preserve-3d;
+  width: 600px;
+  height: 480px;
   background:
     repeating-linear-gradient(90deg, rgba(74, 140, 94, 0.15) 0px, rgba(74, 140, 94, 0.15) 1px, transparent 1px, transparent 50px),
     repeating-linear-gradient(0deg, rgba(74, 140, 94, 0.15) 0px, rgba(74, 140, 94, 0.15) 1px, transparent 1px, transparent 50px);
@@ -633,25 +642,80 @@ body {
 
 .campus-building {
   position: absolute;
-  background: rgba(26, 58, 42, 0.8);
-  border: 1px solid rgba(212, 168, 67, 0.3);
-  border-radius: 4px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  font-size: 9px;
+  color: var(--gold-light);
+  text-align: center;
+  line-height: 1.3;
+  padding: 0;
+  box-shadow: none;
+  transform-style: preserve-3d;
+  --bld-h: 20px;
+}
+
+.campus-building .bld-icon {
+  font-size: 14px;
+  margin-bottom: 1px;
+  color: var(--gold);
+}
+
+.campus-building .bld-svg {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  pointer-events: none;
+  transform-origin: bottom center;
+  transform: rotateX(-90deg);
+}
+
+.campus-building .bld-label {
+  position: absolute;
+  bottom: -22px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  white-space: nowrap;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--gold-light);
+  background: rgba(10, 20, 14, 0.65);
+  padding: 1px 6px;
+  border-radius: 3px;
+  letter-spacing: 0.5px;
+  text-shadow: 0 0 4px rgba(212,168,67,0.3);
+}
+
+/* 南湖独立区域 */
+.campus-nanhu-zone {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  width: 155px;
+  height: 110px;
+  border: 1.5px dashed rgba(212, 168, 67, 0.35);
+  border-radius: 6px;
+  background: rgba(13, 26, 18, 0.3);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-size: 10px;
-  color: var(--gold-light);
-  text-align: center;
-  line-height: 1.3;
-  padding: 2px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  gap: 2px;
+  overflow: visible;
+  transform-style: preserve-3d;
 }
 
-.campus-building .bld-icon {
-  font-size: 16px;
-  margin-bottom: 1px;
-  color: var(--gold);
+.campus-nanhu-label {
+  font-size: 8px;
+  color: var(--text-dim);
+  letter-spacing: 0.5px;
+  margin-top: 2px;
 }
 
 .campus-tree {
@@ -873,7 +937,7 @@ body {
           <div class="card-icon"><svg class="icon"><use href="#icon-map"/></svg></div>
           <div class="card-title">熟悉的场景让设计更具体</div>
           <div class="card-text">
-            选择华师校园作为游戏世界，并非偶然。桂中路两旁种着桂花树，于是"桂花密语"谜题自然成立；图书馆是读书的地方，所以设计问答挑战；食堂里找饭卡是每个学生的日常，就成了搜索类谜题的灵感。<span class="highlight">场景本身就是设计灵感的来源</span>，比凭空想象一个世界要高效得多，也更容易让设计逻辑自洽。
+            选择华师校园作为核心世界观载体并非偶然，游戏场景与谜题设计均取材于真实校园生活，并在此基础上进行合理的艺术化虚构与延伸。例如桂中路桂花树衍生的"桂花密语"谜题、图书馆场景对应的问答挑战，以及食堂"寻找饭卡"的探索任务。<span class="highlight">场景本身就是设计灵感的来源</span>，比凭空想象一个世界要高效得多，也更容易让设计逻辑自洽。
           </div>
         </div>
         <div class="card">
@@ -887,7 +951,7 @@ body {
           <div class="card-icon"><svg class="icon"><use href="#icon-code"/></svg></div>
           <div class="card-title">全面体现课程所学</div>
           <div class="card-text">
-            游戏是一个高度综合的软件系统，本项目涉及：<span class="highlight">面向对象设计</span>（6 层类继承体系、33 个模块）、<span class="highlight">数据结构</span>（状态机、碰撞矩阵）、<span class="highlight">文件 I/O</span>（JSON 序列化存档）、<span class="highlight">模块化与解耦</span>（依赖分层、接口通信），几乎把 Python 课的核心知识点都用上了。
+            游戏是一个高度综合的软件系统，本项目涉及：<span class="highlight">面向对象设计</span>（6 层类继承体系、33 个模块）、<span class="highlight">数据结构</span>（状态机、碰撞矩阵）、<span class="highlight">文件 I/O</span>（JSON 序列化存档）、<span class="highlight">模块化与解耦</span>（依赖分层、接口通信），涵盖了 Python 课程的核心知识体系。
           </div>
         </div>
         <div class="card">
@@ -907,54 +971,129 @@ body {
     <div class="story-tag fade-up">故事线 · 误入秘境</div>
     <h2 class="slide-title fade-up">游戏启动与状态机</h2>
     <div class="slide-content">
-      <div class="fade-up" style="text-align: center; margin-bottom: 20px;">
-        <p style="font-size: 15px; color: var(--text); line-height: 1.8; max-width: 780px; margin: 0 auto;">
+      <div class="fade-up" style="text-align: center; margin-bottom: 18px;">
+        <p style="font-size: 14px; color: var(--text-dim); line-height: 1.7; max-width: 700px; margin: 0 auto; word-break: keep-all; overflow-wrap: break-word;">
           你是一名刚踏入华师的新生。报到那天，校园里桂花逆季盛开，空气中弥漫着不寻常的气息——你误入了与现实校园重叠的秘境异世界。
         </p>
       </div>
-      <div class="two-col fade-up">
-        <div class="two-col-left">
-          <div class="col-title">10 种游戏状态</div>
-          <div class="code-block">
-TITLE     → 标题画面
-INTRO     → 开场动画
-PLAYING   → 游戏主状态
-PAUSED    → 暂停菜单
-INVENTORY → 背包界面
-MAP_VIEW  → 全局地图
-DIALOG    → 对话框
-PUZZLE    → 谜题界面
-QUEST_LOG → 任务日志
-OUTRO     → 结局动画
+      <!-- 状态机 + 架构图 并排 -->
+      <div class="fade-up" style="display: flex; gap: 20px; margin-bottom: 18px; align-items: flex-start;">
+        <!-- 左：状态机转换图 -->
+        <div style="flex: 0 0 40%;">
+          <div class="col-title" style="margin-bottom: 6px;">状态机转换图</div>
+          <svg viewBox="0 0 380 270" xmlns="http://www.w3.org/2000/svg" style="width:100%;">
+            <defs>
+              <marker id="ah" markerWidth="5" markerHeight="4" refX="4.5" refY="2" orient="auto"><polygon points="0 0,5 2,0 4" fill="rgba(74,140,94,0.6)"/></marker>
+              <marker id="ahg" markerWidth="5" markerHeight="4" refX="4.5" refY="2" orient="auto"><polygon points="0 0,5 2,0 4" fill="rgba(212,168,67,0.5)"/></marker>
+            </defs>
+            <line x1="108" y1="22" x2="148" y2="22" stroke="rgba(74,140,94,0.5)" stroke-width="1.2" marker-end="url(#ah)"/>
+            <line x1="175" y1="36" x2="175" y2="96" stroke="rgba(74,140,94,0.5)" stroke-width="1.2" marker-end="url(#ah)"/>
+            <line x1="215" y1="108" x2="282" y2="82" stroke="rgba(74,140,94,0.4)" stroke-width="1.2" marker-end="url(#ah)"/>
+            <line x1="215" y1="118" x2="282" y2="142" stroke="rgba(74,140,94,0.4)" stroke-width="1.2" marker-end="url(#ah)"/>
+            <line x1="195" y1="132" x2="260" y2="205" stroke="rgba(74,140,94,0.4)" stroke-width="1.2" marker-end="url(#ah)"/>
+            <line x1="155" y1="132" x2="95" y2="205" stroke="rgba(74,140,94,0.4)" stroke-width="1.2" marker-end="url(#ah)"/>
+            <line x1="135" y1="118" x2="78" y2="142" stroke="rgba(74,140,94,0.4)" stroke-width="1.2" marker-end="url(#ah)"/>
+            <line x1="135" y1="108" x2="92" y2="82" stroke="rgba(74,140,94,0.4)" stroke-width="1.2" marker-end="url(#ah)"/>
+            <line x1="175" y1="132" x2="175" y2="238" stroke="rgba(212,168,67,0.4)" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#ahg)"/>
+            <rect x="52" y="10" width="55" height="24" rx="4" fill="rgba(26,58,42,0.8)" stroke="rgba(212,168,67,0.3)"/>
+            <text x="79" y="26" text-anchor="middle" fill="#9a9282" font-size="9" font-family="Consolas,monospace">TITLE</text>
+            <rect x="150" y="10" width="52" height="24" rx="4" fill="rgba(26,58,42,0.8)" stroke="rgba(212,168,67,0.3)"/>
+            <text x="176" y="26" text-anchor="middle" fill="#9a9282" font-size="9" font-family="Consolas,monospace">INTRO</text>
+            <rect x="135" y="96" width="80" height="34" rx="6" fill="rgba(212,168,67,0.15)" stroke="#d4a843" stroke-width="2"/>
+            <text x="175" y="118" text-anchor="middle" fill="#f0d68a" font-size="12" font-weight="bold" font-family="Consolas,monospace">PLAYING</text>
+            <rect x="284" y="68" width="62" height="24" rx="4" fill="rgba(26,58,42,0.8)" stroke="rgba(212,168,67,0.3)"/>
+            <text x="315" y="84" text-anchor="middle" fill="#9a9282" font-size="9" font-family="Consolas,monospace">PAUSED</text>
+            <rect x="284" y="130" width="76" height="24" rx="4" fill="rgba(26,58,42,0.8)" stroke="rgba(212,168,67,0.3)"/>
+            <text x="322" y="146" text-anchor="middle" fill="#9a9282" font-size="8.5" font-family="Consolas,monospace">INVENTORY</text>
+            <rect x="258" y="200" width="72" height="24" rx="4" fill="rgba(26,58,42,0.8)" stroke="rgba(212,168,67,0.3)"/>
+            <text x="294" y="216" text-anchor="middle" fill="#9a9282" font-size="8.5" font-family="Consolas,monospace">MAP_VIEW</text>
+            <rect x="48" y="200" width="58" height="24" rx="4" fill="rgba(26,58,42,0.8)" stroke="rgba(212,168,67,0.3)"/>
+            <text x="77" y="216" text-anchor="middle" fill="#9a9282" font-size="9" font-family="Consolas,monospace">DIALOG</text>
+            <rect x="14" y="130" width="60" height="24" rx="4" fill="rgba(26,58,42,0.8)" stroke="rgba(212,168,67,0.3)"/>
+            <text x="44" y="146" text-anchor="middle" fill="#9a9282" font-size="9" font-family="Consolas,monospace">PUZZLE</text>
+            <rect x="8" y="68" width="78" height="24" rx="4" fill="rgba(26,58,42,0.8)" stroke="rgba(212,168,67,0.3)"/>
+            <text x="47" y="84" text-anchor="middle" fill="#9a9282" font-size="8.5" font-family="Consolas,monospace">QUEST_LOG</text>
+            <rect x="147" y="240" width="56" height="24" rx="4" fill="rgba(26,58,42,0.8)" stroke="rgba(212,168,67,0.3)"/>
+            <text x="175" y="256" text-anchor="middle" fill="#9a9282" font-size="9" font-family="Consolas,monospace">OUTRO</text>
+            <text x="128" y="16" text-anchor="middle" fill="rgba(74,140,94,0.55)" font-size="7">开始</text>
+            <text x="186" y="70" text-anchor="start" fill="rgba(74,140,94,0.55)" font-size="7">完成</text>
+            <text x="252" y="90" text-anchor="middle" fill="rgba(74,140,94,0.5)" font-size="7">Esc</text>
+            <text x="252" y="136" text-anchor="middle" fill="rgba(74,140,94,0.5)" font-size="7">Tab/I</text>
+            <text x="238" y="175" text-anchor="middle" fill="rgba(74,140,94,0.5)" font-size="7">M</text>
+            <text x="115" y="175" text-anchor="middle" fill="rgba(74,140,94,0.5)" font-size="7">F</text>
+            <text x="100" y="136" text-anchor="middle" fill="rgba(74,140,94,0.5)" font-size="7">F</text>
+            <text x="108" y="90" text-anchor="middle" fill="rgba(74,140,94,0.5)" font-size="7">J</text>
+            <text x="186" y="195" text-anchor="start" fill="rgba(212,168,67,0.45)" font-size="7">通关</text>
+          </svg>
+        </div>
+        <!-- 右：6 层依赖架构 -->
+        <div style="flex: 0 0 60%;">
+          <div class="col-title" style="margin-bottom: 6px;">6 层依赖架构</div>
+          <div style="display: flex; flex-direction: column; gap: 5px;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <div style="width:28px; font-size:10px; color:var(--gold-light); text-align:right; flex-shrink:0; font-weight:600;">L6</div>
+              <div style="flex:1; background:rgba(212,168,67,0.12); border:1px solid rgba(212,168,67,0.25); border-radius:5px; padding:8px 16px; font-size:13px; color:var(--gold-light);">流程层 <span style="color:var(--text-dim); font-size:11px;">标题 · 开场 · 教程 · 结局</span></div>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <div style="width:28px; font-size:10px; color:var(--text-dim); text-align:right; flex-shrink:0;">L5</div>
+              <div style="flex:1; background:rgba(45,90,63,0.2); border:1px solid rgba(74,140,94,0.25); border-radius:5px; padding:8px 16px; font-size:13px; color:var(--text-dim);">内容层 <span style="font-size:11px;">7 谜题 · 对话 · 道具 · 地图 · 音频</span></div>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <div style="width:28px; font-size:10px; color:var(--text-dim); text-align:right; flex-shrink:0;">L4</div>
+              <div style="flex:1; background:rgba(45,90,63,0.15); border:1px solid rgba(74,140,94,0.2); border-radius:5px; padding:8px 16px; font-size:13px; color:var(--text-dim);">UI 系统 + 游戏系统 <span style="font-size:11px;">dialog · hud · inventory · puzzle · clock · save</span></div>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <div style="width:28px; font-size:10px; color:var(--text-dim); text-align:right; flex-shrink:0;">L3</div>
+              <div style="flex:1; background:rgba(45,90,63,0.1); border:1px solid rgba(74,140,94,0.15); border-radius:5px; padding:8px 16px; font-size:13px; color:var(--text-dim);">角色系统 <span style="font-size:11px;">player · npc · interactive_object · trigger</span></div>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <div style="width:28px; font-size:10px; color:var(--text-dim); text-align:right; flex-shrink:0;">L2</div>
+              <div style="flex:1; background:rgba(45,90,63,0.07); border:1px solid rgba(74,140,94,0.1); border-radius:5px; padding:8px 16px; font-size:13px; color:var(--text-dim);">世界系统 <span style="font-size:11px;">tilemap · camera · entity · collision</span></div>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <div style="width:28px; font-size:10px; color:var(--text-dim); text-align:right; flex-shrink:0;">L1</div>
+              <div style="flex:1; background:rgba(26,58,42,0.3); border:1px solid rgba(74,140,94,0.08); border-radius:5px; padding:8px 16px; font-size:13px; color:var(--text-dim);">基础设施 <span style="font-size:11px;">config · main · game_manager</span></div>
+            </div>
           </div>
-          <div class="col-title" style="margin-top: 10px;">状态转换规则</div>
-          <div class="card-text" style="font-size: 12px; line-height: 1.8;">
-            每个状态有明确的进入/退出条件，<span class="highlight">不可跳转</span>（如 PUZZLE 不能直接到 MAP_VIEW）。<br>
-            PLAYING 是核心枢纽，所有子状态都从 PLAYING 进入并返回。<br>
-            状态机保证了游戏流程的<span class="highlight">确定性和可维护性</span>。
+          <div style="font-size:11px; color:var(--text-dim); margin-top: 8px; text-align: center;">↑ 上层依赖下层，<span class="highlight">不可反向依赖</span>，同层解耦</div>
+        </div>
+      </div>
+      <!-- 下方两列 -->
+      <div class="fade-up" style="display: flex; gap: 14px; align-items: stretch;">
+        <div style="flex: 0 0 38%; background: var(--bg-card); border: 1px solid rgba(212,168,67,0.12); border-radius: 8px; padding: 8px 12px;">
+          <div class="col-title">10 种游戏状态</div>
+          <div style="font-size: 12px; color: var(--text-dim); line-height: 1.8;">
+            <div style="display:flex; justify-content:space-between;"><span><span style="color:var(--gold-light)">TITLE</span> 标题画面</span><span style="color:rgba(148,140,126,0.6);">—</span></div>
+            <div style="display:flex; justify-content:space-between;"><span><span style="color:var(--gold-light)">INTRO</span> 开场动画</span><span style="color:rgba(148,140,126,0.6);">回车</span></div>
+            <div style="display:flex; justify-content:space-between;"><span><span style="color:var(--gold-light)">PLAYING</span> 游戏主状态</span><span style="color:rgba(148,140,126,0.6);">完成</span></div>
+            <div style="display:flex; justify-content:space-between;"><span><span style="color:var(--gold-light)">PAUSED</span> 暂停菜单</span><span style="color:rgba(148,140,126,0.6);">Esc</span></div>
+            <div style="display:flex; justify-content:space-between;"><span><span style="color:var(--gold-light)">INVENTORY</span> 背包界面</span><span style="color:rgba(148,140,126,0.6);">Tab/I</span></div>
+            <div style="display:flex; justify-content:space-between;"><span><span style="color:var(--gold-light)">MAP_VIEW</span> 全局地图</span><span style="color:rgba(148,140,126,0.6);">M</span></div>
+            <div style="display:flex; justify-content:space-between;"><span><span style="color:var(--gold-light)">DIALOG</span> 对话框</span><span style="color:rgba(148,140,126,0.6);">F</span></div>
+            <div style="display:flex; justify-content:space-between;"><span><span style="color:var(--gold-light)">PUZZLE</span> 谜题界面</span><span style="color:rgba(148,140,126,0.6);">F</span></div>
+            <div style="display:flex; justify-content:space-between;"><span><span style="color:var(--gold-light)">QUEST_LOG</span> 任务日志</span><span style="color:rgba(148,140,126,0.6);">J</span></div>
+            <div style="display:flex; justify-content:space-between;"><span><span style="color:var(--gold-light)">OUTRO</span> 结局动画</span><span style="color:rgba(148,140,126,0.6);">通关</span></div>
           </div>
         </div>
-        <div class="two-col-right">
-          <div class="col-title">渲染架构</div>
-          <div class="code-block">
-<span class="cmt"># 内部分辨率 → 窗口缩放</span>
-<span class="kw">INTERNAL</span>: 480×270 → <span class="kw">WINDOW</span>: 960×540
-Tile: 16×16px | 角色: 14×20px
-<span class="fn">pygame.transform.scale</span>() 统一缩放
+        <div style="flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+          <div style="background: var(--bg-card); border: 1px solid rgba(212,168,67,0.12); border-radius: 8px; padding: 8px 12px;">
+            <div class="col-title">状态转换规则</div>
+            <div class="card-text" style="font-size: 11px; line-height: 1.7;">
+              每个状态有明确的进入/退出条件，<span class="highlight">不可跳转</span>。PLAYING 是核心枢纽，所有子状态从 PLAYING 进入并返回。状态机保证了游戏流程的<span class="highlight">确定性和可维护性</span>。
+            </div>
           </div>
-          <div class="col-title" style="margin-top: 10px;">技术要点</div>
-          <div class="tech-point">
+          <div class="tech-point" style="margin-bottom:0;">
             <div class="tech-point-icon"><svg class="icon"><use href="#icon-state"/></svg></div>
             <div class="tech-point-content">
               <div class="tech-point-title">状态机驱动主循环</div>
-              <div class="tech-point-desc">game_manager.py（4453 行）根据当前状态分发 update/draw 调用，不同状态下输入处理逻辑完全隔离</div>
+              <div class="tech-point-desc">game_manager.py 根据当前状态分发 update/draw 调用，不同状态下输入处理逻辑完全隔离</div>
             </div>
           </div>
-          <div class="tech-point">
+          <div class="tech-point" style="margin-bottom:0;">
             <div class="tech-point-icon"><svg class="icon"><use href="#icon-grid"/></svg></div>
             <div class="tech-point-content">
               <div class="tech-point-title">双缓冲缩放渲染</div>
-              <div class="tech-point-desc">所有绘制在 480×270 的内部 Surface 上完成，最终 scale 到窗口尺寸，保证像素对齐和一致的运动速度</div>
+              <div class="tech-point-desc">480×270 内部 Surface → scale 到窗口尺寸，保证像素对齐和一致运动速度</div>
             </div>
           </div>
         </div>
@@ -967,59 +1106,303 @@ Tile: 16×16px | 角色: 14×20px
     <div class="section-tag fade-up">二 / 游戏设计</div>
     <div class="story-tag fade-up">故事线 · 初到校园</div>
     <h2 class="slide-title fade-up">自由探索与无缝地图</h2>
-    <div class="slide-content">
-      <div class="fade-up" style="text-align: center; margin-bottom: 16px;">
-        <p style="font-size: 14px; color: var(--text-dim); line-height: 1.7; max-width: 700px; margin: 0 auto;">
-          秘境中的校园与现实几乎一模一样——桂中路、图书馆、博雅广场、体育馆……但每个地标都被秘境力量笼罩。
+    <div class="slide-content" style="margin-top: 0px;">
+      <div class="fade-up" style="text-align: center; margin-bottom: 20px;">
+        <p style="font-size: 14px; color: var(--text-dim); line-height: 1.7; max-width: 700px; margin: 0 auto; word-break: keep-all; overflow-wrap: break-word;">
+          秘境中的校园与游戏现实几乎一模一样——桂中路、图书馆、博雅广场、体育馆……但每个地标都被秘境力量笼罩。
         </p>
       </div>
       <!-- 透视网格校园图 -->
-      <div class="campus-visual fade-up">
+      <div class="campus-visual fade-up" style="margin-top: -55px;">
         <div class="campus-grid">
           <!-- 马路 -->
-          <div class="campus-road" style="left:200px; top:0; width:30px; height:400px;"></div>
-          <div class="campus-road" style="left:0; top:180px; width:500px; height:25px;"></div>
+          <div class="campus-road" style="left:240px; top:0; width:35px; height:480px;"></div>
+          <div class="campus-road" style="left:0; top:215px; width:600px; height:30px;"></div>
           <!-- 建筑 -->
-          <div class="campus-building" style="left:40px; top:60px; width:70px; height:50px;">
-            <span class="bld-icon"><svg class="icon" style="width:14px;height:14px"><use href="#icon-book"/></svg></span>
-            <span>图书馆</span>
+          <!-- 图书馆：典雅山墙建筑 -->
+          <div class="campus-building" style="left:45px; top:65px; width:85px; height:12px;">
+            <svg class="bld-svg" viewBox="0 0 85 115" style="height:115px;">
+              <defs>
+                <linearGradient id="gLib" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="rgba(38,72,50,0.55)"/>
+                  <stop offset="100%" stop-color="rgba(22,52,36,0.7)"/>
+                </linearGradient>
+                <linearGradient id="gLibWin" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="rgba(220,195,130,0.35)"/>
+                  <stop offset="100%" stop-color="rgba(160,140,80,0.1)"/>
+                </linearGradient>
+                <linearGradient id="gLibRoof" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="rgba(55,100,70,0.5)"/>
+                  <stop offset="100%" stop-color="rgba(40,80,55,0.6)"/>
+                </linearGradient>
+              </defs>
+              <!-- 底部投影 -->
+              <ellipse cx="42" cy="113" rx="40" ry="2.5" fill="rgba(0,0,0,0.3)"/>
+              <!-- 正面墙体 -->
+              <rect x="3" y="28" width="79" height="82" rx="1.5" fill="url(#gLib)" stroke="rgba(212,168,67,0.55)" stroke-width="0.9"/>
+              <!-- 墙体水平线脚 -->
+              <line x1="3" y1="50" x2="82" y2="50" stroke="rgba(212,168,67,0.2)" stroke-width="0.4"/>
+              <line x1="3" y1="75" x2="82" y2="75" stroke="rgba(212,168,67,0.15)" stroke-width="0.3"/>
+              <!-- 山墙屋顶 -->
+              <polygon points="3,28 42,4 82,28" fill="url(#gLibRoof)" stroke="rgba(212,168,67,0.55)" stroke-width="0.9" stroke-linejoin="round"/>
+              <!-- 屋脊装饰 -->
+              <line x1="42" y1="4" x2="42" y2="14" stroke="rgba(212,168,67,0.6)" stroke-width="1.2" stroke-linecap="round"/>
+              <circle cx="42" cy="6" r="3" fill="none" stroke="rgba(212,168,67,0.5)" stroke-width="0.7"/>
+              <circle cx="42" cy="6" r="1" fill="rgba(212,168,67,0.3)"/>
+              <!-- 檐口线 -->
+              <line x1="3" y1="28" x2="82" y2="28" stroke="rgba(212,168,67,0.45)" stroke-width="0.7"/>
+              <!-- 檐下装饰带 -->
+              <rect x="3" y="28" width="79" height="4" rx="0.5" fill="rgba(55,100,70,0.25)" stroke="rgba(212,168,67,0.2)" stroke-width="0.3"/>
+              <!-- 拱窗 3×2 -->
+              <path d="M10,52 Q18,41 26,52 L26,65 L10,65Z" fill="url(#gLibWin)" stroke="rgba(212,168,67,0.4)" stroke-width="0.6" stroke-linejoin="round"/>
+              <path d="M32,52 Q40,41 48,52 L48,65 L32,65Z" fill="url(#gLibWin)" stroke="rgba(212,168,67,0.4)" stroke-width="0.6" stroke-linejoin="round"/>
+              <path d="M54,52 Q62,41 70,52 L70,65 L54,65Z" fill="url(#gLibWin)" stroke="rgba(212,168,67,0.4)" stroke-width="0.6" stroke-linejoin="round"/>
+              <path d="M10,68 Q18,57 26,68 L26,81 L10,81Z" fill="url(#gLibWin)" stroke="rgba(212,168,67,0.4)" stroke-width="0.6" stroke-linejoin="round"/>
+              <path d="M32,68 Q40,57 48,68 L48,81 L32,81Z" fill="url(#gLibWin)" stroke="rgba(212,168,67,0.4)" stroke-width="0.6" stroke-linejoin="round"/>
+              <path d="M54,68 Q62,57 70,68 L70,81 L54,81Z" fill="url(#gLibWin)" stroke="rgba(212,168,67,0.4)" stroke-width="0.6" stroke-linejoin="round"/>
+              <!-- 窗内十字 -->
+              <line x1="18" y1="52" x2="18" y2="65" stroke="rgba(212,168,67,0.12)" stroke-width="0.3"/>
+              <line x1="40" y1="52" x2="40" y2="65" stroke="rgba(212,168,67,0.12)" stroke-width="0.3"/>
+              <line x1="62" y1="52" x2="62" y2="65" stroke="rgba(212,168,67,0.12)" stroke-width="0.3"/>
+              <!-- 入口雨棚 -->
+              <path d="M24,86 L60,86 L57,82 L27,82Z" fill="rgba(55,100,70,0.45)" stroke="rgba(212,168,67,0.35)" stroke-width="0.5"/>
+              <!-- 门 -->
+              <rect x="30" y="88" width="24" height="20" rx="2" fill="rgba(212,168,67,0.1)" stroke="rgba(212,168,67,0.45)" stroke-width="0.6"/>
+              <line x1="42" y1="88" x2="42" y2="108" stroke="rgba(212,168,67,0.25)" stroke-width="0.4"/>
+              <circle cx="39" cy="98" r="1" fill="rgba(212,168,67,0.45)"/>
+              <circle cx="45" cy="98" r="1" fill="rgba(212,168,67,0.45)"/>
+            </svg>
+            <span class="bld-label">图书馆</span>
           </div>
-          <div class="campus-building" style="left:280px; top:50px; width:80px; height:55px;">
-            <span class="bld-icon"><svg class="icon" style="width:14px;height:14px"><use href="#icon-target"/></svg></span>
-            <span>佑铭体育馆</span>
+          <!-- 佑铭体育馆：现代拱顶 -->
+          <div class="campus-building" style="left:70px; top:310px; width:95px; height:12px;">
+            <svg class="bld-svg" viewBox="0 0 95 110" style="height:110px;">
+              <defs>
+                <linearGradient id="gGym" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="rgba(48,82,58,0.5)"/>
+                  <stop offset="100%" stop-color="rgba(28,56,40,0.65)"/>
+                </linearGradient>
+                <linearGradient id="gGymRoof" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="rgba(62,105,72,0.4)"/>
+                  <stop offset="100%" stop-color="rgba(45,82,58,0.5)"/>
+                </linearGradient>
+                <linearGradient id="gGymWin" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="rgba(120,180,140,0.15)"/>
+                  <stop offset="100%" stop-color="rgba(100,160,120,0.05)"/>
+                </linearGradient>
+              </defs>
+              <!-- 底部投影 -->
+              <ellipse cx="47" cy="108" rx="45" ry="2.5" fill="rgba(0,0,0,0.3)"/>
+              <!-- 正面 -->
+              <rect x="3" y="34" width="89" height="70" rx="1.5" fill="url(#gGym)" stroke="rgba(212,168,67,0.55)" stroke-width="0.9"/>
+              <!-- 拱形屋顶 -->
+              <path d="M3,34 Q47,4 92,34" fill="url(#gGymRoof)" stroke="rgba(212,168,67,0.55)" stroke-width="0.9" stroke-linecap="round"/>
+              <!-- 钢结构弧线 -->
+              <path d="M12,34 Q47,10 83,34" fill="none" stroke="rgba(212,168,67,0.22)" stroke-width="0.5"/>
+              <path d="M22,34 Q47,16 73,34" fill="none" stroke="rgba(212,168,67,0.16)" stroke-width="0.4"/>
+              <path d="M32,34 Q47,22 63,34" fill="none" stroke="rgba(212,168,67,0.12)" stroke-width="0.3"/>
+              <!-- 横梁 -->
+              <line x1="3" y1="34" x2="92" y2="34" stroke="rgba(212,168,67,0.4)" stroke-width="0.6"/>
+              <!-- 大面积玻璃窗 -->
+              <rect x="7" y="40" width="34" height="26" rx="1.5" fill="url(#gGymWin)" stroke="rgba(212,168,67,0.3)" stroke-width="0.5"/>
+              <line x1="24" y1="40" x2="24" y2="66" stroke="rgba(212,168,67,0.15)" stroke-width="0.3"/>
+              <line x1="7" y1="53" x2="41" y2="53" stroke="rgba(212,168,67,0.1)" stroke-width="0.3"/>
+              <rect x="54" y="40" width="34" height="26" rx="1.5" fill="url(#gGymWin)" stroke="rgba(212,168,67,0.3)" stroke-width="0.5"/>
+              <line x1="71" y1="40" x2="71" y2="66" stroke="rgba(212,168,67,0.15)" stroke-width="0.3"/>
+              <line x1="54" y1="53" x2="88" y2="53" stroke="rgba(212,168,67,0.1)" stroke-width="0.3"/>
+              <!-- 篮球架 -->
+              <line x1="18" y1="72" x2="18" y2="98" stroke="rgba(212,168,67,0.22)" stroke-width="0.7" stroke-linecap="round"/>
+              <path d="M18,72 L25,72 L25,76" fill="none" stroke="rgba(212,168,67,0.22)" stroke-width="0.5"/>
+              <rect x="14" y="76" width="8" height="5" rx="0.5" fill="none" stroke="rgba(212,168,67,0.15)" stroke-width="0.3"/>
+              <line x1="77" y1="72" x2="77" y2="98" stroke="rgba(212,168,67,0.22)" stroke-width="0.7" stroke-linecap="round"/>
+              <path d="M77,72 L70,72 L70,76" fill="none" stroke="rgba(212,168,67,0.22)" stroke-width="0.5"/>
+              <rect x="73" y="76" width="8" height="5" rx="0.5" fill="none" stroke="rgba(212,168,67,0.15)" stroke-width="0.3"/>
+              <!-- 双开大门 -->
+              <rect x="33" y="76" width="29" height="28" rx="2" fill="rgba(212,168,67,0.08)" stroke="rgba(212,168,67,0.45)" stroke-width="0.6"/>
+              <line x1="47" y1="76" x2="47" y2="104" stroke="rgba(212,168,67,0.25)" stroke-width="0.4"/>
+              <!-- 地面标线 -->
+              <line x1="3" y1="104" x2="92" y2="104" stroke="rgba(212,168,67,0.15)" stroke-width="0.3"/>
+            </svg>
+            <span class="bld-label">佑铭体育馆</span>
           </div>
-          <div class="campus-building" style="left:380px; top:100px; width:70px; height:45px;">
-            <span class="bld-icon"><svg class="icon" style="width:14px;height:14px"><use href="#icon-building"/></svg></span>
-            <span>综合楼</span>
+          <!-- 博雅广场地面（平铺在网格上） -->
+          <div style="position:absolute; left:375px; top:52px; width:105px; height:55px; background: rgba(42,78,56,0.18); border: 1px solid rgba(212,168,67,0.3); border-radius: 4px; box-sizing: border-box;"></div>
+          <!-- 博雅广场：开阔露天 -->
+          <div class="campus-building" style="left:380px; top:100px; width:95px; height:12px;">
+            <svg class="bld-svg" viewBox="0 0 95 52" style="height:52px;">
+              <defs>
+                <linearGradient id="gPlaza" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="rgba(42,78,56,0.25)"/>
+                  <stop offset="100%" stop-color="rgba(32,62,46,0.35)"/>
+                </linearGradient>
+              </defs>
+              <!-- 中心花坛 -->
+              <ellipse cx="47" cy="34" rx="16" ry="10" fill="rgba(74,140,94,0.15)" stroke="rgba(74,140,94,0.35)" stroke-width="0.6"/>
+              <circle cx="41" cy="31" r="3.5" fill="rgba(74,140,94,0.2)" stroke="rgba(74,140,94,0.3)" stroke-width="0.4"/>
+              <circle cx="53" cy="31" r="3.5" fill="rgba(74,140,94,0.2)" stroke="rgba(74,140,94,0.3)" stroke-width="0.4"/>
+              <circle cx="47" cy="37" r="2.5" fill="rgba(212,168,67,0.18)" stroke="rgba(212,168,67,0.25)" stroke-width="0.4"/>
+              <!-- 花坛内小草 -->
+              <line x1="44" y1="30" x2="43" y2="27" stroke="rgba(74,140,94,0.3)" stroke-width="0.3"/>
+              <line x1="50" y1="30" x2="51" y2="27" stroke="rgba(74,140,94,0.3)" stroke-width="0.3"/>
+              <!-- 旗杆 -->
+              <line x1="82" y1="0" x2="82" y2="14" stroke="rgba(212,168,67,0.4)" stroke-width="0.6" stroke-linecap="round"/>
+              <polygon points="82,0 90,3 82,6" fill="rgba(212,168,67,0.22)" stroke="rgba(212,168,67,0.18)" stroke-width="0.3"/>
+              <circle cx="82" cy="0" r="1" fill="rgba(212,168,67,0.3)"/>
+            </svg>
+            <span class="bld-label">博雅广场</span>
           </div>
-          <div class="campus-building" style="left:60px; top:220px; width:80px; height:50px;">
-            <span class="bld-icon"><svg class="icon" style="width:14px;height:14px"><use href="#icon-chat"/></svg></span>
-            <span>博雅广场</span>
+          <!-- 学子食堂：温馨平顶 -->
+          <div class="campus-building" style="left:340px; top:300px; width:85px; height:12px;">
+            <svg class="bld-svg" viewBox="0 0 85 92" style="height:92px;">
+              <defs>
+                <linearGradient id="gDin" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="rgba(52,76,48,0.5)"/>
+                  <stop offset="100%" stop-color="rgba(34,54,30,0.65)"/>
+                </linearGradient>
+                <linearGradient id="gDinWin" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="rgba(230,190,90,0.4)"/>
+                  <stop offset="100%" stop-color="rgba(190,150,60,0.1)"/>
+                </linearGradient>
+              </defs>
+              <!-- 底部投影 -->
+              <ellipse cx="42" cy="90" rx="40" ry="2.5" fill="rgba(0,0,0,0.3)"/>
+              <!-- 正面 -->
+              <rect x="3" y="12" width="79" height="74" rx="1.5" fill="url(#gDin)" stroke="rgba(212,168,67,0.55)" stroke-width="0.9"/>
+              <!-- 平屋顶 -->
+              <rect x="-1" y="8" width="87" height="6" rx="2" fill="rgba(62,88,52,0.45)" stroke="rgba(212,168,67,0.45)" stroke-width="0.6"/>
+              <!-- 屋顶排水线 -->
+              <line x1="-1" y1="11" x2="86" y2="11" stroke="rgba(212,168,67,0.15)" stroke-width="0.3"/>
+              <!-- 烟囱 -->
+              <rect x="65" y="1" width="7" height="10" rx="1.2" fill="rgba(42,68,38,0.5)" stroke="rgba(212,168,67,0.3)" stroke-width="0.5"/>
+              <ellipse cx="68.5" cy="1" rx="4" ry="1.2" fill="rgba(200,200,200,0.12)"/>
+              <!-- 暖光窗口 -->
+              <rect x="8" y="20" width="17" height="20" rx="2" fill="url(#gDinWin)" stroke="rgba(212,168,67,0.4)" stroke-width="0.6"/>
+              <rect x="34" y="20" width="17" height="20" rx="2" fill="url(#gDinWin)" stroke="rgba(212,168,67,0.4)" stroke-width="0.6"/>
+              <rect x="60" y="20" width="17" height="20" rx="2" fill="url(#gDinWin)" stroke="rgba(212,168,67,0.4)" stroke-width="0.6"/>
+              <!-- 窗户十字格 -->
+              <line x1="16" y1="20" x2="16" y2="40" stroke="rgba(212,168,67,0.18)" stroke-width="0.4"/>
+              <line x1="8" y1="30" x2="25" y2="30" stroke="rgba(212,168,67,0.18)" stroke-width="0.4"/>
+              <line x1="42" y1="20" x2="42" y2="40" stroke="rgba(212,168,67,0.18)" stroke-width="0.4"/>
+              <line x1="34" y1="30" x2="51" y2="30" stroke="rgba(212,168,67,0.18)" stroke-width="0.4"/>
+              <line x1="68" y1="20" x2="68" y2="40" stroke="rgba(212,168,67,0.18)" stroke-width="0.4"/>
+              <line x1="60" y1="30" x2="77" y2="30" stroke="rgba(212,168,67,0.18)" stroke-width="0.4"/>
+              <!-- 招牌 -->
+              <rect x="20" y="48" width="45" height="9" rx="2" fill="rgba(212,168,67,0.12)" stroke="rgba(212,168,67,0.35)" stroke-width="0.5"/>
+              <line x1="28" y1="52" x2="57" y2="52" stroke="rgba(212,168,67,0.15)" stroke-width="0.3"/>
+              <!-- 门 -->
+              <rect x="28" y="62" width="29" height="24" rx="2" fill="rgba(212,168,67,0.08)" stroke="rgba(212,168,67,0.45)" stroke-width="0.6"/>
+              <line x1="42" y1="62" x2="42" y2="86" stroke="rgba(212,168,67,0.25)" stroke-width="0.4"/>
+              <circle cx="39" cy="74" r="1" fill="rgba(212,168,67,0.45)"/>
+              <circle cx="45" cy="74" r="1" fill="rgba(212,168,67,0.45)"/>
+            </svg>
+            <span class="bld-label">学子食堂</span>
           </div>
-          <div class="campus-building" style="left:280px; top:240px; width:70px; height:45px;">
-            <span class="bld-icon"><svg class="icon" style="width:14px;height:14px"><use href="#icon-backpack"/></svg></span>
-            <span>学子食堂</span>
-          </div>
-          <div class="campus-building" style="left:170px; top:300px; width:80px; height:50px; border-color: rgba(212, 168, 67, 0.5);">
-            <span class="bld-icon"><svg class="icon" style="width:14px;height:14px"><use href="#icon-sparkle"/></svg></span>
-            <span>喷泉广场</span>
+          <!-- 喷泉广场地面（平铺在网格上） -->
+          <div style="position:absolute; left:215px; top:345px; width:105px; height:60px; background: rgba(42,72,52,0.18); border: 1px solid rgba(212,168,67,0.45); border-radius: 4px; box-sizing: border-box;"></div>
+          <!-- 喷泉广场：金色焦点 -->
+          <div class="campus-building" style="left:220px; top:390px; width:95px; height:12px;">
+            <svg class="bld-svg" viewBox="0 0 95 62" style="height:62px;">
+              <defs>
+                <linearGradient id="gFtn" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="rgba(42,72,52,0.25)"/>
+                  <stop offset="100%" stop-color="rgba(32,58,42,0.35)"/>
+                </linearGradient>
+                <radialGradient id="gFtnWater" cx="50%" cy="50%">
+                  <stop offset="0%" stop-color="rgba(212,168,67,0.25)"/>
+                  <stop offset="70%" stop-color="rgba(212,168,67,0.1)"/>
+                  <stop offset="100%" stop-color="rgba(212,168,67,0.02)"/>
+                </radialGradient>
+              </defs>
+              <!-- 喷泉外圈 -->
+              <ellipse cx="47" cy="38" rx="24" ry="13" fill="url(#gFtnWater)" stroke="rgba(212,168,67,0.55)" stroke-width="0.8"/>
+              <!-- 喷泉内圈 -->
+              <ellipse cx="47" cy="38" rx="11" ry="6" fill="rgba(212,168,67,0.12)" stroke="rgba(212,168,67,0.45)" stroke-width="0.6"/>
+              <!-- 喷泉中心柱 -->
+              <rect x="45" y="28" width="4" height="10" rx="1" fill="rgba(212,168,67,0.15)" stroke="rgba(212,168,67,0.3)" stroke-width="0.4"/>
+              <!-- 水柱 -->
+              <line x1="47" y1="28" x2="47" y2="16" stroke="rgba(212,168,67,0.45)" stroke-width="0.8" stroke-linecap="round" stroke-dasharray="3,1.5"/>
+              <!-- 水花 -->
+              <circle cx="40" cy="20" r="2" fill="rgba(212,168,67,0.22)" stroke="rgba(212,168,67,0.18)" stroke-width="0.4"/>
+              <circle cx="54" cy="19" r="1.5" fill="rgba(212,168,67,0.18)" stroke="rgba(212,168,67,0.14)" stroke-width="0.3"/>
+              <circle cx="47" cy="15" r="2.2" fill="rgba(212,168,67,0.28)" stroke="rgba(212,168,67,0.22)" stroke-width="0.4"/>
+              <!-- 装饰灯柱 -->
+              <line x1="12" y1="8" x2="12" y2="16" stroke="rgba(212,168,67,0.35)" stroke-width="0.6" stroke-linecap="round"/>
+              <circle cx="12" cy="7" r="2" fill="rgba(212,168,67,0.18)" stroke="rgba(212,168,67,0.25)" stroke-width="0.4"/>
+              <line x1="83" y1="8" x2="83" y2="16" stroke="rgba(212,168,67,0.35)" stroke-width="0.6" stroke-linecap="round"/>
+              <circle cx="83" cy="7" r="2" fill="rgba(212,168,67,0.18)" stroke="rgba(212,168,67,0.25)" stroke-width="0.4"/>
+              <!-- 灯柱底座 -->
+              <rect x="10" y="14" width="4" height="2" rx="0.5" fill="rgba(212,168,67,0.1)" stroke="rgba(212,168,67,0.15)" stroke-width="0.3"/>
+              <rect x="81" y="14" width="4" height="2" rx="0.5" fill="rgba(212,168,67,0.1)" stroke="rgba(212,168,67,0.15)" stroke-width="0.3"/>
+            </svg>
+            <span class="bld-label" style="color:var(--gold);">喷泉广场</span>
           </div>
           <!-- 桂花树 -->
-          <div class="campus-tree" style="left:160px; top:120px;"></div>
-          <div class="campus-tree" style="left:175px; top:140px;"></div>
-          <div class="campus-tree" style="left:155px; top:160px;"></div>
-          <div class="campus-tree" style="left:250px; top:150px;"></div>
+          <div class="campus-tree" style="left:190px; top:145px;"></div>
+          <div class="campus-tree" style="left:210px; top:168px;"></div>
+          <div class="campus-tree" style="left:185px; top:192px;"></div>
+          <div class="campus-tree" style="left:300px; top:180px;"></div>
           <!-- 标注 -->
-          <div class="campus-label" style="left:155px; top:100px; color: var(--gold);">桂中路</div>
-          <div class="campus-label" style="left:0; top:165px;">桂子山路</div>
+          <div class="campus-label" style="left:185px; top:120px; color: var(--gold);">桂中路</div>
+          <div class="campus-label" style="left:0; top:198px;">桂子山路</div>
+          <!-- 校车连接虚线 -->
+          <svg style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;" viewBox="0 0 600 480">
+            <line x1="440" y1="385" x2="510" y2="430" stroke="rgba(212,168,67,0.35)" stroke-width="1.5" stroke-dasharray="5,3"/>
+            <text x="458" y="418" fill="rgba(212,168,67,0.55)" font-size="8">校车</text>
+          </svg>
+          <!-- 南湖校区独立区域 -->
+          <div class="campus-nanhu-zone">
+            <div class="campus-building" style="position:relative; left:auto; top:auto; width:75px; height:12px; transform-style:preserve-3d;">
+              <svg class="bld-svg" viewBox="0 0 75 88" style="height:88px;">
+                <defs>
+                  <linearGradient id="gNanhu" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="rgba(32,68,52,0.5)"/>
+                    <stop offset="100%" stop-color="rgba(18,46,34,0.65)"/>
+                  </linearGradient>
+                  <linearGradient id="gNanhuWin" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="rgba(130,190,170,0.25)"/>
+                    <stop offset="100%" stop-color="rgba(90,150,130,0.08)"/>
+                  </linearGradient>
+                </defs>
+                <!-- 底部投影 -->
+                <ellipse cx="37" cy="86" rx="35" ry="2.5" fill="rgba(0,0,0,0.3)"/>
+                <!-- 正面 -->
+                <rect x="3" y="12" width="69" height="70" rx="1.5" fill="url(#gNanhu)" stroke="rgba(212,168,67,0.55)" stroke-width="0.9"/>
+                <!-- 平顶 -->
+                <rect x="-1" y="8" width="77" height="6" rx="2" fill="rgba(42,82,66,0.45)" stroke="rgba(212,168,67,0.45)" stroke-width="0.6"/>
+                <!-- 屋顶天线 -->
+                <line x1="37" y1="8" x2="37" y2="2" stroke="rgba(212,168,67,0.3)" stroke-width="0.5" stroke-linecap="round"/>
+                <circle cx="37" cy="2" r="1.2" fill="rgba(212,168,67,0.25)"/>
+                <!-- 玻璃幕墙网格 -->
+                <line x1="26" y1="12" x2="26" y2="82" stroke="rgba(212,168,67,0.15)" stroke-width="0.4"/>
+                <line x1="49" y1="12" x2="49" y2="82" stroke="rgba(212,168,67,0.15)" stroke-width="0.4"/>
+                <line x1="3" y1="35" x2="72" y2="35" stroke="rgba(212,168,67,0.15)" stroke-width="0.4"/>
+                <line x1="3" y1="58" x2="72" y2="58" stroke="rgba(212,168,67,0.15)" stroke-width="0.4"/>
+                <!-- 窗户 3×2 -->
+                <rect x="5" y="15" width="18" height="17" rx="1.5" fill="url(#gNanhuWin)" stroke="rgba(212,168,67,0.3)" stroke-width="0.5"/>
+                <rect x="28" y="15" width="18" height="17" rx="1.5" fill="url(#gNanhuWin)" stroke="rgba(212,168,67,0.3)" stroke-width="0.5"/>
+                <rect x="51" y="15" width="18" height="17" rx="1.5" fill="url(#gNanhuWin)" stroke="rgba(212,168,67,0.3)" stroke-width="0.5"/>
+                <rect x="5" y="36" width="18" height="15" rx="1.5" fill="url(#gNanhuWin)" stroke="rgba(212,168,67,0.3)" stroke-width="0.5"/>
+                <rect x="28" y="36" width="18" height="15" rx="1.5" fill="url(#gNanhuWin)" stroke="rgba(212,168,67,0.3)" stroke-width="0.5"/>
+                <rect x="51" y="36" width="18" height="15" rx="1.5" fill="url(#gNanhuWin)" stroke="rgba(212,168,67,0.3)" stroke-width="0.5"/>
+                <!-- 旋转门 -->
+                <circle cx="37" cy="72" r="6" fill="rgba(212,168,67,0.07)" stroke="rgba(212,168,67,0.4)" stroke-width="0.6"/>
+                <line x1="37" y1="66" x2="37" y2="78" stroke="rgba(212,168,67,0.22)" stroke-width="0.4"/>
+                <line x1="31" y1="72" x2="43" y2="72" stroke="rgba(212,168,67,0.22)" stroke-width="0.4"/>
+                <!-- 门上方横梁 -->
+                <line x1="28" y1="54" x2="47" y2="54" stroke="rgba(212,168,67,0.2)" stroke-width="0.4"/>
+              </svg>
+              <span class="bld-label">南湖综合楼</span>
+            </div>
+            <div class="campus-nanhu-label">南湖校区 · 独立地图</div>
+          </div>
         </div>
       </div>
-      <div class="card-grid cols-3 fade-up" style="margin-top: 30px;">
+      <div class="card-grid cols-3 fade-up" style="margin-top: 8px;">
         <div class="tech-point" style="margin-bottom:0;">
           <div class="tech-point-icon"><svg class="icon"><use href="#icon-map"/></svg></div>
           <div class="tech-point-content">
             <div class="tech-point-title">无缝大地图</div>
-            <div class="tech-point-desc">本部校区 120×80 tiles，pytmx 加载 Tiled 导出的 TMX 地图，6 层图层（ground→collision）</div>
+            <div class="tech-point-desc">本部 120×80 tiles + 南湖 40×30 tiles，校车接驳站连接（过场 2-3s + 淡入）。pytmx 加载 TMX，6 层图层（ground→collision）</div>
           </div>
         </div>
         <div class="tech-point" style="margin-bottom:0;">
@@ -1047,7 +1430,7 @@ Tile: 16×16px | 角色: 14×20px
     <h2 class="slide-title fade-up">昼夜循环与秘境觉醒</h2>
     <div class="slide-content">
       <div class="fade-up" style="text-align: center; margin-bottom: 18px;">
-        <p style="font-size: 14px; color: var(--text-dim); line-height: 1.7; max-width: 700px; margin: 0 auto;">
+        <p style="font-size: 14px; color: var(--text-dim); line-height: 1.7; max-width: 700px; margin: 0 auto; word-break: keep-all; overflow-wrap: break-word;">
           白天，校园宁静如常；夜幕降临，秘境觉醒——幽绿光芒从地面涌出，桂花树在暗夜中发出微光，广场舞阿姨出现在博雅广场……
         </p>
       </div>
@@ -1122,8 +1505,8 @@ KEYFRAMES = [
     <h2 class="slide-title fade-up">三个地标 · 三种玩法</h2>
     <div class="slide-content">
       <div class="fade-up" style="text-align: center; margin-bottom: 18px;">
-        <p style="font-size: 14px; color: var(--text-dim); line-height: 1.7; max-width: 700px; margin: 0 auto;">
-          秘境守护者告诉你：七个地标各藏一枚桂花徽章碎片，集齐七枚方能解除封印。你首先来到夜晚的桂中路……
+        <p style="font-size: 14px; color: var(--text-dim); line-height: 1.7; max-width: 700px; margin: 0 auto; word-break: keep-all; overflow-wrap: break-word;">
+          秘境守护者告诉你：七个地标各藏一枚桂花徽章碎片，集齐七枚方能解除封印。夜幕低垂，秘境的气息弥漫在校园的每个角落……
         </p>
       </div>
       <div class="card-grid cols-3 fade-up">
@@ -1149,36 +1532,38 @@ KEYFRAMES = [
           <div class="puzzle-stars">★☆☆</div>
         </div>
       </div>
-      <div class="two-col fade-up" style="margin-top: 18px;">
-        <div class="two-col-left">
-          <div class="tech-point">
-            <div class="tech-point-icon"><svg class="icon"><use href="#icon-moon"/></svg></div>
-            <div class="tech-point-content">
-              <div class="tech-point-title">夜晚限定机制</div>
-              <div class="tech-point-desc">桂花密语仅在夜晚可触发——PuzzleManager 检查当前时钟时段，白天互动桂花树只返回普通对话。这是昼夜系统与谜题系统的<span class="highlight">跨模块联动</span>。</div>
+      <div class="fade-up" style="margin-top: 18px;">
+        <div style="display: flex; gap: 16px;">
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
+            <div class="tech-point" style="margin-bottom:0; flex: 1;">
+              <div class="tech-point-icon"><svg class="icon"><use href="#icon-moon"/></svg></div>
+              <div class="tech-point-content">
+                <div class="tech-point-title">夜晚限定机制</div>
+                <div class="tech-point-desc">桂花密语仅在夜晚可触发——PuzzleManager 检查当前时钟时段，白天互动桂花树只返回普通对话。这是昼夜系统与谜题系统的<span class="highlight">跨模块联动</span>。</div>
+              </div>
+            </div>
+            <div class="tech-point" style="margin-bottom:0; flex: 1;">
+              <div class="tech-point-icon"><svg class="icon"><use href="#icon-key"/></svg></div>
+              <div class="tech-point-content">
+                <div class="tech-point-title">密码输入终端</div>
+                <div class="tech-point-desc">综合楼电脑终端支持数字键输入 4 位密码，含光标闪烁动画。线索散布在公告栏残页中，<span class="highlight">信息碎片化设计</span>引导玩家主动探索。</div>
+              </div>
             </div>
           </div>
-          <div class="tech-point">
-            <div class="tech-point-icon"><svg class="icon"><use href="#icon-key"/></svg></div>
-            <div class="tech-point-content">
-              <div class="tech-point-title">密码输入终端</div>
-              <div class="tech-point-desc">综合楼电脑终端支持数字键输入 4 位密码，含光标闪烁动画。线索散布在公告栏残页中，<span class="highlight">信息碎片化设计</span>引导玩家主动探索。</div>
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
+            <div class="tech-point" style="margin-bottom:0; flex: 1;">
+              <div class="tech-point-icon"><svg class="icon"><use href="#icon-search"/></svg></div>
+              <div class="tech-point-content">
+                <div class="tech-point-title">搜索交互与对话驱动</div>
+                <div class="tech-point-desc">食堂谜题没有独立 UI，完全通过<span class="highlight">对话系统+互动物体</span>实现：搜索桌子→对话框反馈结果→找到饭卡→与阿姨对话归还。纯逻辑层 48 行代码，体现了数据驱动架构的简洁性。</div>
+              </div>
             </div>
-          </div>
-        </div>
-        <div class="two-col-right">
-          <div class="tech-point">
-            <div class="tech-point-icon"><svg class="icon"><use href="#icon-search"/></svg></div>
-            <div class="tech-point-content">
-              <div class="tech-point-title">搜索交互与对话驱动</div>
-              <div class="tech-point-desc">食堂谜题没有独立 UI，完全通过<span class="highlight">对话系统+互动物体</span>实现：搜索桌子→对话框反馈结果→找到饭卡→与阿姨对话归还。纯逻辑层 48 行代码，体现了数据驱动架构的简洁性。</div>
-            </div>
-          </div>
-          <div class="tech-point">
-            <div class="tech-point-icon"><svg class="icon"><use href="#icon-state"/></svg></div>
-            <div class="tech-point-content">
-              <div class="tech-point-title">谜题状态机</div>
-              <div class="tech-point-desc">所有谜题共享 <span class="highlight">UNDISCOVERED → DISCOVERED → IN_PROGRESS → SOLVED</span> 四阶段状态机，PuzzleManager 统一管理前置条件检查和徽章奖励发放。</div>
+            <div class="tech-point" style="margin-bottom:0; flex: 1;">
+              <div class="tech-point-icon"><svg class="icon"><use href="#icon-state"/></svg></div>
+              <div class="tech-point-content">
+                <div class="tech-point-title">谜题状态机</div>
+                <div class="tech-point-desc">所有谜题共享 <span class="highlight">UNDISCOVERED → DISCOVERED → IN_PROGRESS → SOLVED</span> 四阶段状态机，PuzzleManager 统一管理前置条件检查和徽章奖励发放。</div>
+              </div>
             </div>
           </div>
         </div>
@@ -1193,7 +1578,7 @@ KEYFRAMES = [
     <h2 class="slide-title fade-up">三个挑战 · 三重考验</h2>
     <div class="slide-content">
       <div class="fade-up" style="text-align: center; margin-bottom: 18px;">
-        <p style="font-size: 14px; color: var(--text-dim); line-height: 1.7; max-width: 700px; margin: 0 auto;">
+        <p style="font-size: 14px; color: var(--text-dim); line-height: 1.7; max-width: 700px; margin: 0 auto; word-break: keep-all; overflow-wrap: break-word;">
           图书馆的书架间藏着知识的考验，博雅广场的地砖暗含阵法，体育馆里需要精准一击……
         </p>
       </div>
@@ -1220,38 +1605,71 @@ KEYFRAMES = [
           <div class="puzzle-stars">★★☆</div>
         </div>
       </div>
-      <div class="two-col fade-up" style="margin-top: 18px;">
-        <div class="two-col-left">
-          <div class="tech-point">
-            <div class="tech-point-icon"><svg class="icon"><use href="#icon-book"/></svg></div>
-            <div class="tech-point-content">
-              <div class="tech-point-title">题库 JSON 驱动</div>
-              <div class="tech-point-desc"><code>library_questions.json</code> 存储 12 道选择题，运行时随机抽取 3 道。答错可重试，答对全部通过。题目内容与华师校史相关，<span class="highlight">数据与逻辑完全分离</span>，增删题目无需改代码。</div>
+      <div class="fade-up" style="margin-top: 18px;">
+        <!-- 上排两栏对称 -->
+        <div style="display: flex; gap: 16px; margin-bottom: 14px;">
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
+            <div class="tech-point" style="margin-bottom:0; flex: 1;">
+              <div class="tech-point-icon"><svg class="icon"><use href="#icon-book"/></svg></div>
+              <div class="tech-point-content">
+                <div class="tech-point-title">题库 JSON 驱动</div>
+                <div class="tech-point-desc"><code>library_questions.json</code> 存储 12 道选择题，运行时随机抽取 3 道。答错可重试，答对全部通过。<span class="highlight">数据与逻辑完全分离</span>，增删题目无需改代码。</div>
+              </div>
+            </div>
+            <div class="tech-point" style="margin-bottom:0; flex: 1;">
+              <div class="tech-point-icon"><svg class="icon"><use href="#icon-target"/></svg></div>
+              <div class="tech-point-content">
+                <div class="tech-point-title">投篮小游戏 · 双阶段谜题</div>
+                <div class="tech-point-desc">体育馆谜题分两阶段：<span class="highlight">① 投篮</span>（移动指示器停在绿区判定命中）→ <span class="highlight">② 翻牌</span>（记分牌拨盘输入密码 1903）。416 行代码，是复杂度最高的谜题之一。</div>
+              </div>
             </div>
           </div>
-          <div class="tech-point">
-            <div class="tech-point-icon"><svg class="icon"><use href="#icon-grid"/></svg></div>
-            <div class="tech-point-content">
-              <div class="tech-point-title">9-slice 像素风边框</div>
-              <div class="tech-point-desc">pygame_gui 不支持 9-slice 图片拉伸（角会变形），因此<span class="highlight">自写 9-slice 渲染函数</span>：角不拉伸、边单方向拉伸、中心双向拉伸。在 dialog_box.py 中实现，被 inventory_ui、quest_log 等模块全局复用。</div>
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
+            <div class="tech-point" style="margin-bottom:0; flex: 1;">
+              <div class="tech-point-icon"><svg class="icon"><use href="#icon-grid"/></svg></div>
+              <div class="tech-point-content">
+                <div class="tech-point-title">9-slice 像素风边框</div>
+                <div class="tech-point-desc">pygame_gui 不支持 9-slice 图片拉伸（角会变形），因此<span class="highlight">自写 9-slice 渲染函数</span>：角不拉伸、边单方向拉伸、中心双向拉伸。在 dialog_box.py 中实现，被 inventory_ui、quest_log 等模块全局复用。</div>
+              </div>
+            </div>
+            <div class="tech-point" style="margin-bottom:0; flex: 1;">
+              <div class="tech-point-icon"><svg class="icon"><use href="#icon-eye"/></svg></div>
+              <div class="tech-point-content">
+                <div class="tech-point-title">视觉反馈系统</div>
+                <div class="tech-point-desc">地砖阵法踩对发光、踩错红色闪烁重置；投篮命中/未中有不同动画；谜题解决时播放音效+徽章获取提示。<span class="highlight">即时反馈</span>让玩家始终知道操作结果。</div>
+              </div>
             </div>
           </div>
         </div>
-        <div class="two-col-right">
-          <div class="tech-point">
-            <div class="tech-point-icon"><svg class="icon"><use href="#icon-target"/></svg></div>
-            <div class="tech-point-content">
-              <div class="tech-point-title">投篮小游戏 · 双阶段谜题</div>
-              <div class="tech-point-desc">体育馆谜题分两阶段：<span class="highlight">① 投篮</span>（移动指示器停在绿区判定命中）→ <span class="highlight">② 翻牌</span>（记分牌拨盘输入密码 1903）。416 行代码，是复杂度最高的谜题之一。</div>
-            </div>
-          </div>
-          <div class="tech-point">
-            <div class="tech-point-icon"><svg class="icon"><use href="#icon-eye"/></svg></div>
-            <div class="tech-point-content">
-              <div class="tech-point-title">视觉反馈系统</div>
-              <div class="tech-point-desc">地砖阵法踩对发光、踩错红色闪烁重置；投篮命中/未中有不同动画；谜题解决时播放音效+徽章获取提示。<span class="highlight">即时反馈</span>让玩家始终知道操作结果。</div>
-            </div>
-          </div>
+        <!-- 9-slice 原理图居中独立展示 -->
+        <div style="text-align: center;">
+          <div class="col-title" style="margin-bottom: 4px;">9-slice 原理示意图</div>
+          <svg viewBox="0 0 220 120" xmlns="http://www.w3.org/2000/svg" style="width:60%;max-width:260px;">
+            <rect x="10" y="5" width="36" height="28" rx="2" fill="rgba(26,58,42,0.7)" stroke="rgba(212,168,67,0.35)" stroke-width="1.2"/>
+            <text x="28" y="23" text-anchor="middle" fill="#9a9282" font-size="8">角</text>
+            <rect x="174" y="5" width="36" height="28" rx="2" fill="rgba(26,58,42,0.7)" stroke="rgba(212,168,67,0.35)" stroke-width="1.2"/>
+            <text x="192" y="23" text-anchor="middle" fill="#9a9282" font-size="8">角</text>
+            <rect x="10" y="87" width="36" height="28" rx="2" fill="rgba(26,58,42,0.7)" stroke="rgba(212,168,67,0.35)" stroke-width="1.2"/>
+            <text x="28" y="105" text-anchor="middle" fill="#9a9282" font-size="8">角</text>
+            <rect x="174" y="87" width="36" height="28" rx="2" fill="rgba(26,58,42,0.7)" stroke="rgba(212,168,67,0.35)" stroke-width="1.2"/>
+            <text x="192" y="105" text-anchor="middle" fill="#9a9282" font-size="8">角</text>
+            <rect x="48" y="5" width="124" height="28" rx="2" fill="rgba(45,90,63,0.4)" stroke="rgba(212,168,67,0.25)"/>
+            <text x="110" y="18" text-anchor="middle" fill="#9a9282" font-size="7.5">边 · 水平拉伸</text>
+            <line x1="60" y1="24" x2="160" y2="24" stroke="rgba(74,140,94,0.5)" stroke-width="1" marker-end="url(#ah)"/>
+            <rect x="10" y="35" width="36" height="50" rx="2" fill="rgba(45,90,63,0.4)" stroke="rgba(212,168,67,0.25)"/>
+            <text x="28" y="56" text-anchor="middle" fill="#9a9282" font-size="7">边</text>
+            <text x="28" y="66" text-anchor="middle" fill="#9a9282" font-size="7">↕</text>
+            <rect x="174" y="35" width="36" height="50" rx="2" fill="rgba(45,90,63,0.4)" stroke="rgba(212,168,67,0.25)"/>
+            <text x="192" y="56" text-anchor="middle" fill="#9a9282" font-size="7">边</text>
+            <text x="192" y="66" text-anchor="middle" fill="#9a9282" font-size="7">↕</text>
+            <rect x="48" y="87" width="124" height="28" rx="2" fill="rgba(45,90,63,0.4)" stroke="rgba(212,168,67,0.25)"/>
+            <text x="110" y="100" text-anchor="middle" fill="#9a9282" font-size="7.5">边 · 水平拉伸</text>
+            <line x1="60" y1="106" x2="160" y2="106" stroke="rgba(74,140,94,0.5)" stroke-width="1" marker-end="url(#ah)"/>
+            <rect x="48" y="35" width="124" height="50" rx="2" fill="rgba(74,140,94,0.25)" stroke="rgba(212,168,67,0.4)" stroke-width="1.2"/>
+            <text x="110" y="56" text-anchor="middle" fill="#f0d68a" font-size="8.5" font-weight="bold">中心 · 双向拉伸</text>
+            <line x1="60" y1="64" x2="160" y2="64" stroke="rgba(212,168,67,0.4)" stroke-width="1" marker-end="url(#ahg)"/>
+            <line x1="110" y1="42" x2="110" y2="78" stroke="rgba(212,168,67,0.4)" stroke-width="1" marker-end="url(#ahg)"/>
+          </svg>
         </div>
       </div>
     </div>
@@ -1264,7 +1682,7 @@ KEYFRAMES = [
     <h2 class="slide-title fade-up">最终谜题与粒子动画</h2>
     <div class="slide-content">
       <div class="fade-up" style="text-align: center; margin-bottom: 18px;">
-        <p style="font-size: 14px; color: var(--text-dim); line-height: 1.7; max-width: 700px; margin: 0 auto;">
+        <p style="font-size: 14px; color: var(--text-dim); line-height: 1.7; max-width: 700px; margin: 0 auto; word-break: keep-all; overflow-wrap: break-word;">
           六枚徽章已集齐。喷泉广场中央，基座上有七个凹槽——按正确顺序嵌入前六枚，第七枚将从光芒中自行显现……
         </p>
       </div>
@@ -1328,46 +1746,109 @@ KEYFRAMES = [
     <h2 class="slide-title fade-up">数据驱动与存档系统</h2>
     <div class="slide-content">
       <div class="fade-up" style="text-align: center; margin-bottom: 18px;">
-        <p style="font-size: 14px; color: var(--text-dim); line-height: 1.7; max-width: 700px; margin: 0 auto;">
+        <p style="font-size: 14px; color: var(--text-dim); line-height: 1.7; max-width: 700px; margin: 0 auto; word-break: keep-all; overflow-wrap: break-word;">
           七枚徽章归位，喷泉涌出光芒，秘境封印解除。通关之后，回顾整个游戏的数据驱动架构——
         </p>
       </div>
-      <div class="two-col fade-up">
-        <div class="two-col-left">
+      <!-- 结局差异 -->
+      <div class="fade-up" style="display: flex; gap: 14px; justify-content: center; margin-bottom: 18px; flex-wrap: wrap;">
+        <div style="background: var(--bg-card); border: 1px solid rgba(212,168,67,0.2); border-radius: 8px; padding: 10px 18px; max-width: 280px; flex: 1;">
+          <div style="font-size: 13px; color: var(--gold-light); font-weight: 700; margin-bottom: 4px;">普通结局</div>
+          <div style="font-size: 11px; color: var(--text-dim); line-height: 1.6;">仅收集 7 枚徽章通关 → 校园恢复平静，秘境消散</div>
+        </div>
+        <div style="background: var(--bg-card); border: 1px solid rgba(212,168,67,0.35); border-radius: 8px; padding: 10px 18px; max-width: 340px; flex: 1;">
+          <div style="font-size: 13px; color: var(--gold); font-weight: 700; margin-bottom: 4px;">彩蛋追加</div>
+          <div style="font-size: 11px; color: var(--text-dim); line-height: 1.6;">持有隐藏道具通关（桂花书签·校徽暗纹·博雅石·实验室钥匙），道具共鸣发光，追加百年守护之链幻象。持有越多，幻象越完整</div>
+        </div>
+      </div>
+      <!-- 数据流架构图 -->
+      <div class="fade-up" style="max-width: 520px; margin: 0 auto 18px;">
+        <svg viewBox="0 0 500 185" xmlns="http://www.w3.org/2000/svg" style="width:100%;">
+          <defs>
+            <marker id="ah2" markerWidth="5" markerHeight="4" refX="4.5" refY="2" orient="auto"><polygon points="0 0,5 2,0 4" fill="rgba(74,140,94,0.6)"/></marker>
+          </defs>
+          <!-- 数据层 -->
+          <rect x="8" y="3" width="484" height="48" rx="6" fill="rgba(26,58,42,0.4)" stroke="rgba(212,168,67,0.15)"/>
+          <text x="22" y="16" fill="rgba(212,168,67,0.5)" font-size="8" font-weight="bold">数据层 · JSON</text>
+          <rect x="18" y="22" width="95" height="22" rx="3" fill="rgba(45,90,63,0.5)" stroke="rgba(212,168,67,0.25)"/>
+          <text x="65" y="37" text-anchor="middle" fill="#9a9282" font-size="8">dialogues/*.json</text>
+          <rect x="122" y="22" width="72" height="22" rx="3" fill="rgba(45,90,63,0.5)" stroke="rgba(212,168,67,0.25)"/>
+          <text x="158" y="37" text-anchor="middle" fill="#9a9282" font-size="8">items.json</text>
+          <rect x="203" y="22" width="78" height="22" rx="3" fill="rgba(45,90,63,0.5)" stroke="rgba(212,168,67,0.25)"/>
+          <text x="242" y="37" text-anchor="middle" fill="#9a9282" font-size="8">puzzles.json</text>
+          <rect x="290" y="22" width="115" height="22" rx="3" fill="rgba(45,90,63,0.5)" stroke="rgba(212,168,67,0.25)"/>
+          <text x="347" y="37" text-anchor="middle" fill="#9a9282" font-size="8">library_questions.json</text>
+          <rect x="414" y="22" width="68" height="22" rx="3" fill="rgba(45,90,63,0.5)" stroke="rgba(212,168,67,0.25)"/>
+          <text x="448" y="37" text-anchor="middle" fill="#9a9282" font-size="8">saves/*.json</text>
+          <!-- 箭头：数据层→逻辑层 -->
+          <line x1="65" y1="51" x2="65" y2="78" stroke="rgba(74,140,94,0.4)" stroke-width="1.2" marker-end="url(#ah2)"/>
+          <line x1="158" y1="51" x2="158" y2="78" stroke="rgba(74,140,94,0.4)" stroke-width="1.2" marker-end="url(#ah2)"/>
+          <line x1="242" y1="51" x2="242" y2="78" stroke="rgba(74,140,94,0.4)" stroke-width="1.2" marker-end="url(#ah2)"/>
+          <line x1="347" y1="51" x2="347" y2="78" stroke="rgba(74,140,94,0.4)" stroke-width="1.2" marker-end="url(#ah2)"/>
+          <line x1="448" y1="51" x2="448" y2="78" stroke="rgba(74,140,94,0.4)" stroke-width="1.2" marker-end="url(#ah2)"/>
+          <!-- 逻辑层 -->
+          <rect x="8" y="80" width="484" height="48" rx="6" fill="rgba(26,58,42,0.4)" stroke="rgba(212,168,67,0.15)"/>
+          <text x="22" y="93" fill="rgba(212,168,67,0.5)" font-size="8" font-weight="bold">逻辑层 · Python 模块</text>
+          <rect x="18" y="99" width="78" height="22" rx="3" fill="rgba(74,140,94,0.25)" stroke="rgba(212,168,67,0.3)"/>
+          <text x="57" y="114" text-anchor="middle" fill="#f0d68a" font-size="8">DialogBox</text>
+          <rect x="105" y="99" width="72" height="22" rx="3" fill="rgba(74,140,94,0.25)" stroke="rgba(212,168,67,0.3)"/>
+          <text x="141" y="114" text-anchor="middle" fill="#f0d68a" font-size="8">Inventory</text>
+          <rect x="186" y="99" width="98" height="22" rx="3" fill="rgba(74,140,94,0.25)" stroke="rgba(212,168,67,0.3)"/>
+          <text x="235" y="114" text-anchor="middle" fill="#f0d68a" font-size="8">PuzzleManager</text>
+          <rect x="293" y="99" width="88" height="22" rx="3" fill="rgba(74,140,94,0.25)" stroke="rgba(212,168,67,0.3)"/>
+          <text x="337" y="114" text-anchor="middle" fill="#f0d68a" font-size="8">SaveManager</text>
+          <rect x="390" y="99" width="92" height="22" rx="3" fill="rgba(74,140,94,0.25)" stroke="rgba(212,168,67,0.3)"/>
+          <text x="436" y="114" text-anchor="middle" fill="#f0d68a" font-size="8">GameManager</text>
+          <!-- 箭头：逻辑层→渲染层 -->
+          <line x1="57" y1="128" x2="57" y2="152" stroke="rgba(74,140,94,0.4)" stroke-width="1.2" marker-end="url(#ah2)"/>
+          <line x1="141" y1="128" x2="141" y2="152" stroke="rgba(74,140,94,0.4)" stroke-width="1.2" marker-end="url(#ah2)"/>
+          <line x1="235" y1="128" x2="235" y2="152" stroke="rgba(74,140,94,0.4)" stroke-width="1.2" marker-end="url(#ah2)"/>
+          <line x1="337" y1="128" x2="337" y2="152" stroke="rgba(74,140,94,0.4)" stroke-width="1.2" marker-end="url(#ah2)"/>
+          <line x1="436" y1="128" x2="436" y2="152" stroke="rgba(74,140,94,0.4)" stroke-width="1.2" marker-end="url(#ah2)"/>
+          <!-- 渲染层 -->
+          <rect x="8" y="155" width="484" height="26" rx="6" fill="rgba(212,168,67,0.08)" stroke="rgba(212,168,67,0.25)"/>
+          <text x="250" y="172" text-anchor="middle" fill="#f0d68a" font-size="9" font-weight="bold">渲染层 · Pygame Surface  480×270 → scale → 960×540</text>
+        </svg>
+      </div>
+      <div class="fade-up" style="display: flex; gap: 16px; align-items: flex-start;">
+        <div style="flex: 1;">
           <div class="col-title">数据驱动架构</div>
-          <div class="card-text" style="font-size: 13px; line-height: 1.9; margin-bottom: 12px;">
+          <div class="card-text" style="font-size: 13px; line-height: 1.9; margin-bottom: 10px;">
             所有面向玩家的内容存储在 JSON 数据文件中，代码只负责逻辑：<br>
             <span class="tag">14 个对话 JSON</span> 对话文本+条件分支+选项<br>
             <span class="tag">items.json</span> 道具名称/描述/分类/可组合性<br>
             <span class="tag">puzzles.json</span> 谜题名称/难度/前置条件/奖励<br>
-            <span class="tag">library_questions.json</span> 问答题库<br><br>
+            <span class="tag">library_questions.json</span> 问答题库<br>
             <span class="highlight">增删内容无需改代码</span>，只需编辑 JSON 文件。
           </div>
-          <div class="col-title">对话系统</div>
-          <div class="card-text" style="font-size: 13px; line-height: 1.8;">
-            逐字显示（50ms/字）+ 选项分支 + 条件显示（<code>has_item</code>、谜题状态等）+ 自动换行。支持<span class="highlight">游戏状态检查</span>，同一 NPC 在不同进度下有不同对话。
+          <div class="tech-point" style="margin-bottom:0;">
+            <div class="tech-point-icon"><svg class="icon"><use href="#icon-file-code"/></svg></div>
+            <div class="tech-point-content">
+              <div class="tech-point-title">JSON 异常捕获与降级</div>
+              <div class="tech-point-desc">所有 JSON 加载均有 try-except，缺失字段使用合理默认值。地图加载失败时显示错误提示而非崩溃，保证<span class="highlight">健壮性</span>。</div>
+            </div>
           </div>
         </div>
-        <div class="two-col-right">
-          <div class="tech-point">
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
+          <div class="tech-point" style="margin-bottom:0;">
             <div class="tech-point-icon"><svg class="icon"><use href="#icon-shield"/></svg></div>
             <div class="tech-point-content">
               <div class="tech-point-title">存档安全 · 临时文件策略</div>
               <div class="tech-point-desc">采用"写临时文件 → 重命名"策略，防止写入中断导致数据损坏。存档涵盖 <span class="highlight">15+ 字段</span>：玩家位置、背包、谜题状态、昼夜时钟、对话标记、探索迷雾、音频设置等，支持完整状态恢复。</div>
             </div>
           </div>
-          <div class="tech-point">
+          <div class="tech-point" style="margin-bottom:0;">
             <div class="tech-point-icon"><svg class="icon"><use href="#icon-save"/></svg></div>
             <div class="tech-point-content">
               <div class="tech-point-title">自动存档触发</div>
               <div class="tech-point-desc">1 个自动存档 + 2 个手动存档槽。自动存档触发点：退出游戏、进/出室内、跨校区、解谜完成、拾取关键道具——<span class="highlight">关键节点不丢失进度</span>。</div>
             </div>
           </div>
-          <div class="tech-point">
-            <div class="tech-point-icon"><svg class="icon"><use href="#icon-file-code"/></svg></div>
+          <div class="tech-point" style="margin-bottom:0;">
+            <div class="tech-point-icon"><svg class="icon"><use href="#icon-chat"/></svg></div>
             <div class="tech-point-content">
-              <div class="tech-point-title">JSON 异常捕获与降级</div>
-              <div class="tech-point-desc">所有 JSON 加载均有 try-except，缺失字段使用合理默认值。地图加载失败时显示错误提示而非崩溃，保证<span class="highlight">健壮性</span>。</div>
+              <div class="tech-point-title">条件对话分支</div>
+              <div class="tech-point-desc">逐字显示（50ms/字）+ 选项分支 + 条件显示（<code>has_item</code>、谜题状态等）+ 自动换行。同一 NPC 在不同进度下有不同对话，<span class="highlight">对话随游戏进度动态变化</span>。</div>
             </div>
           </div>
         </div>
@@ -1415,6 +1896,32 @@ KEYFRAMES = [
                 <div class="ai-step-text">各模块完成后，AI 辅助模块间集成、依赖梳理和性能优化</div>
               </div>
             </div>
+          </div>
+          <!-- 人机协作循环示意 -->
+          <div style="margin-top: 12px; text-align: center;">
+            <div class="col-title" style="margin-bottom: 6px;">人机协作迭代循环</div>
+            <svg viewBox="0 0 320 110" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:320px;">
+              <defs>
+                <marker id="ah3" markerWidth="5" markerHeight="4" refX="4.5" refY="2" orient="auto"><polygon points="0 0,5 2,0 4" fill="rgba(74,140,94,0.6)"/></marker>
+              </defs>
+              <!-- 节点 -->
+              <rect x="5" y="18" width="68" height="28" rx="4" fill="rgba(26,58,42,0.6)" stroke="rgba(212,168,67,0.25)"/>
+              <text x="39" y="36" text-anchor="middle" fill="#9a9282" font-size="8">需求描述</text>
+              <rect x="85" y="18" width="68" height="28" rx="4" fill="rgba(26,58,42,0.6)" stroke="rgba(212,168,67,0.25)"/>
+              <text x="119" y="36" text-anchor="middle" fill="#9a9282" font-size="8">AI 生成</text>
+              <rect x="165" y="18" width="68" height="28" rx="4" fill="rgba(26,58,42,0.6)" stroke="rgba(212,168,67,0.25)"/>
+              <text x="199" y="36" text-anchor="middle" fill="#9a9282" font-size="8">审查修改</text>
+              <rect x="245" y="18" width="68" height="28" rx="4" fill="rgba(26,58,42,0.6)" stroke="rgba(212,168,67,0.25)"/>
+              <text x="279" y="36" text-anchor="middle" fill="#9a9282" font-size="8">测试验证</text>
+              <!-- 横向箭头 -->
+              <line x1="75" y1="32" x2="83" y2="32" stroke="rgba(74,140,94,0.5)" stroke-width="1" marker-end="url(#ah3)"/>
+              <line x1="155" y1="32" x2="163" y2="32" stroke="rgba(74,140,94,0.5)" stroke-width="1" marker-end="url(#ah3)"/>
+              <line x1="235" y1="32" x2="243" y2="32" stroke="rgba(74,140,94,0.5)" stroke-width="1" marker-end="url(#ah3)"/>
+              <!-- 向下返回箭头 -->
+              <path d="M 279 46 L 279 68 L 39 68 L 39 50" fill="none" stroke="rgba(212,168,67,0.3)" stroke-width="1" stroke-dasharray="3,2" marker-end="url(#ah3)"/>
+              <!-- 循环标注 -->
+              <text x="160" y="62" text-anchor="middle" fill="rgba(212,168,67,0.4)" font-size="8">迭代优化</text>
+            </svg>
           </div>
         </div>
         <div class="two-col-right">
@@ -1488,8 +1995,8 @@ KEYFRAMES = [
         <div class="card-text">需求→生成→审查→迭代<br>人机协同高效开发</div>
       </div>
     </div>
-    <p class="fade-up" style="margin-top: 32px; font-size: 18px; color: var(--gold); letter-spacing: 4px; font-family: 'Ma Shan Zheng', cursive;">
-      感谢聆听
+    <p class="fade-up" style="margin-top: 32px; font-size: 28px; color: var(--gold); letter-spacing: 6px; font-family: 'Ma Shan Zheng', cursive;">
+      感谢垂听
     </p>
   </div>
 
