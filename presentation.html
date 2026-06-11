@@ -31,10 +31,8 @@ body {
   width: 100vw;
   height: 100vh;
   user-select: none;
-  cursor: default;
 }
 
-/* ===== 背景粒子 ===== */
 #particles-canvas {
   position: fixed;
   top: 0; left: 0;
@@ -43,7 +41,6 @@ body {
   pointer-events: none;
 }
 
-/* ===== 幻灯片容器 ===== */
 .slides-container {
   position: relative;
   width: 100vw;
@@ -59,7 +56,7 @@ body {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 60px 80px;
+  padding: 50px 70px;
   opacity: 0;
   transform: translateX(60px);
   transition: opacity 0.6s ease, transform 0.6s ease;
@@ -77,31 +74,30 @@ body {
   transform: translateX(-60px);
 }
 
-/* ===== 导航 ===== */
+/* 导航 */
 .nav-bar {
   position: fixed;
-  bottom: 30px;
+  bottom: 28px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 100;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   background: rgba(13, 26, 18, 0.85);
   border: 1px solid rgba(212, 168, 67, 0.3);
   border-radius: 30px;
-  padding: 8px 20px;
+  padding: 8px 18px;
   backdrop-filter: blur(10px);
 }
 
 .nav-dot {
-  width: 10px; height: 10px;
+  width: 9px; height: 9px;
   border-radius: 50%;
   background: var(--text-dim);
   cursor: pointer;
   transition: all 0.3s;
-  border: none;
-  outline: none;
+  border: none; outline: none;
 }
 
 .nav-dot.active {
@@ -116,10 +112,10 @@ body {
   background: none;
   border: 1px solid rgba(212, 168, 67, 0.4);
   color: var(--gold);
-  width: 32px; height: 32px;
+  width: 30px; height: 30px;
   border-radius: 50%;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 13px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -139,20 +135,20 @@ body {
   font-family: 'ZCOOL QingKe HuangYou', sans-serif;
 }
 
-/* ===== 通用样式 ===== */
+/* 通用 */
 .slide-title {
   font-family: 'Ma Shan Zheng', cursive;
-  font-size: 52px;
+  font-size: 48px;
   color: var(--gold);
   text-shadow: 0 0 30px rgba(212, 168, 67, 0.3);
-  margin-bottom: 12px;
+  margin-bottom: 8px;
   letter-spacing: 4px;
 }
 
 .slide-subtitle {
-  font-size: 18px;
+  font-size: 16px;
   color: var(--text-dim);
-  margin-bottom: 40px;
+  margin-bottom: 32px;
   letter-spacing: 2px;
 }
 
@@ -164,27 +160,39 @@ body {
   padding: 4px 16px;
   border-radius: 20px;
   border: 1px solid rgba(212, 168, 67, 0.3);
-  margin-bottom: 20px;
+  margin-bottom: 16px;
   letter-spacing: 2px;
+  font-family: 'ZCOOL QingKe HuangYou', sans-serif;
+}
+
+.story-tag {
+  display: inline-block;
+  background: rgba(212, 168, 67, 0.1);
+  color: var(--gold);
+  font-size: 13px;
+  padding: 4px 14px;
+  border-radius: 20px;
+  border: 1px solid rgba(212, 168, 67, 0.25);
+  margin-bottom: 12px;
+  letter-spacing: 1px;
   font-family: 'ZCOOL QingKe HuangYou', sans-serif;
 }
 
 .card-grid {
   display: grid;
-  gap: 20px;
+  gap: 18px;
   width: 100%;
-  max-width: 1100px;
+  max-width: 1080px;
 }
 
 .card-grid.cols-2 { grid-template-columns: 1fr 1fr; }
 .card-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
-.card-grid.cols-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
 
 .card {
   background: var(--bg-card);
   border: 1px solid rgba(212, 168, 67, 0.15);
   border-radius: 12px;
-  padding: 24px;
+  padding: 22px;
   backdrop-filter: blur(5px);
   transition: all 0.3s;
 }
@@ -196,29 +204,26 @@ body {
 }
 
 .card-icon {
-  font-size: 32px;
-  margin-bottom: 12px;
+  font-size: 28px;
+  margin-bottom: 10px;
   color: var(--gold);
   line-height: 1;
 }
 
 .card-title {
-  font-size: 17px;
+  font-size: 16px;
   color: var(--gold-light);
   margin-bottom: 8px;
   font-weight: 700;
 }
 
 .card-text {
-  font-size: 14px;
+  font-size: 13px;
   color: var(--text-dim);
-  line-height: 1.7;
+  line-height: 1.75;
 }
 
-.highlight {
-  color: var(--gold);
-  font-weight: 700;
-}
+.highlight { color: var(--gold); font-weight: 700; }
 
 .tag {
   display: inline-block;
@@ -228,20 +233,30 @@ body {
   padding: 2px 10px;
   border-radius: 10px;
   border: 1px solid rgba(212, 168, 67, 0.2);
-  margin: 2px 4px;
+  margin: 2px 3px;
 }
 
-/* ===== 封面 ===== */
-.cover-slide {
-  text-align: center;
+.slide-content {
+  width: 100%;
+  max-width: 1080px;
+  overflow-y: auto;
+  max-height: calc(100vh - 180px);
+  padding-right: 8px;
 }
+
+.slide-content::-webkit-scrollbar { width: 4px; }
+.slide-content::-webkit-scrollbar-track { background: transparent; }
+.slide-content::-webkit-scrollbar-thumb { background: rgba(212, 168, 67, 0.3); border-radius: 2px; }
+
+/* 封面 */
+.cover-slide { text-align: center; }
 
 .cover-badge {
-  width: 80px; height: 80px;
+  width: 76px; height: 76px;
   border-radius: 50%;
   background: radial-gradient(circle, var(--gold-light), var(--gold), var(--green));
   box-shadow: 0 0 40px rgba(212, 168, 67, 0.4), 0 0 80px rgba(212, 168, 67, 0.15);
-  margin-bottom: 30px;
+  margin-bottom: 28px;
   animation: pulse-glow 3s ease-in-out infinite;
   position: relative;
 }
@@ -252,7 +267,7 @@ body {
   top: 50%; left: 50%;
   transform: translate(-50%, -50%);
   font-family: 'Ma Shan Zheng', cursive;
-  font-size: 36px;
+  font-size: 34px;
   color: var(--bg-dark);
 }
 
@@ -263,19 +278,18 @@ body {
 
 .cover-title {
   font-family: 'Ma Shan Zheng', cursive;
-  font-size: 72px;
+  font-size: 68px;
   color: var(--gold);
   text-shadow: 0 0 40px rgba(212, 168, 67, 0.3);
   letter-spacing: 8px;
-  margin-bottom: 16px;
-  animation: title-in 1s ease-out;
+  margin-bottom: 14px;
 }
 
 .cover-sub {
-  font-size: 22px;
+  font-size: 20px;
   color: var(--text-dim);
   letter-spacing: 6px;
-  margin-bottom: 40px;
+  margin-bottom: 36px;
 }
 
 .cover-info {
@@ -284,70 +298,120 @@ body {
   line-height: 2;
 }
 
-@keyframes title-in {
-  from { opacity: 0; transform: translateY(30px); }
-  to { opacity: 1; transform: translateY(0); }
+/* 两栏 */
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+  width: 100%;
+  max-width: 1080px;
 }
 
-/* ===== 架构图 ===== */
-.arch-layer {
-  background: var(--bg-card);
-  border: 1px solid rgba(212, 168, 67, 0.15);
-  border-radius: 10px;
-  padding: 14px 20px;
-  margin-bottom: 10px;
+.two-col-left, .two-col-right {
   display: flex;
-  align-items: center;
-  gap: 16px;
-  transition: all 0.3s;
+  flex-direction: column;
+  gap: 12px;
 }
 
-.arch-layer:hover {
-  border-color: rgba(212, 168, 67, 0.4);
-  background: rgba(26, 58, 42, 0.8);
-}
-
-.arch-layer-num {
-  width: 28px; height: 28px;
-  border-radius: 50%;
-  background: var(--green);
+.col-title {
+  font-size: 15px;
   color: var(--gold-light);
+  font-weight: 700;
+  margin-bottom: 6px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid rgba(212, 168, 67, 0.2);
+}
+
+/* 代码块 */
+.code-block {
+  background: rgba(13, 26, 18, 0.9);
+  border: 1px solid rgba(212, 168, 67, 0.2);
+  border-radius: 8px;
+  padding: 14px 18px;
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--text-dim);
+  overflow-x: auto;
+}
+
+.code-block .kw { color: #c792ea; }
+.code-block .fn { color: #82aaff; }
+.code-block .str { color: #c3e88d; }
+.code-block .cmt { color: #546e7a; }
+
+/* 流程步骤 */
+.flow-steps {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 13px;
-  font-weight: 700;
-  flex-shrink: 0;
-  border: 1px solid rgba(212, 168, 67, 0.3);
+  gap: 6px;
+  flex-wrap: wrap;
+  margin: 14px 0;
 }
 
-.arch-layer-name {
+.flow-step {
+  background: var(--bg-card);
+  border: 1px solid rgba(212, 168, 67, 0.2);
+  border-radius: 8px;
+  padding: 7px 14px;
+  font-size: 12px;
   color: var(--gold-light);
-  font-size: 15px;
-  font-weight: 700;
-  min-width: 100px;
-}
-
-.arch-layer-modules {
-  color: var(--text-dim);
-  font-size: 13px;
-  flex: 1;
-}
-
-.arch-arrow {
   text-align: center;
-  color: var(--green-light);
-  font-size: 18px;
-  margin: 2px 0;
-  opacity: 0.5;
 }
 
-/* ===== 谜题卡片 ===== */
+.flow-arrow { color: var(--green-light); font-size: 16px; opacity: 0.6; }
+
+/* 技术难点条 */
+.tech-point {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  padding: 14px 20px;
+  background: var(--bg-card);
+  border: 1px solid rgba(212, 168, 67, 0.12);
+  border-radius: 10px;
+  margin-bottom: 10px;
+  transition: all 0.3s;
+}
+
+.tech-point:hover {
+  border-color: rgba(212, 168, 67, 0.35);
+  background: rgba(26, 58, 42, 0.8);
+}
+
+.tech-point-icon {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  background: rgba(212, 168, 67, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--gold);
+}
+
+.tech-point-content { flex: 1; }
+
+.tech-point-title {
+  font-size: 14px;
+  color: var(--gold-light);
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.tech-point-desc {
+  font-size: 12px;
+  color: var(--text-dim);
+  line-height: 1.7;
+}
+
+/* 谜题卡片 */
 .puzzle-card {
   background: var(--bg-card);
   border: 1px solid rgba(212, 168, 67, 0.15);
   border-radius: 10px;
-  padding: 16px;
+  padding: 14px;
   text-align: center;
   transition: all 0.3s;
   position: relative;
@@ -374,96 +438,45 @@ body {
 
 .puzzle-num {
   font-family: 'Ma Shan Zheng', cursive;
-  font-size: 28px;
+  font-size: 26px;
   color: var(--gold);
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .puzzle-name {
-  font-size: 16px;
+  font-size: 15px;
   color: var(--gold-light);
   font-weight: 700;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .puzzle-loc {
   font-size: 12px;
   color: var(--green-light);
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .puzzle-desc {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--text-dim);
   line-height: 1.6;
 }
 
-.puzzle-stars {
-  color: var(--gold);
-  font-size: 14px;
-  margin-top: 6px;
-}
+.puzzle-stars { color: var(--gold); font-size: 13px; margin-top: 4px; }
 
-/* ===== 技术难点 ===== */
-.challenge-item {
-  display: flex;
-  gap: 20px;
-  align-items: flex-start;
-  padding: 18px 24px;
-  background: var(--bg-card);
-  border: 1px solid rgba(212, 168, 67, 0.12);
-  border-radius: 10px;
-  margin-bottom: 12px;
-  transition: all 0.3s;
-}
-
-.challenge-item:hover {
-  border-color: rgba(212, 168, 67, 0.35);
-  background: rgba(26, 58, 42, 0.8);
-}
-
-.challenge-icon {
-  font-size: 28px;
-  flex-shrink: 0;
-  margin-top: 2px;
-  color: var(--gold);
-  line-height: 1;
-}
-
-.challenge-content { flex: 1; }
-
-.challenge-title {
-  font-size: 16px;
-  color: var(--gold-light);
-  font-weight: 700;
-  margin-bottom: 6px;
-}
-
-.challenge-desc {
-  font-size: 13px;
-  color: var(--text-dim);
-  line-height: 1.7;
-}
-
-/* ===== AI 流程 ===== */
-.ai-flow {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  max-width: 900px;
-  width: 100%;
-}
+/* AI 流程 */
+.ai-flow { display: flex; flex-direction: column; gap: 0; max-width: 880px; width: 100%; }
 
 .ai-step {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 14px 20px;
+  gap: 14px;
+  padding: 12px 18px;
   position: relative;
 }
 
 .ai-step-num {
-  width: 36px; height: 36px;
+  width: 34px; height: 34px;
   border-radius: 50%;
   background: linear-gradient(135deg, var(--green), var(--green-dark));
   border: 2px solid var(--gold);
@@ -471,7 +484,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   flex-shrink: 0;
   z-index: 2;
@@ -482,81 +495,54 @@ body {
   background: var(--bg-card);
   border: 1px solid rgba(212, 168, 67, 0.12);
   border-radius: 10px;
-  padding: 14px 18px;
+  padding: 12px 16px;
 }
 
 .ai-step-title {
-  font-size: 15px;
+  font-size: 14px;
   color: var(--gold-light);
   font-weight: 700;
-  margin-bottom: 4px;
+  margin-bottom: 3px;
 }
 
 .ai-step-text {
-  font-size: 13px;
+  font-size: 12px;
   color: var(--text-dim);
   line-height: 1.6;
 }
 
 .ai-connector {
   position: absolute;
-  left: 37px;
-  top: 50px;
+  left: 34px;
+  top: 46px;
   width: 2px;
-  height: 28px;
+  height: 24px;
   background: linear-gradient(to bottom, var(--gold), rgba(212, 168, 67, 0.2));
   z-index: 1;
 }
 
-/* ===== 数据统计 ===== */
+/* 数据统计 */
 .stat-row {
   display: flex;
-  gap: 24px;
+  gap: 22px;
   justify-content: center;
   flex-wrap: wrap;
-  margin-bottom: 30px;
+  margin-bottom: 24px;
 }
 
-.stat-item {
-  text-align: center;
-  min-width: 120px;
-}
+.stat-item { text-align: center; min-width: 100px; }
 
 .stat-num {
   font-family: 'ZCOOL QingKe HuangYou', sans-serif;
-  font-size: 42px;
+  font-size: 38px;
   color: var(--gold);
   line-height: 1;
   text-shadow: 0 0 20px rgba(212, 168, 67, 0.3);
 }
 
-.stat-label {
-  font-size: 13px;
-  color: var(--text-dim);
-  margin-top: 6px;
-}
+.stat-label { font-size: 12px; color: var(--text-dim); margin-top: 5px; }
 
-/* ===== 结尾 ===== */
-.end-badge {
-  width: 60px; height: 60px;
-  border-radius: 50%;
-  background: radial-gradient(circle, var(--gold-light), var(--gold), var(--green));
-  box-shadow: 0 0 30px rgba(212, 168, 67, 0.3);
-  margin-bottom: 24px;
-  position: relative;
-}
-
-.end-badge::after {
-  content: '桂';
-  position: absolute;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  font-family: 'Ma Shan Zheng', cursive;
-  font-size: 28px;
-  color: var(--bg-dark);
-}
-
-/* ===== 进度条 ===== */
+/* 进度条 */
 .progress-bar {
   position: fixed;
   top: 0; left: 0;
@@ -567,54 +553,146 @@ body {
   box-shadow: 0 0 8px rgba(212, 168, 67, 0.5);
 }
 
-/* ===== 内容区滚动 ===== */
-.slide-content {
-  width: 100%;
-  max-width: 1100px;
-  overflow-y: auto;
-  max-height: calc(100vh - 200px);
-  padding-right: 10px;
+/* SVG 图标 */
+.icon {
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.15em;
+  display: inline-block;
+  overflow: hidden;
 }
 
-.slide-content::-webkit-scrollbar { width: 4px; }
-.slide-content::-webkit-scrollbar-track { background: transparent; }
-.slide-content::-webkit-scrollbar-thumb { background: rgba(212, 168, 67, 0.3); border-radius: 2px; }
+.card-icon .icon { width: 28px; height: 28px; }
 
-/* ===== 代码块 ===== */
-.code-block {
-  background: rgba(13, 26, 18, 0.9);
-  border: 1px solid rgba(212, 168, 67, 0.2);
+.tech-point-icon .icon { width: 18px; height: 18px; }
+
+.inline-icon {
+  width: 1.1em;
+  height: 1.1em;
+  vertical-align: -0.15em;
+  margin-right: 4px;
+  display: inline-block;
+  overflow: hidden;
+}
+
+.puzzle-loc .icon {
+  width: 13px;
+  height: 13px;
+  vertical-align: -1px;
+  margin-right: 2px;
+}
+
+/* 渐变条 */
+.gradient-bar {
+  height: 40px;
   border-radius: 8px;
-  padding: 16px 20px;
-  font-family: 'Consolas', 'Courier New', monospace;
-  font-size: 13px;
-  line-height: 1.7;
+  position: relative;
+  margin: 12px 0;
+  overflow: hidden;
+  border: 1px solid rgba(212, 168, 67, 0.2);
+}
+
+.gradient-bar-label {
+  position: absolute;
+  bottom: -22px;
+  font-size: 11px;
   color: var(--text-dim);
-  overflow-x: auto;
+  transform: translateX(-50%);
 }
 
-.code-block .kw { color: #c792ea; }
-.code-block .fn { color: #82aaff; }
-.code-block .str { color: #c3e88d; }
-.code-block .cmt { color: #546e7a; }
-.code-block .num { color: #f78c6c; }
-
-/* ===== 响应式 ===== */
-@media (max-width: 900px) {
-  .slide { padding: 40px 30px; }
-  .cover-title { font-size: 48px; }
-  .slide-title { font-size: 36px; }
-  .card-grid.cols-3, .card-grid.cols-4 { grid-template-columns: 1fr 1fr; }
+/* 透视网格校园 */
+.campus-visual {
+  position: relative;
+  width: 100%;
+  max-width: 600px;
+  height: 280px;
+  margin: 0 auto;
+  perspective: 800px;
+  overflow: hidden;
 }
 
-@media (max-width: 600px) {
-  .slide { padding: 30px 20px; }
-  .cover-title { font-size: 36px; letter-spacing: 4px; }
-  .slide-title { font-size: 28px; }
-  .card-grid.cols-2, .card-grid.cols-3, .card-grid.cols-4 { grid-template-columns: 1fr; }
+.campus-grid {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%) rotateX(55deg);
+  transform-origin: bottom center;
+  width: 500px;
+  height: 400px;
+  background:
+    repeating-linear-gradient(90deg, rgba(74, 140, 94, 0.15) 0px, rgba(74, 140, 94, 0.15) 1px, transparent 1px, transparent 50px),
+    repeating-linear-gradient(0deg, rgba(74, 140, 94, 0.15) 0px, rgba(74, 140, 94, 0.15) 1px, transparent 1px, transparent 50px);
+  border: 1px solid rgba(74, 140, 94, 0.2);
 }
 
-/* ===== 动画入场 ===== */
+.campus-road {
+  position: absolute;
+  background: rgba(160, 140, 110, 0.25);
+  border-radius: 2px;
+}
+
+.campus-building {
+  position: absolute;
+  background: rgba(26, 58, 42, 0.8);
+  border: 1px solid rgba(212, 168, 67, 0.3);
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  color: var(--gold-light);
+  text-align: center;
+  line-height: 1.3;
+  padding: 2px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+.campus-building .bld-icon {
+  font-size: 16px;
+  margin-bottom: 1px;
+  color: var(--gold);
+}
+
+.campus-tree {
+  position: absolute;
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: rgba(74, 140, 94, 0.5);
+  border: 1px solid rgba(74, 140, 94, 0.3);
+}
+
+.campus-label {
+  position: absolute;
+  font-size: 10px;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
+/* 粒子汇聚示意 */
+.particle-demo {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  margin: 0 auto;
+}
+
+.particle-dot {
+  position: absolute;
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 6px var(--accent-glow);
+  animation: converge 3s ease-in-out infinite;
+}
+
+@keyframes converge {
+  0% { opacity: 0.4; }
+  50% { opacity: 1; }
+  100% { opacity: 0.4; }
+}
+
+/* 动画入场 */
 .fade-up {
   opacity: 0;
   transform: translateY(20px);
@@ -635,158 +713,39 @@ body {
 .slide.active .fade-up:nth-child(7) { transition-delay: 0.7s; }
 .slide.active .fade-up:nth-child(8) { transition-delay: 0.8s; }
 
-/* ===== 技术栈图标行 ===== */
-.tech-row {
-  display: flex;
-  gap: 16px;
-  justify-content: center;
-  flex-wrap: wrap;
-  margin-bottom: 24px;
+/* 结尾 */
+.end-badge {
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--gold-light), var(--gold), var(--green));
+  box-shadow: 0 0 30px rgba(212, 168, 67, 0.3);
+  margin-bottom: 20px;
+  position: relative;
 }
 
-.tech-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: var(--bg-card);
-  border: 1px solid rgba(212, 168, 67, 0.15);
-  border-radius: 8px;
-  padding: 10px 18px;
-  transition: all 0.3s;
+.end-badge::after {
+  content: '桂';
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: 'Ma Shan Zheng', cursive;
+  font-size: 26px;
+  color: var(--bg-dark);
 }
 
-.tech-item:hover {
-  border-color: rgba(212, 168, 67, 0.4);
-  transform: translateY(-2px);
+/* 响应式 */
+@media (max-width: 900px) {
+  .slide { padding: 40px 28px; }
+  .cover-title { font-size: 44px; }
+  .slide-title { font-size: 34px; }
+  .card-grid.cols-2, .card-grid.cols-3 { grid-template-columns: 1fr; }
+  .two-col { grid-template-columns: 1fr; }
 }
 
-.tech-item-icon { font-size: 22px; color: var(--gold); line-height: 1; }
-.tech-item-name { font-size: 14px; color: var(--gold-light); font-weight: 700; }
-.tech-item-desc { font-size: 12px; color: var(--text-dim); }
-
-/* ===== 演示提示 ===== */
-.demo-tip {
-  background: rgba(212, 168, 67, 0.08);
-  border: 1px dashed rgba(212, 168, 67, 0.3);
-  border-radius: 10px;
-  padding: 20px 24px;
-  margin-top: 20px;
-}
-
-.demo-tip-title {
-  font-size: 15px;
-  color: var(--gold-light);
-  font-weight: 700;
-  margin-bottom: 10px;
-}
-
-.demo-tip-text {
-  font-size: 13px;
-  color: var(--text-dim);
-  line-height: 1.8;
-}
-
-/* ===== 流程图 ===== */
-.flow-steps {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin: 16px 0;
-}
-
-.flow-step {
-  background: var(--bg-card);
-  border: 1px solid rgba(212, 168, 67, 0.2);
-  border-radius: 8px;
-  padding: 8px 16px;
-  font-size: 13px;
-  color: var(--gold-light);
-  text-align: center;
-}
-
-.flow-arrow {
-  color: var(--green-light);
-  font-size: 18px;
-  opacity: 0.6;
-}
-
-/* ===== 两栏布局 ===== */
-.two-col {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 30px;
-  width: 100%;
-  max-width: 1100px;
-}
-
-.two-col-left, .two-col-right {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.col-title {
-  font-size: 16px;
-  color: var(--gold-light);
-  font-weight: 700;
-  margin-bottom: 8px;
-  padding-bottom: 6px;
-  border-bottom: 1px solid rgba(212, 168, 67, 0.2);
-}
-
-.inline-icon {
-  color: var(--gold);
-  font-size: 1em;
-  vertical-align: -0.1em;
-  margin-right: 4px;
-}
-
-.puzzle-loc i {
-  font-size: 12px;
-  color: var(--green-light);
-  vertical-align: -0.1em;
-  margin-right: 2px;
-}
-
-.icon {
-  width: 1em;
-  height: 1em;
-  vertical-align: -0.15em;
-  display: inline-block;
-  overflow: hidden;
-}
-
-.card-icon .icon {
-  width: 32px;
-  height: 32px;
-}
-
-.challenge-icon .icon {
-  width: 28px;
-  height: 28px;
-}
-
-.tech-item-icon .icon {
-  width: 22px;
-  height: 22px;
-}
-
-.inline-icon {
-  width: 1.1em;
-  height: 1.1em;
-  vertical-align: -0.15em;
-  margin-right: 4px;
-  display: inline-block;
-  overflow: hidden;
-}
-
-.puzzle-loc .icon {
-  width: 14px;
-  height: 14px;
-  vertical-align: -1px;
-  margin-right: 2px;
+@media (max-width: 600px) {
+  .slide { padding: 30px 18px; }
+  .cover-title { font-size: 34px; letter-spacing: 4px; }
+  .slide-title { font-size: 26px; }
 }
 </style>
 </head>
@@ -865,6 +824,24 @@ body {
   <symbol id="icon-chat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
     <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
   </symbol>
+  <symbol id="icon-state" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="3"/><path d="M12 2v4m0 12v4M2 12h4m12 0h4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/>
+  </symbol>
+  <symbol id="icon-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+  </symbol>
+  <symbol id="icon-book" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+  </symbol>
+  <symbol id="icon-target" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>
+  </symbol>
+  <symbol id="icon-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+  </symbol>
+  <symbol id="icon-key" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>
+  </symbol>
 </svg>
 
 <canvas id="particles-canvas"></canvas>
@@ -879,228 +856,66 @@ body {
     <p class="cover-sub fade-up">2D 俯视角 · 校园探索 · 解谜冒险</p>
     <div class="cover-info fade-up">
       <p>Python 程序设计 大作业项目展示</p>
-      <p style="margin-top: 8px; font-size: 13px; color: var(--text-dim);">技术栈：Python 3 + Pygame + pytmx + Tiled Map Editor</p>
+      <p style="margin-top: 8px; font-size: 13px; color: var(--text-dim);">Python 3 · Pygame · pytmx · Tiled Map Editor</p>
     </div>
-    <p class="fade-up" style="margin-top: 40px; font-size: 13px; color: var(--text-dim); letter-spacing: 2px;">
+    <p class="fade-up" style="margin-top: 36px; font-size: 13px; color: var(--text-dim); letter-spacing: 2px;">
       按 → 键或点击下方导航翻页
     </p>
   </div>
 
   <!-- ====== 第2页：项目背景 ====== -->
   <div class="slide" data-index="1">
-    <div class="section-tag fade-up">01 / 项目背景</div>
-    <h2 class="slide-title fade-up">为什么要做这个项目</h2>
+    <div class="section-tag fade-up">一 / 项目背景</div>
+    <h2 class="slide-title fade-up">为什么做这个项目</h2>
     <div class="slide-content">
       <div class="card-grid cols-2 fade-up">
         <div class="card">
-          <div class="card-icon"><svg class="icon"><use href="#icon-building"/></svg></div>
-          <div class="card-title">校园情怀与游戏化表达</div>
+          <div class="card-icon"><svg class="icon"><use href="#icon-map"/></svg></div>
+          <div class="card-title">熟悉的场景让设计更具体</div>
           <div class="card-text">
-            以华中师范大学真实校园为蓝本，将桂子山、南湖、图书馆、博雅广场等标志性场景像素化还原。让玩家在游戏中重新认识校园，用互动叙事赋予熟悉空间新的意义。
+            选择华师校园作为游戏世界，并非偶然。桂中路两旁种着桂花树，于是"桂花密语"谜题自然成立；图书馆是读书的地方，所以设计问答挑战；食堂里找饭卡是每个学生的日常，就成了搜索类谜题的灵感。<span class="highlight">场景本身就是设计灵感的来源</span>，比凭空想象一个世界要高效得多，也更容易让设计逻辑自洽。
           </div>
         </div>
         <div class="card">
           <div class="card-icon"><svg class="icon"><use href="#icon-puzzle"/></svg></div>
-          <div class="card-title">解谜冒险的完整体验</div>
+          <div class="card-title">解谜类型的技术覆盖面</div>
           <div class="card-text">
-            设计了 <span class="highlight">7 个风格各异的谜题</span>，涵盖观察、知识、问答、时机、搜索等多种玩法。从简单的"找饭卡"到复杂的"七徽归位"，难度递进，体验完整。
+            解谜游戏对系统设计的要求比其他类型更丰富——需要<span class="highlight">对话系统</span>（条件分支、选项）、<span class="highlight">道具管理</span>（拾取、组合、持久化）、<span class="highlight">状态判定</span>（谜题解锁条件、昼夜触发）、<span class="highlight">数据驱动</span>（对话/谜题/题库外置 JSON）等。一个项目就能覆盖多种编程范式。
           </div>
         </div>
         <div class="card">
-          <div class="card-icon"><svg class="icon"><use href="#icon-moon"/></svg></div>
-          <div class="card-title">昼夜双态的叙事深度</div>
+          <div class="card-icon"><svg class="icon"><use href="#icon-code"/></svg></div>
+          <div class="card-title">全面体现课程所学</div>
           <div class="card-text">
-            白天校园宁静温暖，夜晚秘境觉醒、幽绿脉冲。昼夜不只是视觉变化——<span class="highlight">NPC 出没时段不同</span>、<span class="highlight">桂中路谜题仅夜晚可解</span>、秘境双态光照叠加，赋予游戏时间维度上的叙事层次。
+            游戏是一个高度综合的软件系统，本项目涉及：<span class="highlight">面向对象设计</span>（6 层类继承体系、33 个模块）、<span class="highlight">数据结构</span>（状态机、碰撞矩阵）、<span class="highlight">文件 I/O</span>（JSON 序列化存档）、<span class="highlight">模块化与解耦</span>（依赖分层、接口通信），几乎把 Python 课的核心知识点都用上了。
           </div>
         </div>
         <div class="card">
           <div class="card-icon"><svg class="icon"><use href="#icon-terminal"/></svg></div>
-          <div class="card-title">Python 工程实践</div>
+          <div class="card-title">从零搭建的工程挑战</div>
           <div class="card-text">
-            从零搭建游戏引擎：状态机、碰撞检测、摄像机系统、数据驱动架构、存档管理……在 Pygame 限制下实现完整游戏循环，是对 Python 编程能力的综合考验。
+            Pygame 不是游戏引擎，而是底层渲染库——没有场景管理器、没有 UI 框架、没有动画系统。碰撞检测、状态机、摄像机、9-slice 边框、粒子系统，<span class="highlight">每一个都需要从底层实现</span>。这种"造轮子"的过程，恰恰是对编程能力的综合锻炼。
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- ====== 第3页：游戏概述 ====== -->
+  <!-- ====== 第3页：误入秘境 ====== -->
   <div class="slide" data-index="2">
-    <div class="section-tag fade-up">02 / 游戏概述</div>
-    <h2 class="slide-title fade-up">核心概念与游戏流程</h2>
+    <div class="section-tag fade-up">二 / 游戏设计</div>
+    <div class="story-tag fade-up">故事线 · 误入秘境</div>
+    <h2 class="slide-title fade-up">游戏启动与状态机</h2>
     <div class="slide-content">
-      <div class="fade-up" style="text-align: center; margin-bottom: 24px;">
-        <p style="font-size: 16px; color: var(--text); line-height: 1.8; max-width: 800px; margin: 0 auto;">
-          你是一名刚踏入华师的新生，误入与现实校园重叠的秘境异世界。<br>
-          桂花逆季盛开，七个地标被秘境力量笼罩——<span class="highlight">唯有集齐七枚桂花徽章碎片，才能解除封印</span>。
+      <div class="fade-up" style="text-align: center; margin-bottom: 20px;">
+        <p style="font-size: 15px; color: var(--text); line-height: 1.8; max-width: 780px; margin: 0 auto;">
+          你是一名刚踏入华师的新生。报到那天，校园里桂花逆季盛开，空气中弥漫着不寻常的气息——你误入了与现实校园重叠的秘境异世界。
         </p>
       </div>
-      <div class="flow-steps fade-up">
-        <div class="flow-step">开场动画</div>
-        <div class="flow-arrow">→</div>
-        <div class="flow-step">新生报到<br><span style="font-size:11px;color:var(--text-dim)">教程引导</span></div>
-        <div class="flow-arrow">→</div>
-        <div class="flow-step">自由探索<br><span style="font-size:11px;color:var(--text-dim)">双校区无缝</span></div>
-        <div class="flow-arrow">→</div>
-        <div class="flow-step">7 地标解谜<br><span style="font-size:11px;color:var(--text-dim)">收集徽章碎片</span></div>
-        <div class="flow-arrow">→</div>
-        <div class="flow-step">七徽归位<br><span style="font-size:11px;color:var(--text-dim)">最终谜题</span></div>
-        <div class="flow-arrow">→</div>
-        <div class="flow-step">通关结局<br><span style="font-size:11px;color:var(--text-dim)">多结局差异</span></div>
-      </div>
-      <div class="card-grid cols-3 fade-up" style="margin-top: 20px;">
-        <div class="card" style="text-align: center;">
-          <div class="card-icon"><svg class="icon"><use href="#icon-map"/></svg></div>
-          <div class="card-title">无缝大地图</div>
-          <div class="card-text">本部校区 120×80 tiles 无缝连通<br>南湖校区独立地图 + 校车过渡</div>
-        </div>
-        <div class="card" style="text-align: center;">
-          <div class="card-icon"><svg class="icon"><use href="#icon-backpack"/></svg></div>
-          <div class="card-title">背包与道具</div>
-          <div class="card-text">20 格背包 · 5 类道具<br>支持拾取/使用/组合/丢弃</div>
-        </div>
-        <div class="card" style="text-align: center;">
-          <div class="card-icon"><svg class="icon"><use href="#icon-save"/></svg></div>
-          <div class="card-title">自动存档</div>
-          <div class="card-text">1 自动 + 2 手动存档槽<br>退出/进室内/解谜自动保存</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ====== 第4页：技术栈 ====== -->
-  <div class="slide" data-index="3">
-    <div class="section-tag fade-up">03 / 详细设计</div>
-    <h2 class="slide-title fade-up">技术栈与工具链</h2>
-    <div class="slide-content">
-      <div class="tech-row fade-up">
-        <div class="tech-item">
-          <div class="tech-item-icon"><svg class="icon"><use href="#icon-code"/></svg></div>
-          <div>
-            <div class="tech-item-name">Python 3</div>
-            <div class="tech-item-desc">主语言</div>
-          </div>
-        </div>
-        <div class="tech-item">
-          <div class="tech-item-icon"><svg class="icon"><use href="#icon-gamepad"/></svg></div>
-          <div>
-            <div class="tech-item-name">Pygame</div>
-            <div class="tech-item-desc">渲染/输入/UI</div>
-          </div>
-        </div>
-        <div class="tech-item">
-          <div class="tech-item-icon"><svg class="icon"><use href="#icon-map"/></svg></div>
-          <div>
-            <div class="tech-item-name">pytmx</div>
-            <div class="tech-item-desc">TMX 地图加载</div>
-          </div>
-        </div>
-        <div class="tech-item">
-          <div class="tech-item-icon"><svg class="icon"><use href="#icon-grid"/></svg></div>
-          <div>
-            <div class="tech-item-name">Tiled</div>
-            <div class="tech-item-desc">地图编辑器</div>
-          </div>
-        </div>
-        <div class="tech-item">
-          <div class="tech-item-icon"><svg class="icon"><use href="#icon-file-code"/></svg></div>
-          <div>
-            <div class="tech-item-name">JSON</div>
-            <div class="tech-item-desc">数据驱动</div>
-          </div>
-        </div>
-      </div>
       <div class="two-col fade-up">
         <div class="two-col-left">
-          <div class="col-title">渲染架构</div>
-          <div class="code-block">
-<span class="cmt"># 内部分辨率 → 窗口缩放</span>
-<span class="kw">INTERNAL</span>: 480×270 → <span class="kw">WINDOW</span>: 960×540
-Tile: 16×16px | 角色: 14×20px
-<span class="fn">pygame.transform.scale</span>() 统一缩放
-视口裁剪：仅渲染摄像机可见 Tile
-          </div>
-          <div class="col-title" style="margin-top: 12px;">数据驱动</div>
-          <div class="card-text" style="font-size: 13px;">
-            <span class="tag">14 个对话 JSON</span>
-            <span class="tag">items.json</span>
-            <span class="tag">puzzles.json</span>
-            <span class="tag">library_questions.json</span>
-            <br>代码与内容分离，对话/道具/谜题数据全部外置
-          </div>
-        </div>
-        <div class="two-col-right">
-          <div class="col-title">纯 Pygame 自定义渲染</div>
-          <div class="card-text" style="font-size: 13px; line-height: 1.8;">
-            由于 pygame_gui 对中文像素风支持有限，<br>
-            全部 UI 采用<span class="highlight">纯 Pygame 手工渲染</span>：<br>
-            <svg class="icon" style="color:var(--green-light);width:14px;height:14px;vertical-align:-2px"><use href="#icon-check"/></svg> 9-slice 像素风边框（全局复用）<br>
-            <svg class="icon" style="color:var(--green-light);width:14px;height:14px;vertical-align:-2px"><use href="#icon-check"/></svg> Zpix 中文像素风字体<br>
-            <svg class="icon" style="color:var(--green-light);width:14px;height:14px;vertical-align:-2px"><use href="#icon-check"/></svg> 事件/布局/渲染全手工处理<br>
-            <svg class="icon" style="color:var(--green-light);width:14px;height:14px;vertical-align:-2px"><use href="#icon-check"/></svg> 道具图标程序化绘制 + AI 生成
-          </div>
-          <div class="col-title" style="margin-top: 12px;">资源规模</div>
-          <div class="card-text" style="font-size: 13px;">
-            <span class="tag">11 张地图</span>
-            <span class="tag">37 张精灵图</span>
-            <span class="tag">57 个 UI 素材</span>
-            <br>
-            <span class="tag">11 首 BGM</span>
-            <span class="tag">15 个音效</span>
-            <span class="tag">3 种字体</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ====== 第5页：系统架构 ====== -->
-  <div class="slide" data-index="4">
-    <div class="section-tag fade-up">04 / 详细设计</div>
-    <h2 class="slide-title fade-up">系统架构与模块依赖</h2>
-    <div class="slide-content">
-      <div class="two-col fade-up">
-        <div class="two-col-left">
-          <div class="col-title">六层依赖架构</div>
-          <div class="arch-layer">
-            <div class="arch-layer-num">6</div>
-            <div class="arch-layer-name">流程层</div>
-            <div class="arch-layer-modules">标题画面 · 开场动画 · 教程 · 结局动画</div>
-          </div>
-          <div class="arch-arrow">↑</div>
-          <div class="arch-layer">
-            <div class="arch-layer-num">5</div>
-            <div class="arch-layer-name">内容层</div>
-            <div class="arch-layer-modules">7 个谜题 · 对话数据 · 道具数据 · 地图资源</div>
-          </div>
-          <div class="arch-arrow">↑</div>
-          <div class="arch-layer">
-            <div class="arch-layer-num">4</div>
-            <div class="arch-layer-name">系统层</div>
-            <div class="arch-layer-modules">inventory · clock · save · puzzle_manager · transition</div>
-          </div>
-          <div class="arch-arrow">↑</div>
-          <div class="arch-layer">
-            <div class="arch-layer-num">3</div>
-            <div class="arch-layer-name">角色层</div>
-            <div class="arch-layer-modules">player · npc · interactive_object · trigger</div>
-          </div>
-          <div class="arch-arrow">↑</div>
-          <div class="arch-layer">
-            <div class="arch-layer-num">2</div>
-            <div class="arch-layer-name">世界层</div>
-            <div class="arch-layer-modules">tilemap · camera · entity · collision</div>
-          </div>
-          <div class="arch-arrow">↑</div>
-          <div class="arch-layer">
-            <div class="arch-layer-num">1</div>
-            <div class="arch-layer-name">基础层</div>
-            <div class="arch-layer-modules">config · main · game_manager</div>
-          </div>
-        </div>
-        <div class="two-col-right">
           <div class="col-title">10 种游戏状态</div>
-          <div class="code-block" style="font-size: 12px;">
+          <div class="code-block">
 TITLE     → 标题画面
 INTRO     → 开场动画
 PLAYING   → 游戏主状态
@@ -1112,78 +927,206 @@ PUZZLE    → 谜题界面
 QUEST_LOG → 任务日志
 OUTRO     → 结局动画
           </div>
-          <div class="col-title" style="margin-top: 12px;">核心设计原则</div>
+          <div class="col-title" style="margin-top: 10px;">状态转换规则</div>
+          <div class="card-text" style="font-size: 12px; line-height: 1.8;">
+            每个状态有明确的进入/退出条件，<span class="highlight">不可跳转</span>（如 PUZZLE 不能直接到 MAP_VIEW）。<br>
+            PLAYING 是核心枢纽，所有子状态都从 PLAYING 进入并返回。<br>
+            状态机保证了游戏流程的<span class="highlight">确定性和可维护性</span>。
+          </div>
+        </div>
+        <div class="two-col-right">
+          <div class="col-title">渲染架构</div>
+          <div class="code-block">
+<span class="cmt"># 内部分辨率 → 窗口缩放</span>
+<span class="kw">INTERNAL</span>: 480×270 → <span class="kw">WINDOW</span>: 960×540
+Tile: 16×16px | 角色: 14×20px
+<span class="fn">pygame.transform.scale</span>() 统一缩放
+          </div>
+          <div class="col-title" style="margin-top: 10px;">技术要点</div>
+          <div class="tech-point">
+            <div class="tech-point-icon"><svg class="icon"><use href="#icon-state"/></svg></div>
+            <div class="tech-point-content">
+              <div class="tech-point-title">状态机驱动主循环</div>
+              <div class="tech-point-desc">game_manager.py（4453 行）根据当前状态分发 update/draw 调用，不同状态下输入处理逻辑完全隔离</div>
+            </div>
+          </div>
+          <div class="tech-point">
+            <div class="tech-point-icon"><svg class="icon"><use href="#icon-grid"/></svg></div>
+            <div class="tech-point-content">
+              <div class="tech-point-title">双缓冲缩放渲染</div>
+              <div class="tech-point-desc">所有绘制在 480×270 的内部 Surface 上完成，最终 scale 到窗口尺寸，保证像素对齐和一致的运动速度</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== 第4页：初到校园 ====== -->
+  <div class="slide" data-index="3">
+    <div class="section-tag fade-up">二 / 游戏设计</div>
+    <div class="story-tag fade-up">故事线 · 初到校园</div>
+    <h2 class="slide-title fade-up">自由探索与无缝地图</h2>
+    <div class="slide-content">
+      <div class="fade-up" style="text-align: center; margin-bottom: 16px;">
+        <p style="font-size: 14px; color: var(--text-dim); line-height: 1.7; max-width: 700px; margin: 0 auto;">
+          秘境中的校园与现实几乎一模一样——桂中路、图书馆、博雅广场、体育馆……但每个地标都被秘境力量笼罩。
+        </p>
+      </div>
+      <!-- 透视网格校园图 -->
+      <div class="campus-visual fade-up">
+        <div class="campus-grid">
+          <!-- 马路 -->
+          <div class="campus-road" style="left:200px; top:0; width:30px; height:400px;"></div>
+          <div class="campus-road" style="left:0; top:180px; width:500px; height:25px;"></div>
+          <!-- 建筑 -->
+          <div class="campus-building" style="left:40px; top:60px; width:70px; height:50px;">
+            <span class="bld-icon"><svg class="icon" style="width:14px;height:14px"><use href="#icon-book"/></svg></span>
+            <span>图书馆</span>
+          </div>
+          <div class="campus-building" style="left:280px; top:50px; width:80px; height:55px;">
+            <span class="bld-icon"><svg class="icon" style="width:14px;height:14px"><use href="#icon-target"/></svg></span>
+            <span>佑铭体育馆</span>
+          </div>
+          <div class="campus-building" style="left:380px; top:100px; width:70px; height:45px;">
+            <span class="bld-icon"><svg class="icon" style="width:14px;height:14px"><use href="#icon-building"/></svg></span>
+            <span>综合楼</span>
+          </div>
+          <div class="campus-building" style="left:60px; top:220px; width:80px; height:50px;">
+            <span class="bld-icon"><svg class="icon" style="width:14px;height:14px"><use href="#icon-chat"/></svg></span>
+            <span>博雅广场</span>
+          </div>
+          <div class="campus-building" style="left:280px; top:240px; width:70px; height:45px;">
+            <span class="bld-icon"><svg class="icon" style="width:14px;height:14px"><use href="#icon-backpack"/></svg></span>
+            <span>学子食堂</span>
+          </div>
+          <div class="campus-building" style="left:170px; top:300px; width:80px; height:50px; border-color: rgba(212, 168, 67, 0.5);">
+            <span class="bld-icon"><svg class="icon" style="width:14px;height:14px"><use href="#icon-sparkle"/></svg></span>
+            <span>喷泉广场</span>
+          </div>
+          <!-- 桂花树 -->
+          <div class="campus-tree" style="left:160px; top:120px;"></div>
+          <div class="campus-tree" style="left:175px; top:140px;"></div>
+          <div class="campus-tree" style="left:155px; top:160px;"></div>
+          <div class="campus-tree" style="left:250px; top:150px;"></div>
+          <!-- 标注 -->
+          <div class="campus-label" style="left:155px; top:100px; color: var(--gold);">桂中路</div>
+          <div class="campus-label" style="left:0; top:165px;">桂子山路</div>
+        </div>
+      </div>
+      <div class="card-grid cols-3 fade-up" style="margin-top: 30px;">
+        <div class="tech-point" style="margin-bottom:0;">
+          <div class="tech-point-icon"><svg class="icon"><use href="#icon-map"/></svg></div>
+          <div class="tech-point-content">
+            <div class="tech-point-title">无缝大地图</div>
+            <div class="tech-point-desc">本部校区 120×80 tiles，pytmx 加载 Tiled 导出的 TMX 地图，6 层图层（ground→collision）</div>
+          </div>
+        </div>
+        <div class="tech-point" style="margin-bottom:0;">
+          <div class="tech-point-icon"><svg class="icon"><use href="#icon-bolt"/></svg></div>
+          <div class="tech-point-content">
+            <div class="tech-point-title">碰撞 · 分轴滑动</div>
+            <div class="tech-point-desc">从 Tiled 碰撞层提取布尔矩阵，先 X 后 Y 分轴检测，允许沿墙滑动而非卡住</div>
+          </div>
+        </div>
+        <div class="tech-point" style="margin-bottom:0;">
+          <div class="tech-point-icon"><svg class="icon"><use href="#icon-eye"/></svg></div>
+          <div class="tech-point-content">
+            <div class="tech-point-title">视口裁剪渲染</div>
+            <div class="tech-point-desc">仅渲染摄像机可见范围内的 Tile 和实体，大地图下保持 60 FPS 稳定</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== 第5页：夜幕降临 ====== -->
+  <div class="slide" data-index="4">
+    <div class="section-tag fade-up">二 / 游戏设计</div>
+    <div class="story-tag fade-up">故事线 · 夜幕降临</div>
+    <h2 class="slide-title fade-up">昼夜循环与秘境觉醒</h2>
+    <div class="slide-content">
+      <div class="fade-up" style="text-align: center; margin-bottom: 18px;">
+        <p style="font-size: 14px; color: var(--text-dim); line-height: 1.7; max-width: 700px; margin: 0 auto;">
+          白天，校园宁静如常；夜幕降临，秘境觉醒——幽绿光芒从地面涌出，桂花树在暗夜中发出微光，广场舞阿姨出现在博雅广场……
+        </p>
+      </div>
+      <!-- 昼夜渐变条 -->
+      <div class="fade-up" style="max-width: 800px; margin: 0 auto 24px;">
+        <div class="gradient-bar" style="background: linear-gradient(90deg,
+          rgba(0,0,0,0) 0%,
+          rgba(0,0,0,0) 25%,
+          rgba(200,100,30,0.25) 35%,
+          rgba(120,40,80,0.35) 42%,
+          rgba(15,20,60,0.55) 50%,
+          rgba(10,15,50,0.65) 60%,
+          rgba(10,15,50,0.65) 75%,
+          rgba(120,40,80,0.35) 83%,
+          rgba(200,100,30,0.25) 90%,
+          rgba(0,0,0,0) 100%
+        );">
+          <div class="gradient-bar-label" style="left: 12%;">6:00 白天</div>
+          <div class="gradient-bar-label" style="left: 38%;">18:00 黄昏</div>
+          <div class="gradient-bar-label" style="left: 55%;">19:30 夜晚</div>
+          <div class="gradient-bar-label" style="left: 88%;">6:00 次日</div>
+        </div>
+        <div style="height: 24px;"></div>
+      </div>
+      <div class="two-col fade-up">
+        <div class="two-col-left">
+          <div class="col-title">关键帧插值法</div>
           <div class="card-text" style="font-size: 13px; line-height: 1.8;">
-            <svg class="icon" style="color:var(--green-light);width:14px;height:14px;vertical-align:-2px"><use href="#icon-check"/></svg> 依赖严格自底向上，<span class="highlight">不可反向依赖</span><br>
-            <svg class="icon" style="color:var(--green-light);width:14px;height:14px;vertical-align:-2px"><use href="#icon-check"/></svg> <span class="highlight">update() 与 draw() 分离</span>，逻辑与渲染解耦<br>
-            <svg class="icon" style="color:var(--green-light);width:14px;height:14px;vertical-align:-2px"><use href="#icon-check"/></svg> 数据与逻辑分离，JSON 外置驱动<br>
-            <svg class="icon" style="color:var(--green-light);width:14px;height:14px;vertical-align:-2px"><use href="#icon-check"/></svg> 同层模块通过接口通信，避免循环导入<br>
-            <svg class="icon" style="color:var(--green-light);width:14px;height:14px;vertical-align:-2px"><use href="#icon-check"/></svg> UI 三阶段递进：基础→素材→打磨
+            全天定义 <span class="highlight">11 个关键帧</span>，每个帧指定色调颜色和 alpha 值。任意时刻的色调由相邻两个关键帧<span class="highlight">线性插值</span>得到，实现平滑过渡。<br><br>
+            <span class="tag">白天</span> 无叠加（秘境蛰伏态淡绿 alpha≈10）<br>
+            <span class="tag">黄昏</span> 橘红→紫蓝渐变<br>
+            <span class="tag">夜晚</span> 深蓝叠加 alpha 最高 155<br>
+            <span class="tag">觉醒态</span> 幽绿脉冲 alpha 20-50 呼吸
+          </div>
+          <div class="col-title" style="margin-top: 10px;">NPC 时段系统</div>
+          <div class="card-text" style="font-size: 13px;">
+            不同 NPC 在不同时段出现：图书管理员白天在岗，广场舞阿姨仅夜晚出现，<span class="highlight">桂中路谜题仅夜晚可解</span>——昼夜不只是视觉变化，更影响游戏逻辑。
+          </div>
+        </div>
+        <div class="two-col-right">
+          <div class="col-title">实现原理</div>
+          <div class="code-block">
+<span class="cmt"># 11个关键帧定义色调</span>
+KEYFRAMES = [
+  (6.0,  (0,0,0), 0),    <span class="cmt"># 白天无叠加</span>
+  (18.0, (200,100,30), 40), <span class="cmt"># 黄昏橘红</span>
+  (19.5, (15,20,60), 155),  <span class="cmt"># 夜晚深蓝</span>
+  ...
+]
+<span class="cmt"># 当前时刻插值</span>
+<span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="fn">len</span>(KEYFRAMES)-1):
+  t0, c0, a0 = KEYFRAMES[i]
+  t1, c1, a1 = KEYFRAMES[i+1]
+  <span class="kw">if</span> t0 <= hour <= t1:
+    ratio = (hour-t0)/(t1-t0)
+    color = <span class="fn">lerp</span>(c0, c1, ratio)
+    alpha = <span class="fn">lerp</span>(a0, a1, ratio)
+          </div>
+          <div class="col-title" style="margin-top: 10px;">技术要点</div>
+          <div class="card-text" style="font-size: 13px; line-height: 1.8;">
+            所有叠加通过 <code>Surface.set_alpha()</code> 实现，<span class="highlight">每帧仅一次全屏 fill</span>，性能友好。游戏内 1 天 = 现实 6 分钟，由 <code>config.py</code> 中 <code>DAY_DURATION</code> 控制。
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- ====== 第6页：核心技术难点 ====== -->
+  <!-- ====== 第6页：收集徽章（上） ====== -->
   <div class="slide" data-index="5">
-    <div class="section-tag fade-up">05 / 详细设计</div>
-    <h2 class="slide-title fade-up">核心技术难点</h2>
+    <div class="section-tag fade-up">二 / 游戏设计</div>
+    <div class="story-tag fade-up">故事线 · 收集徽章</div>
+    <h2 class="slide-title fade-up">三个地标 · 三种玩法</h2>
     <div class="slide-content">
-      <div class="challenge-item fade-up">
-        <div class="challenge-icon"><svg class="icon"><use href="#icon-sun"/></svg></div>
-        <div class="challenge-content">
-          <div class="challenge-title">昼夜光照 · 关键帧插值法</div>
-          <div class="challenge-desc">
-            全天 11 个关键帧定义色调，任意时刻由相邻帧<span class="highlight">线性插值</span>得到。白天无叠加，黄昏橘红→紫蓝渐变，夜晚深蓝叠加(alpha 最高 155)。秘境蛰伏态叠加淡绿(alpha≈10)，觉醒态叠加<span class="highlight">幽绿脉冲</span>(alpha 20-50 呼吸)。通关后秘境消散，恢复正常昼夜。所有叠加通过 <code>Surface.set_alpha()</code> 实现，性能友好。
-          </div>
-        </div>
+      <div class="fade-up" style="text-align: center; margin-bottom: 18px;">
+        <p style="font-size: 14px; color: var(--text-dim); line-height: 1.7; max-width: 700px; margin: 0 auto;">
+          秘境守护者告诉你：七个地标各藏一枚桂花徽章碎片，集齐七枚方能解除封印。你首先来到夜晚的桂中路……
+        </p>
       </div>
-      <div class="challenge-item fade-up">
-        <div class="challenge-icon"><svg class="icon"><use href="#icon-grid"/></svg></div>
-        <div class="challenge-content">
-          <div class="challenge-title">9-slice 像素风边框</div>
-          <div class="challenge-desc">
-            pygame_gui 不支持 9-slice 图片拉伸（角会变形），因此<span class="highlight">自写 9-slice 渲染函数</span>：将边框图分为 9 区域，角不拉伸、边单方向拉伸、中心双向拉伸。该函数在 <code>dialog_box.py</code> 中实现，被 <code>inventory_ui</code>、<code>quest_log</code> 等模块全局复用。
-          </div>
-        </div>
-      </div>
-      <div class="challenge-item fade-up">
-        <div class="challenge-icon"><svg class="icon"><use href="#icon-bolt"/></svg></div>
-        <div class="challenge-content">
-          <div class="challenge-title">碰撞检测 · 分轴滑动</div>
-          <div class="challenge-desc">
-            基于 Tile 的碰撞，从 Tiled 碰撞层提取二维布尔数组。移动时<span class="highlight">先 X 后 Y 分轴检测</span>，允许沿墙滑动而非卡住。内部分辨率 480×270 下运算，缩放到窗口显示。
-          </div>
-        </div>
-      </div>
-      <div class="challenge-item fade-up">
-        <div class="challenge-icon"><svg class="icon"><use href="#icon-sparkle"/></svg></div>
-        <div class="challenge-content">
-          <div class="challenge-title">粒子系统 · 七徽归位动画</div>
-          <div class="challenge-desc">
-            喷泉广场最终谜题：前 6 枚徽章正确放置后，触发<span class="highlight">三阶段显现动画</span>——粒子从 6 枚徽章汇聚到第 7 槽位(2s) → 第 7 枚从光芒中逐渐显现(2s) → 完成提示。纯 Pygame 手写粒子系统，含速度衰减、透明度渐变、随机偏移。
-          </div>
-        </div>
-      </div>
-      <div class="challenge-item fade-up">
-        <div class="challenge-icon"><svg class="icon"><use href="#icon-shield"/></svg></div>
-        <div class="challenge-content">
-          <div class="challenge-title">存档安全 · 写临时文件再重命名</div>
-          <div class="challenge-desc">
-            采用"写临时文件 → 重命名"策略防止写入中断导致数据损坏。存档内容涵盖玩家位置/背包/谜题状态/昼夜时钟/对话标记/探索迷雾/音频设置等 <span class="highlight">15+ 字段</span>，支持完整状态恢复。
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ====== 第7页：7大谜题 ====== -->
-  <div class="slide" data-index="6">
-    <div class="section-tag fade-up">06 / 详细设计</div>
-    <h2 class="slide-title fade-up">七大谜题系统</h2>
-    <div class="slide-content">
-      <div class="card-grid cols-4 fade-up" style="margin-bottom: 16px;">
+      <div class="card-grid cols-3 fade-up">
         <div class="puzzle-card">
           <div class="puzzle-num">壹</div>
           <div class="puzzle-name">桂花密语</div>
@@ -1199,6 +1142,63 @@ OUTRO     → 结局动画
           <div class="puzzle-stars">★★☆</div>
         </div>
         <div class="puzzle-card">
+          <div class="puzzle-num">陆</div>
+          <div class="puzzle-name">饭卡迷踪</div>
+          <div class="puzzle-loc"><svg class="icon"><use href="#icon-pin"/></svg> 学子食堂</div>
+          <div class="puzzle-desc">2 楼 3 张餐桌搜索饭卡，归还后获桂花糕→徽章</div>
+          <div class="puzzle-stars">★☆☆</div>
+        </div>
+      </div>
+      <div class="two-col fade-up" style="margin-top: 18px;">
+        <div class="two-col-left">
+          <div class="tech-point">
+            <div class="tech-point-icon"><svg class="icon"><use href="#icon-moon"/></svg></div>
+            <div class="tech-point-content">
+              <div class="tech-point-title">夜晚限定机制</div>
+              <div class="tech-point-desc">桂花密语仅在夜晚可触发——PuzzleManager 检查当前时钟时段，白天互动桂花树只返回普通对话。这是昼夜系统与谜题系统的<span class="highlight">跨模块联动</span>。</div>
+            </div>
+          </div>
+          <div class="tech-point">
+            <div class="tech-point-icon"><svg class="icon"><use href="#icon-key"/></svg></div>
+            <div class="tech-point-content">
+              <div class="tech-point-title">密码输入终端</div>
+              <div class="tech-point-desc">综合楼电脑终端支持数字键输入 4 位密码，含光标闪烁动画。线索散布在公告栏残页中，<span class="highlight">信息碎片化设计</span>引导玩家主动探索。</div>
+            </div>
+          </div>
+        </div>
+        <div class="two-col-right">
+          <div class="tech-point">
+            <div class="tech-point-icon"><svg class="icon"><use href="#icon-search"/></svg></div>
+            <div class="tech-point-content">
+              <div class="tech-point-title">搜索交互与对话驱动</div>
+              <div class="tech-point-desc">食堂谜题没有独立 UI，完全通过<span class="highlight">对话系统+互动物体</span>实现：搜索桌子→对话框反馈结果→找到饭卡→与阿姨对话归还。纯逻辑层 48 行代码，体现了数据驱动架构的简洁性。</div>
+            </div>
+          </div>
+          <div class="tech-point">
+            <div class="tech-point-icon"><svg class="icon"><use href="#icon-state"/></svg></div>
+            <div class="tech-point-content">
+              <div class="tech-point-title">谜题状态机</div>
+              <div class="tech-point-desc">所有谜题共享 <span class="highlight">UNDISCOVERED → DISCOVERED → IN_PROGRESS → SOLVED</span> 四阶段状态机，PuzzleManager 统一管理前置条件检查和徽章奖励发放。</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== 第7页：收集徽章（下） ====== -->
+  <div class="slide" data-index="6">
+    <div class="section-tag fade-up">二 / 游戏设计</div>
+    <div class="story-tag fade-up">故事线 · 收集徽章</div>
+    <h2 class="slide-title fade-up">三个挑战 · 三重考验</h2>
+    <div class="slide-content">
+      <div class="fade-up" style="text-align: center; margin-bottom: 18px;">
+        <p style="font-size: 14px; color: var(--text-dim); line-height: 1.7; max-width: 700px; margin: 0 auto;">
+          图书馆的书架间藏着知识的考验，博雅广场的地砖暗含阵法，体育馆里需要精准一击……
+        </p>
+      </div>
+      <div class="card-grid cols-3 fade-up">
+        <div class="puzzle-card">
           <div class="puzzle-num">叁</div>
           <div class="puzzle-name">书海寻踪</div>
           <div class="puzzle-loc"><svg class="icon"><use href="#icon-pin"/></svg> 图书馆</div>
@@ -1212,8 +1212,6 @@ OUTRO     → 结局动画
           <div class="puzzle-desc">8 方位地砖按随机顺序踩踏，错误重置+红色闪烁</div>
           <div class="puzzle-stars">★★☆</div>
         </div>
-      </div>
-      <div class="card-grid cols-3 fade-up">
         <div class="puzzle-card">
           <div class="puzzle-num">伍</div>
           <div class="puzzle-name">精准一击</div>
@@ -1221,34 +1219,165 @@ OUTRO     → 结局动画
           <div class="puzzle-desc">投篮小游戏(进度条停在绿区) + 记分牌拨盘输入 1903</div>
           <div class="puzzle-stars">★★☆</div>
         </div>
-        <div class="puzzle-card">
-          <div class="puzzle-num">陆</div>
-          <div class="puzzle-name">饭卡迷踪</div>
-          <div class="puzzle-loc"><svg class="icon"><use href="#icon-pin"/></svg> 学子食堂</div>
-          <div class="puzzle-desc">2 楼 3 张餐桌搜索饭卡，归还后获桂花糕→徽章</div>
-          <div class="puzzle-stars">★☆☆</div>
-        </div>
-        <div class="puzzle-card" style="border-color: rgba(212, 168, 67, 0.4); background: rgba(212, 168, 67, 0.06);">
-          <div class="puzzle-num">柒</div>
-          <div class="puzzle-name">七徽归位</div>
-          <div class="puzzle-loc"><svg class="icon"><use href="#icon-pin"/></svg> 喷泉广场 · 最终谜题</div>
-          <div class="puzzle-desc">7 凹槽按序嵌入徽章，前 6 枚放对后粒子动画生成第 7 枚</div>
-          <div class="puzzle-stars">★★★</div>
-        </div>
       </div>
-      <div class="fade-up" style="text-align: center; margin-top: 16px;">
-        <span class="tag">UNDISCOVERED</span> →
-        <span class="tag">DISCOVERED</span> →
-        <span class="tag">IN_PROGRESS</span> →
-        <span class="tag">SOLVED</span>
-        <span style="color: var(--text-dim); font-size: 12px; margin-left: 8px;">谜题状态机</span>
+      <div class="two-col fade-up" style="margin-top: 18px;">
+        <div class="two-col-left">
+          <div class="tech-point">
+            <div class="tech-point-icon"><svg class="icon"><use href="#icon-book"/></svg></div>
+            <div class="tech-point-content">
+              <div class="tech-point-title">题库 JSON 驱动</div>
+              <div class="tech-point-desc"><code>library_questions.json</code> 存储 12 道选择题，运行时随机抽取 3 道。答错可重试，答对全部通过。题目内容与华师校史相关，<span class="highlight">数据与逻辑完全分离</span>，增删题目无需改代码。</div>
+            </div>
+          </div>
+          <div class="tech-point">
+            <div class="tech-point-icon"><svg class="icon"><use href="#icon-grid"/></svg></div>
+            <div class="tech-point-content">
+              <div class="tech-point-title">9-slice 像素风边框</div>
+              <div class="tech-point-desc">pygame_gui 不支持 9-slice 图片拉伸（角会变形），因此<span class="highlight">自写 9-slice 渲染函数</span>：角不拉伸、边单方向拉伸、中心双向拉伸。在 dialog_box.py 中实现，被 inventory_ui、quest_log 等模块全局复用。</div>
+            </div>
+          </div>
+        </div>
+        <div class="two-col-right">
+          <div class="tech-point">
+            <div class="tech-point-icon"><svg class="icon"><use href="#icon-target"/></svg></div>
+            <div class="tech-point-content">
+              <div class="tech-point-title">投篮小游戏 · 双阶段谜题</div>
+              <div class="tech-point-desc">体育馆谜题分两阶段：<span class="highlight">① 投篮</span>（移动指示器停在绿区判定命中）→ <span class="highlight">② 翻牌</span>（记分牌拨盘输入密码 1903）。416 行代码，是复杂度最高的谜题之一。</div>
+            </div>
+          </div>
+          <div class="tech-point">
+            <div class="tech-point-icon"><svg class="icon"><use href="#icon-eye"/></svg></div>
+            <div class="tech-point-content">
+              <div class="tech-point-title">视觉反馈系统</div>
+              <div class="tech-point-desc">地砖阵法踩对发光、踩错红色闪烁重置；投篮命中/未中有不同动画；谜题解决时播放音效+徽章获取提示。<span class="highlight">即时反馈</span>让玩家始终知道操作结果。</div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- ====== 第8页：AI辅助开发 ====== -->
+  <!-- ====== 第8页：七徽归位 ====== -->
   <div class="slide" data-index="7">
-    <div class="section-tag fade-up">07 / AI 使用说明</div>
+    <div class="section-tag fade-up">二 / 游戏设计</div>
+    <div class="story-tag fade-up">故事线 · 七徽归位</div>
+    <h2 class="slide-title fade-up">最终谜题与粒子动画</h2>
+    <div class="slide-content">
+      <div class="fade-up" style="text-align: center; margin-bottom: 18px;">
+        <p style="font-size: 14px; color: var(--text-dim); line-height: 1.7; max-width: 700px; margin: 0 auto;">
+          六枚徽章已集齐。喷泉广场中央，基座上有七个凹槽——按正确顺序嵌入前六枚，第七枚将从光芒中自行显现……
+        </p>
+      </div>
+      <div class="two-col fade-up">
+        <div class="two-col-left">
+          <div class="col-title">三阶段显现动画</div>
+          <div class="card-text" style="font-size: 13px; line-height: 1.9;">
+            <span class="tag">阶段一</span> 粒子从 6 枚徽章汇聚到第 7 槽位（2s）<br>
+            <span class="tag">阶段二</span> 第 7 枚徽章从光芒中逐渐显现（2s）<br>
+            <span class="tag">阶段三</span> 完成提示，秘境封印解除<br><br>
+            纯 Pygame 手写粒子系统，含速度衰减、透明度渐变、随机偏移。fountain_puzzle.py 共 <span class="highlight">593 行</span>，是代码量最大的谜题。
+          </div>
+          <div class="col-title" style="margin-top: 10px;">PuzzleManager 统一管理</div>
+          <div class="card-text" style="font-size: 13px; line-height: 1.8;">
+            7 个谜题由 PuzzleManager 统一调度：<br>
+            <span class="tag">前置条件检查</span>
+            <span class="tag">状态持久化</span>
+            <span class="tag">徽章奖励发放</span>
+            <span class="tag">存档序列化</span><br>
+            七徽归位的前置条件是前 6 个谜题全部 SOLVED。
+          </div>
+        </div>
+        <div class="two-col-right">
+          <div class="col-title">粒子汇聚示意</div>
+          <div class="particle-demo" style="width:100%; height:180px; background: rgba(13,26,18,0.5); border-radius:10px; border:1px solid rgba(212,168,67,0.15); position:relative; overflow:hidden;">
+            <!-- 6枚徽章位置 -->
+            <div style="position:absolute; left:15%; top:20%; width:14px; height:14px; border-radius:50%; background:var(--gold); opacity:0.7; box-shadow:0 0 8px var(--accent-glow);"></div>
+            <div style="position:absolute; left:75%; top:15%; width:14px; height:14px; border-radius:50%; background:var(--gold); opacity:0.7; box-shadow:0 0 8px var(--accent-glow);"></div>
+            <div style="position:absolute; left:10%; top:70%; width:14px; height:14px; border-radius:50%; background:var(--gold); opacity:0.7; box-shadow:0 0 8px var(--accent-glow);"></div>
+            <div style="position:absolute; left:80%; top:65%; width:14px; height:14px; border-radius:50%; background:var(--gold); opacity:0.7; box-shadow:0 0 8px var(--accent-glow);"></div>
+            <div style="position:absolute; left:25%; top:85%; width:14px; height:14px; border-radius:50%; background:var(--gold); opacity:0.7; box-shadow:0 0 8px var(--accent-glow);"></div>
+            <div style="position:absolute; left:65%; top:82%; width:14px; height:14px; border-radius:50%; background:var(--gold); opacity:0.7; box-shadow:0 0 8px var(--accent-glow);"></div>
+            <!-- 第7枚（中心） -->
+            <div style="position:absolute; left:50%; top:45%; transform:translate(-50%,-50%); width:22px; height:22px; border-radius:50%; background:radial-gradient(circle, var(--gold-light), var(--gold)); box-shadow:0 0 20px rgba(212,168,67,0.6), 0 0 40px rgba(212,168,67,0.3); animation: pulse-glow 2s ease-in-out infinite;"></div>
+            <!-- 汇聚线 -->
+            <svg style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;" viewBox="0 0 400 180">
+              <line x1="60" y1="36" x2="200" y2="81" stroke="rgba(212,168,67,0.15)" stroke-width="1" stroke-dasharray="4,4"/>
+              <line x1="300" y1="27" x2="200" y2="81" stroke="rgba(212,168,67,0.15)" stroke-width="1" stroke-dasharray="4,4"/>
+              <line x1="40" y1="126" x2="200" y2="81" stroke="rgba(212,168,67,0.15)" stroke-width="1" stroke-dasharray="4,4"/>
+              <line x1="320" y1="117" x2="200" y2="81" stroke="rgba(212,168,67,0.15)" stroke-width="1" stroke-dasharray="4,4"/>
+              <line x1="100" y1="153" x2="200" y2="81" stroke="rgba(212,168,67,0.15)" stroke-width="1" stroke-dasharray="4,4"/>
+              <line x1="260" y1="148" x2="200" y2="81" stroke="rgba(212,168,67,0.15)" stroke-width="1" stroke-dasharray="4,4"/>
+            </svg>
+            <div style="position:absolute; bottom:8px; right:12px; font-size:10px; color:var(--text-dim);">6 枚汇聚 → 第 7 枚显现</div>
+          </div>
+          <div class="col-title" style="margin-top: 10px;">技术实现</div>
+          <div class="card-text" style="font-size: 13px; line-height: 1.8;">
+            粒子属性：位置、速度、加速度、透明度、生命周期<br>
+            每帧更新：<code>pos += vel; vel *= 0.96; alpha -= fade_rate</code><br>
+            渲染：<code>Surface.set_alpha()</code> + <code>blit</code> 到目标位置
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== 第9页：封印解除 ====== -->
+  <div class="slide" data-index="8">
+    <div class="section-tag fade-up">二 / 游戏设计</div>
+    <div class="story-tag fade-up">故事线 · 封印解除</div>
+    <h2 class="slide-title fade-up">数据驱动与存档系统</h2>
+    <div class="slide-content">
+      <div class="fade-up" style="text-align: center; margin-bottom: 18px;">
+        <p style="font-size: 14px; color: var(--text-dim); line-height: 1.7; max-width: 700px; margin: 0 auto;">
+          七枚徽章归位，喷泉涌出光芒，秘境封印解除。通关之后，回顾整个游戏的数据驱动架构——
+        </p>
+      </div>
+      <div class="two-col fade-up">
+        <div class="two-col-left">
+          <div class="col-title">数据驱动架构</div>
+          <div class="card-text" style="font-size: 13px; line-height: 1.9; margin-bottom: 12px;">
+            所有面向玩家的内容存储在 JSON 数据文件中，代码只负责逻辑：<br>
+            <span class="tag">14 个对话 JSON</span> 对话文本+条件分支+选项<br>
+            <span class="tag">items.json</span> 道具名称/描述/分类/可组合性<br>
+            <span class="tag">puzzles.json</span> 谜题名称/难度/前置条件/奖励<br>
+            <span class="tag">library_questions.json</span> 问答题库<br><br>
+            <span class="highlight">增删内容无需改代码</span>，只需编辑 JSON 文件。
+          </div>
+          <div class="col-title">对话系统</div>
+          <div class="card-text" style="font-size: 13px; line-height: 1.8;">
+            逐字显示（50ms/字）+ 选项分支 + 条件显示（<code>has_item</code>、谜题状态等）+ 自动换行。支持<span class="highlight">游戏状态检查</span>，同一 NPC 在不同进度下有不同对话。
+          </div>
+        </div>
+        <div class="two-col-right">
+          <div class="tech-point">
+            <div class="tech-point-icon"><svg class="icon"><use href="#icon-shield"/></svg></div>
+            <div class="tech-point-content">
+              <div class="tech-point-title">存档安全 · 临时文件策略</div>
+              <div class="tech-point-desc">采用"写临时文件 → 重命名"策略，防止写入中断导致数据损坏。存档涵盖 <span class="highlight">15+ 字段</span>：玩家位置、背包、谜题状态、昼夜时钟、对话标记、探索迷雾、音频设置等，支持完整状态恢复。</div>
+            </div>
+          </div>
+          <div class="tech-point">
+            <div class="tech-point-icon"><svg class="icon"><use href="#icon-save"/></svg></div>
+            <div class="tech-point-content">
+              <div class="tech-point-title">自动存档触发</div>
+              <div class="tech-point-desc">1 个自动存档 + 2 个手动存档槽。自动存档触发点：退出游戏、进/出室内、跨校区、解谜完成、拾取关键道具——<span class="highlight">关键节点不丢失进度</span>。</div>
+            </div>
+          </div>
+          <div class="tech-point">
+            <div class="tech-point-icon"><svg class="icon"><use href="#icon-file-code"/></svg></div>
+            <div class="tech-point-content">
+              <div class="tech-point-title">JSON 异常捕获与降级</div>
+              <div class="tech-point-desc">所有 JSON 加载均有 try-except，缺失字段使用合理默认值。地图加载失败时显示错误提示而非崩溃，保证<span class="highlight">健壮性</span>。</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== 第10页：AI 辅助开发 ====== -->
+  <div class="slide" data-index="9">
+    <div class="section-tag fade-up">三 / AI 辅助开发</div>
     <h2 class="slide-title fade-up">大模型辅助开发流程</h2>
     <div class="slide-content">
       <div class="two-col fade-up">
@@ -1300,7 +1429,7 @@ OUTRO     → 结局动画
           </div>
           <div class="card" style="margin-bottom: 10px;">
             <div class="card-title"><svg class="inline-icon"><use href="#icon-bug"/></svg>调试与问题定位</div>
-            <div class="card-text">将运行时错误日志粘贴给 AI，快速定位问题根因。如 pytmx 加载异常、中文字体渲染模糊、状态机转换死锁等</div>
+            <div class="card-text">将运行时错误日志反馈给 AI，快速定位问题根因。如 pytmx 加载异常、中文字体渲染模糊、状态机转换死锁等</div>
           </div>
           <div class="card">
             <div class="card-title"><svg class="inline-icon"><use href="#icon-file-list"/></svg>数据文件编写</div>
@@ -1311,167 +1440,62 @@ OUTRO     → 结局动画
     </div>
   </div>
 
-  <!-- ====== 第9页：项目数据 ====== -->
-  <div class="slide" data-index="8">
-    <div class="section-tag fade-up">08 / 项目数据</div>
-    <h2 class="slide-title fade-up">项目规模一览</h2>
-    <div class="slide-content" style="display: flex; flex-direction: column; align-items: center;">
-      <div class="stat-row fade-up">
-        <div class="stat-item">
-          <div class="stat-num">~15K</div>
-          <div class="stat-label">行 Python 代码</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-num">33</div>
-          <div class="stat-label">个源文件</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-num">7</div>
-          <div class="stat-label">个谜题</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-num">11</div>
-          <div class="stat-label">张地图</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-num">14</div>
-          <div class="stat-label">个对话文件</div>
-        </div>
-      </div>
-      <div class="stat-row fade-up">
-        <div class="stat-item">
-          <div class="stat-num">10</div>
-          <div class="stat-label">种游戏状态</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-num">6</div>
-          <div class="stat-label">位 NPC</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-num">11</div>
-          <div class="stat-label">首 BGM</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-num">15</div>
-          <div class="stat-label">个音效</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-num">57</div>
-          <div class="stat-label">个 UI 素材</div>
-        </div>
-      </div>
-      <div class="card-grid cols-2 fade-up" style="max-width: 800px; margin-top: 10px;">
-        <div class="card">
-          <div class="card-title">核心文件 TOP 5</div>
-          <div class="card-text" style="font-size: 13px; line-height: 2;">
-            game_manager.py — <span class="highlight">4453 行</span>（主循环+状态机+场景管理）<br>
-            fountain_puzzle.py — 593 行（粒子系统+三阶段动画）<br>
-            menu.py — 878 行（完整菜单系统）<br>
-            minimap.py — 578 行（小地图+迷雾+全屏地图）<br>
-            gym_puzzle.py — 416 行（投篮+记分牌双阶段）
-          </div>
-        </div>
-        <div class="card">
-          <div class="card-title">开发周期：14 天</div>
-          <div class="card-text" style="font-size: 13px; line-height: 2;">
-            Day 1-2：框架 + 地图系统<br>
-            Day 3-7：地图制作 + 互动 + 背包 + 过渡<br>
-            Day 8-9：7 个谜题全部实现<br>
-            Day 10-11：昼夜 + 体力 + 存档 + HUD<br>
-            Day 12-14：精灵 + 音频 + 测试 + 打磨
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ====== 第10页：系统演示 ====== -->
-  <div class="slide" data-index="9">
-    <div class="section-tag fade-up">09 / 系统演示</div>
-    <h2 class="slide-title fade-up">功能展示</h2>
-    <div class="slide-content" style="display: flex; flex-direction: column; align-items: center;">
-      <div class="fade-up" style="text-align: center; margin-bottom: 24px;">
-        <p style="font-size: 16px; color: var(--text); line-height: 1.8;">
-          接下来进行实机演示，重点展示以下功能模块：
-        </p>
-      </div>
-      <div class="card-grid cols-3 fade-up" style="max-width: 900px;">
-        <div class="card" style="text-align: center; border-color: rgba(212, 168, 67, 0.3);">
-          <div class="card-icon"><svg class="icon"><use href="#icon-gamepad"/></svg></div>
-          <div class="card-title">基础操作</div>
-          <div class="card-text">移动/冲刺/互动<br>摄像机跟随<br>碰撞与滑动</div>
-        </div>
-        <div class="card" style="text-align: center; border-color: rgba(212, 168, 67, 0.3);">
-          <div class="card-icon"><svg class="icon"><use href="#icon-moon"/></svg></div>
-          <div class="card-title">昼夜与秘境</div>
-          <div class="card-text">光照渐变过渡<br>秘境双态叠加<br>夜晚限定内容</div>
-        </div>
-        <div class="card" style="text-align: center; border-color: rgba(212, 168, 67, 0.3);">
-          <div class="card-icon"><svg class="icon"><use href="#icon-puzzle"/></svg></div>
-          <div class="card-title">谜题玩法</div>
-          <div class="card-text">选 1-2 个谜题演示<br>展示不同类型<br>解谜→获徽章</div>
-        </div>
-      </div>
-      <div class="card-grid cols-3 fade-up" style="max-width: 900px; margin-top: 16px;">
-        <div class="card" style="text-align: center; border-color: rgba(212, 168, 67, 0.3);">
-          <div class="card-icon"><svg class="icon"><use href="#icon-chat"/></svg></div>
-          <div class="card-title">对话与NPC</div>
-          <div class="card-text">逐字显示+选项分支<br>条件对话<br>NPC 时段出现</div>
-        </div>
-        <div class="card" style="text-align: center; border-color: rgba(212, 168, 67, 0.3);">
-          <div class="card-icon"><svg class="icon"><use href="#icon-backpack"/></svg></div>
-          <div class="card-title">背包与UI</div>
-          <div class="card-text">道具拾取/使用<br>9-slice 像素风边框<br>小地图+任务日志</div>
-        </div>
-        <div class="card" style="text-align: center; border-color: rgba(212, 168, 67, 0.3);">
-          <div class="card-icon"><svg class="icon"><use href="#icon-sparkle"/></svg></div>
-          <div class="card-title">七徽归位</div>
-          <div class="card-text">最终谜题<br>粒子显现动画<br>通关结局</div>
-        </div>
-      </div>
-      <div class="demo-tip fade-up">
-        <div class="demo-tip-title">演示策略</div>
-        <div class="demo-tip-text">
-          由于时间限制，无法完整通关。建议：展示基础操作和昼夜变化 → 演示 1 个简单谜题(饭卡迷踪) + 1 个复杂谜题(精准一击) → 使用存档跳到集齐 6 枚徽章的进度 → 演示七徽归位最终谜题 + 结局动画
-        </div>
-      </div>
-    </div>
-  </div>
-
   <!-- ====== 第11页：总结 ====== -->
   <div class="slide cover-slide" data-index="10">
     <div class="end-badge fade-up"></div>
-    <h2 class="slide-title fade-up" style="font-size: 44px;">项目总结</h2>
-    <div class="fade-up" style="max-width: 700px; text-align: center; margin-bottom: 30px;">
-      <p style="font-size: 16px; line-height: 2; color: var(--text);">
+    <h2 class="slide-title fade-up" style="font-size: 40px;">项目总结</h2>
+    <div class="fade-up" style="max-width: 680px; text-align: center; margin-bottom: 24px;">
+      <p style="font-size: 15px; line-height: 2; color: var(--text);">
         从零到一，用 <span class="highlight">Python + Pygame</span> 实现了一款完整的 2D 解谜冒险游戏。<br>
-        涵盖地图渲染、碰撞检测、状态机、昼夜循环、<br>
-        7 个风格各异的谜题、背包系统、对话系统、存档管理等<br>
-        一套完整的游戏工程体系。
+        以华师校园为蓝本，7 个地标对应 7 种玩法，<br>
+        昼夜双态赋予时间维度的叙事层次，<br>
+        数据驱动架构让内容与逻辑彻底分离。
       </p>
     </div>
-    <div class="card-grid cols-3 fade-up" style="max-width: 800px;">
+    <div class="stat-row fade-up">
+      <div class="stat-item">
+        <div class="stat-num">~15K</div>
+        <div class="stat-label">行代码</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">33</div>
+        <div class="stat-label">个模块</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">7</div>
+        <div class="stat-label">个谜题</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">11</div>
+        <div class="stat-label">张地图</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">14</div>
+        <div class="stat-label">个对话文件</div>
+      </div>
+    </div>
+    <div class="card-grid cols-3 fade-up" style="max-width: 760px;">
       <div class="card" style="text-align: center;">
         <div class="card-title">工程能力</div>
-        <div class="card-text">15K 行代码 · 六层架构<br>数据驱动 · 模块解耦</div>
+        <div class="card-text">6 层架构 · 数据驱动<br>模块解耦 · 状态机</div>
       </div>
       <div class="card" style="text-align: center;">
         <div class="card-title">完整体验</div>
-        <div class="card-text">标题→教程→探索→解谜<br>→通关→多结局</div>
+        <div class="card-text">标题→探索→解谜<br>→通关→多结局</div>
       </div>
       <div class="card" style="text-align: center;">
         <div class="card-title">AI 协作</div>
         <div class="card-text">需求→生成→审查→迭代<br>人机协同高效开发</div>
       </div>
     </div>
-    <p class="fade-up" style="margin-top: 40px; font-size: 20px; color: var(--gold); letter-spacing: 4px; font-family: 'Ma Shan Zheng', cursive;">
+    <p class="fade-up" style="margin-top: 32px; font-size: 18px; color: var(--gold); letter-spacing: 4px; font-family: 'Ma Shan Zheng', cursive;">
       感谢聆听
     </p>
   </div>
 
 </div>
 
-<!-- ===== 导航栏 ===== -->
+<!-- 导航栏 -->
 <div class="nav-bar">
   <button class="nav-arrow" id="prevBtn">◀</button>
   <div id="navDots"></div>
@@ -1480,7 +1504,6 @@ OUTRO     → 结局动画
 </div>
 
 <script>
-// ===== 幻灯片控制 =====
 const slides = document.querySelectorAll('.slide');
 const totalSlides = slides.length;
 let currentSlide = 0;
@@ -1490,7 +1513,6 @@ const navDotsContainer = document.getElementById('navDots');
 const slideCounter = document.getElementById('slideCounter');
 const progressBar = document.getElementById('progressBar');
 
-// 创建导航点
 for (let i = 0; i < totalSlides; i++) {
   const dot = document.createElement('button');
   dot.className = 'nav-dot' + (i === 0 ? ' active' : '');
@@ -1508,17 +1530,14 @@ function updateUI() {
 function goToSlide(index) {
   if (isTransitioning || index === currentSlide || index < 0 || index >= totalSlides) return;
   isTransitioning = true;
-
   const direction = index > currentSlide ? 1 : -1;
   const oldSlide = slides[currentSlide];
   const newSlide = slides[index];
 
-  // 退出动画
   oldSlide.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
   oldSlide.style.opacity = '0';
   oldSlide.style.transform = `translateX(${-60 * direction}px)`;
 
-  // 进入准备
   newSlide.style.transition = 'none';
   newSlide.style.opacity = '0';
   newSlide.style.transform = `translateX(${60 * direction}px)`;
@@ -1526,16 +1545,13 @@ function goToSlide(index) {
   setTimeout(() => {
     oldSlide.classList.remove('active');
     oldSlide.style.pointerEvents = 'none';
-
     newSlide.classList.add('active');
     newSlide.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
     newSlide.style.opacity = '1';
     newSlide.style.transform = 'translateX(0)';
     newSlide.style.pointerEvents = 'auto';
-
     currentSlide = index;
     updateUI();
-
     setTimeout(() => { isTransitioning = false; }, 500);
   }, 350);
 }
@@ -1553,7 +1569,6 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'End') { e.preventDefault(); goToSlide(totalSlides - 1); }
 });
 
-// 触摸滑动
 let touchStartX = 0;
 document.addEventListener('touchstart', (e) => { touchStartX = e.touches[0].clientX; });
 document.addEventListener('touchend', (e) => {
@@ -1561,7 +1576,7 @@ document.addEventListener('touchend', (e) => {
   if (Math.abs(diff) > 50) { diff < 0 ? nextSlide() : prevSlide(); }
 });
 
-// ===== 桂花粒子背景 =====
+// 桂花粒子背景
 const canvas = document.getElementById('particles-canvas');
 const ctx = canvas.getContext('2d');
 let particles = [];
@@ -1574,9 +1589,7 @@ resizeCanvas();
 window.addEventListener('resize', resizeCanvas);
 
 class Particle {
-  constructor() {
-    this.reset();
-  }
+  constructor() { this.reset(); }
   reset() {
     this.x = Math.random() * canvas.width;
     this.y = Math.random() * canvas.height - canvas.height;
@@ -1586,7 +1599,6 @@ class Particle {
     this.opacity = Math.random() * 0.4 + 0.1;
     this.wobble = Math.random() * Math.PI * 2;
     this.wobbleSpeed = Math.random() * 0.02 + 0.01;
-    // 金色/绿色随机
     const isGold = Math.random() > 0.4;
     this.color = isGold
       ? `rgba(212, 168, 67, ${this.opacity})`
@@ -1606,10 +1618,9 @@ class Particle {
   }
 }
 
-// 初始化粒子
 for (let i = 0; i < 60; i++) {
   const p = new Particle();
-  p.y = Math.random() * canvas.height; // 初始分布在整个屏幕
+  p.y = Math.random() * canvas.height;
   particles.push(p);
 }
 
@@ -1620,7 +1631,6 @@ function animateParticles() {
 }
 animateParticles();
 
-// 初始化
 updateUI();
 </script>
 </body>
