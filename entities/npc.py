@@ -1,4 +1,5 @@
 """NPC模块：非玩家角色逻辑、精灵渲染和互动"""
+import math
 import os
 import pygame
 from config import (
@@ -154,9 +155,66 @@ class NPC(Entity):
             return
         sx, sy = camera.apply(self.x, self.y - self.height - 4)
         text_surf = font.render(f"按 F {self.prompt_text}", True, (255, 255, 255))
-        text_rect = text_surf.get_rect(centerx=int(sx), bottom=int(sy))
-        bg_rect = text_rect.inflate(6, 4)
-        bg_surf = pygame.Surface((bg_rect.width, bg_rect.height), pygame.SRCALPHA)
-        bg_surf.fill((0, 0, 0, 160))
-        surface.blit(bg_surf, bg_rect.topleft)
-        surface.blit(text_surf, text_rect)
+        # 浮动动画
+        float_offset = int(1.5 * math.sin(pygame.time.get_ticks() / 400.0))
+        sy += float_offset
+        # 气泡主体尺寸（含内边距）
+        pad_x, pad_y = 8, 5
+        bubble_w = text_surf.get_width() + pad_x * 2
+        bubble_h = text_surf.get_height() + pad_y * 2
+        # 箭头参数
+        arrow_w = 4
+        arrow_h = 3
+        # 气泡主体矩形
+        bubble_rect = pygame.Rect(0, 0, bubble_w, bubble_h)
+        bubble_rect.centerx = int(sx)
+        bubble_rect.bottom = int(sy)
+        # 含箭头的总表面
+        total_h = bubble_h + arrow_h
+        total_surf = pygame.Surface((bubble_w, total_h), pygame.SRCALPHA)
+        # 深蓝半透明圆角背景
+        pygame.draw.rect(
+            total_surf,
+            (20, 20, 40, 180),
+            (0, 0, bubble_w, bubble_h),
+            border_radius=3,
+        )
+        # 青绿色圆角边框（与物体的金色边框区分）
+        pygame.draw.rect(
+            total_surf,
+            (100, 180, 240, 200),
+            (0, 0, bubble_w, bubble_h),
+            width=1,
+            border_radius=3,
+        )
+        # 底部箭头（向下三角形）
+        arrow_cx = bubble_w // 2
+        pygame.draw.polygon(
+            total_surf,
+            (20, 20, 40, 180),
+            [
+                (arrow_cx - arrow_w // 2, bubble_h - 1),
+                (arrow_cx + arrow_w // 2, bubble_h - 1),
+                (arrow_cx, bubble_h + arrow_h - 1),
+            ],
+        )
+        # 箭头左右青绿色边线
+        pygame.draw.line(
+            total_surf,
+            (100, 180, 240, 200),
+            (arrow_cx - arrow_w // 2, bubble_h - 1),
+            (arrow_cx, bubble_h + arrow_h - 1),
+            width=1,
+        )
+        pygame.draw.line(
+            total_surf,
+            (100, 180, 240, 200),
+            (arrow_cx + arrow_w // 2, bubble_h - 1),
+            (arrow_cx, bubble_h + arrow_h - 1),
+            width=1,
+        )
+        # 文本居中
+        text_x = (bubble_w - text_surf.get_width()) // 2
+        text_y = (bubble_h - text_surf.get_height()) // 2
+        total_surf.blit(text_surf, (text_x, text_y))
+        surface.blit(total_surf, bubble_rect.topleft)
