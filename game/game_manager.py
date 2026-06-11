@@ -307,20 +307,8 @@ class GameManager:
         }
         self.npcs.append(passing_student)
 
-        test_npc2 = NPC(
-            x=spawn_x - 48, y=spawn_y,
-            npc_id="senior_student",
-            dialogue_id="senior_student",
-            properties={
-                "direction": "right",
-                "body_color": (80, 140, 80),
-                "hair_color": (40, 30, 20),
-            },
-        )
-        self.npcs.append(test_npc2)
-
         test_obj = InteractiveObject(
-            x=spawn_x + 80, y=spawn_y - 16,
+            x=spawn_x + 48, y=spawn_y - 32,
             width=16, height=16,
             interactive_type="examine",
             properties={"prompt_text": "查看告示牌", "color": (160, 140, 100), "sprite_key": "bulletin_board"},
@@ -338,7 +326,7 @@ class GameManager:
 
         if not self._dialog_flags.get("picked_up_water_bottle", False):
             pickup_obj3 = InteractiveObject(
-                x=spawn_x + 16, y=spawn_y - 24,
+                x=spawn_x - 48, y=spawn_y - 16,
                 width=12, height=12,
                 interactive_type="pickup",
                 properties={
@@ -3240,8 +3228,8 @@ class GameManager:
 
         if self._intro_phase == 0:
             # 阶段0：黑屏 + 开场文字淡入
-            self._intro_text_alpha = min(255, int(self._intro_timer * 200))
-            if self._intro_timer > 3.5:
+            self._intro_text_alpha = min(255, int(self._intro_timer * 100))
+            if self._intro_timer > 3.4:
                 self._intro_phase = 1
                 self._intro_timer = 0.0
                 self._intro_fade_alpha = 255
@@ -3325,7 +3313,11 @@ class GameManager:
         ]
         y_offset = INTERNAL_HEIGHT // 2 - 15
         for i, text in enumerate(texts):
-            alpha = max(0, min(255, self._intro_text_alpha - i * 30))
+            if i == 0:
+                alpha = max(0, min(255, self._intro_text_alpha))
+            else:
+                delayed_alpha = max(0, self._intro_text_alpha - 80)
+                alpha = min(255, delayed_alpha)
             text_surf = self.info_font.render(text, True, COLOR_WHITE)
             text_surf.set_alpha(alpha)
             text_rect = text_surf.get_rect(
@@ -3349,7 +3341,7 @@ class GameManager:
             for x in range(0, INTERNAL_WIDTH, 8):
                 seed = (x * 7 + y * 13) % 37
                 if seed < 5:
-                    shade = (65 + seed, 105 + seed, 48 + seed)
+                    shade = (70 + seed, 112 + seed, 52 + seed)
                 elif seed < 10:
                     shade = (75 + seed, 118 + seed, 58 + seed)
                 else:
@@ -3362,10 +3354,10 @@ class GameManager:
         road_right = cx + road_w // 2
         for y in range(0, INTERNAL_HEIGHT, 2):
             for bx in range(road_left - 4, road_left):
-                c = (60, 125, 50) if (bx + y) % 4 < 2 else (50, 110, 40)
+                c = (68, 120, 52) if (bx + y) % 4 < 2 else (62, 115, 48)
                 surf.set_at((bx, y), c)
             for bx in range(road_right, road_right + 4):
-                c = (60, 125, 50) if (bx + y) % 4 < 2 else (50, 110, 40)
+                c = (68, 120, 52) if (bx + y) % 4 < 2 else (62, 115, 48)
                 surf.set_at((bx, y), c)
 
         # 零星小花簇（白/黄/粉色点缀在草地上，避开道路和花坛带）
@@ -3405,25 +3397,8 @@ class GameManager:
         ]
         for px, py, pw, ph in dark_patches:
             patch_s = pygame.Surface((pw, ph), pygame.SRCALPHA)
-            pygame.draw.ellipse(patch_s, (55, 95, 42, 60), (0, 0, pw, ph))
+            pygame.draw.ellipse(patch_s, (68, 112, 52, 30), (0, 0, pw, ph))
             surf.blit(patch_s, (px, py))
-
-        # 蜿蜒小径（从主路左侧 y≈160 向左延伸的碎石小径）
-        path_points = [
-            (road_left - 5, 160), (road_left - 15, 158),
-            (road_left - 28, 162), (road_left - 40, 157),
-            (road_left - 52, 160), (road_left - 60, 155),
-        ]
-        for k in range(len(path_points) - 1):
-            pygame.draw.line(surf, (150, 140, 115), path_points[k], path_points[k + 1], 2)
-        # 碎石点缀
-        for k in range(len(path_points)):
-            px, py = path_points[k]
-            for di in range(3):
-                dx = px + ((k * 5 + di * 7) % 7 - 3)
-                dy = py + ((k * 3 + di * 11) % 5 - 2)
-                if 0 <= dx < INTERNAL_WIDTH and 0 <= dy < INTERNAL_HEIGHT:
-                    surf.set_at((dx, dy), (140, 130, 105))
 
         # 远侧野花带（x≈30~80 和 x≈400~450 的 y≈180~220 区域）
         wild_flower_positions = [
@@ -3471,7 +3446,7 @@ class GameManager:
         # ============================================================
         # 3. 远景树影（校门后方，暗示校园深处）
         # ============================================================
-        far_trees = [(cx - 70, 15, 5), (cx + 80, 10, 4), (cx - 20, 8, 3)]
+        far_trees = [(cx + 80, 10, 4)]
         for ftx, fty, ftr in far_trees:
             # 远景树影：偏暗偏蓝的绿色
             pygame.draw.circle(surf, (45, 85, 40), (ftx, fty), ftr)
@@ -3628,8 +3603,8 @@ class GameManager:
         # 保存牌匾位置供后置叠加文字使用
         self._intro_plaque_rect = plaque_rect.copy()
 
-        # 校门两侧花坛
-        for ft_x in [cx - 62, cx + 44]:
+        # 校门两侧花坛（向外移，避免遮挡石狮子）
+        for ft_x in [cx - 75, cx + 56]:
             # 花坛外框
             pygame.draw.rect(surf, (140, 120, 90), (ft_x, gate_y + 38, 14, 10))
             pygame.draw.rect(surf, (120, 100, 70), (ft_x, gate_y + 38, 14, 10), 1)
@@ -3722,9 +3697,9 @@ class GameManager:
             # 画面底部点缀（向外移）
             (cx - 110, 230, 4),  # 左下
             (cx + 115, 240, 3),  # 右下
-            # 校门到树A/B之间（适配新校门）
-            (cx - 70, 58, 4),    # 校门左侧
-            (cx + 70, 56, 3),    # 校门右侧
+            # 校门到树A/B之间（适配新校门，向外移避免挡住石狮子）
+            (cx - 90, 58, 4),    # 校门左侧（远离石狮子）
+            (cx + 90, 56, 3),    # 校门右侧（远离石狮子）
         ]
         for bx, by, br in bush_clusters:
             pygame.draw.circle(surf, (42, 100, 38), (bx, by), br)
@@ -3840,8 +3815,8 @@ class GameManager:
             (lantern_x, lantern_y - 8)
         ])
 
-        # 校门两侧桂花花丛（低矮，3-4个黄色小圆点聚集，适配新校门）
-        for fc_x, fc_y in [(cx - 68, gate_y + 48), (cx + 58, gate_y + 47)]:
+        # 校门两侧桂花花丛（低矮，3-4个黄色小圆点聚集，向外移避免挡住石狮子）
+        for fc_x, fc_y in [(cx - 85, gate_y + 48), (cx + 75, gate_y + 47)]:
             for fi in range(5):
                 ffx = fc_x + (fi % 3) * 3
                 ffy = fc_y + (fi // 3) * 2

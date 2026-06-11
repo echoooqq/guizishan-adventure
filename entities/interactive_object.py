@@ -127,7 +127,7 @@ class InteractiveObject:
             # 居中精灵到物体区域
             sprite_w = self._sprite.get_width()
             sprite_h = self._sprite.get_height()
-            offset_x = (self.width - sprite_w) // 2
+            offset_x = round((self.width - sprite_w) / 2)
             offset_y = self.height - sprite_h  # 底部对齐
             surface.blit(self._sprite, (ix + offset_x, iy + offset_y))
         else:

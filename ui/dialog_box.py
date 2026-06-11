@@ -116,6 +116,7 @@ class DialogBox:
     TEXT_RIGHT_PADDING = 10
     CHOICE_INDENT = 12
     CHOICE_SPACING = 4
+    LINE_SPACING = 3
 
     def __init__(self):
         self.active = False
@@ -344,7 +345,7 @@ class DialogBox:
                         break
                     text_surf = self.font.render(line, True, COLOR_DIALOG_TEXT)
                     surface.blit(text_surf, (self._text_x, line_y))
-                    line_y += self.font.get_linesize()
+                    line_y += self.font.get_linesize() + self.LINE_SPACING
                     line = ch
                 else:
                     line = test
