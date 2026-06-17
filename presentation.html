@@ -141,7 +141,7 @@ body {
   font-size: 48px;
   color: var(--gold);
   text-shadow: 0 0 30px rgba(212, 168, 67, 0.3);
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   letter-spacing: 4px;
 }
 
@@ -174,7 +174,7 @@ body {
   padding: 5px 16px 5px 20px;
   border-radius: 20px;
   border: 1px solid rgba(212, 168, 67, 0.4);
-  margin-bottom: 14px;
+  margin-bottom: 10px;
   letter-spacing: 1px;
   font-family: 'ZCOOL QingKe HuangYou', sans-serif;
   border-left: 3px solid var(--gold);
@@ -188,7 +188,7 @@ body {
 
 .card-grid {
   display: grid;
-  gap: 18px;
+  gap: 14px;
   width: 100%;
   max-width: 1080px;
 }
@@ -200,7 +200,7 @@ body {
   background: var(--bg-card);
   border: 1px solid rgba(212, 168, 67, 0.15);
   border-radius: 12px;
-  padding: 22px;
+  padding: 12px 14px;
   backdrop-filter: blur(5px);
   transition: all 0.3s;
 }
@@ -213,7 +213,7 @@ body {
 
 .card-icon {
   font-size: 28px;
-  margin-bottom: 10px;
+  margin-bottom: 3px;
   color: var(--gold);
   line-height: 1;
 }
@@ -221,14 +221,14 @@ body {
 .card-title {
   font-size: 16px;
   color: var(--gold-light);
-  margin-bottom: 8px;
+  margin-bottom: 5px;
   font-weight: 700;
 }
 
 .card-text {
   font-size: 13px;
   color: var(--text-dim);
-  line-height: 1.75;
+  line-height: 1.7;
 }
 
 .highlight { color: var(--gold); font-weight: 700; }
@@ -310,7 +310,7 @@ body {
 .two-col {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 28px;
+  gap: 20px;
   width: 100%;
   max-width: 1080px;
 }
@@ -318,15 +318,15 @@ body {
 .two-col-left, .two-col-right {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
 }
 
 .col-title {
   font-size: 15px;
   color: var(--gold-light);
   font-weight: 700;
-  margin-bottom: 6px;
-  padding-bottom: 5px;
+  margin-bottom: 3px;
+  padding-bottom: 4px;
   border-bottom: 1px solid rgba(212, 168, 67, 0.2);
 }
 
@@ -335,10 +335,10 @@ body {
   background: rgba(13, 26, 18, 0.9);
   border: 1px solid rgba(212, 168, 67, 0.2);
   border-radius: 8px;
-  padding: 14px 18px;
+  padding: 10px 14px;
   font-family: 'Consolas', 'Courier New', monospace;
   font-size: 12px;
-  line-height: 1.7;
+  line-height: 1.65;
   color: var(--text-dim);
   overflow-x: auto;
 }
@@ -373,13 +373,13 @@ body {
 /* 技术难点条 */
 .tech-point {
   display: flex;
-  gap: 16px;
+  gap: 12px;
   align-items: flex-start;
-  padding: 14px 20px;
+  padding: 10px 14px;
   background: var(--bg-card);
   border: 1px solid rgba(212, 168, 67, 0.12);
   border-radius: 10px;
-  margin-bottom: 10px;
+  margin-bottom: 6px;
   transition: all 0.3s;
 }
 
@@ -389,7 +389,7 @@ body {
 }
 
 .tech-point-icon {
-  width: 32px; height: 32px;
+  width: 28px; height: 28px;
   border-radius: 8px;
   background: rgba(212, 168, 67, 0.1);
   display: flex;
@@ -405,13 +405,13 @@ body {
   font-size: 14px;
   color: var(--gold-light);
   font-weight: 700;
-  margin-bottom: 4px;
+  margin-bottom: 3px;
 }
 
 .tech-point-desc {
   font-size: 12px;
   color: var(--text-dim);
-  line-height: 1.7;
+  line-height: 1.65;
 }
 
 /* 谜题卡片 */
@@ -419,11 +419,15 @@ body {
   background: var(--bg-card);
   border: 1px solid rgba(212, 168, 67, 0.15);
   border-radius: 10px;
-  padding: 14px;
+  padding: 10px 12px;
   text-align: center;
   transition: all 0.3s;
   position: relative;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 .puzzle-card:hover {
@@ -448,29 +452,30 @@ body {
   font-family: 'Ma Shan Zheng', cursive;
   font-size: 26px;
   color: var(--gold);
-  margin-bottom: 2px;
+  margin-bottom: 0px;
+  line-height: 1.2;
 }
 
 .puzzle-name {
   font-size: 15px;
   color: var(--gold-light);
   font-weight: 700;
-  margin-bottom: 4px;
+  margin-bottom: 3px;
 }
 
 .puzzle-loc {
   font-size: 12px;
   color: var(--green-light);
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .puzzle-desc {
   font-size: 11px;
   color: var(--text-dim);
-  line-height: 1.6;
+  line-height: 1.55;
 }
 
-.puzzle-stars { color: var(--gold); font-size: 13px; margin-top: 4px; }
+.puzzle-stars { color: var(--gold); font-size: 13px; margin-top: 3px; }
 
 /* AI 流程 */
 .ai-flow { display: flex; flex-direction: column; gap: 0; max-width: 880px; width: 100%; }
@@ -478,13 +483,13 @@ body {
 .ai-step {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 12px 18px;
+  gap: 12px;
+  padding: 6px 10px;
   position: relative;
 }
 
 .ai-step-num {
-  width: 34px; height: 34px;
+  width: 28px; height: 28px;
   border-radius: 50%;
   background: linear-gradient(135deg, var(--green), var(--green-dark));
   border: 2px solid var(--gold);
@@ -503,7 +508,7 @@ body {
   background: var(--bg-card);
   border: 1px solid rgba(212, 168, 67, 0.12);
   border-radius: 10px;
-  padding: 12px 16px;
+  padding: 6px 10px;
 }
 
 .ai-step-title {
@@ -521,8 +526,8 @@ body {
 
 .ai-connector {
   position: absolute;
-  left: 34px;
-  top: 46px;
+  left: 28px;
+  top: 36px;
   width: 2px;
   height: 24px;
   background: linear-gradient(to bottom, var(--gold), rgba(212, 168, 67, 0.2));
@@ -532,10 +537,10 @@ body {
 /* 数据统计 */
 .stat-row {
   display: flex;
-  gap: 22px;
+  gap: 20px;
   justify-content: center;
   flex-wrap: wrap;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
 }
 
 .stat-item { display: inline-flex; align-items: baseline; min-width: 100px; justify-content: center; }
@@ -573,6 +578,63 @@ body {
 .card-icon .icon { width: 28px; height: 28px; }
 
 .tech-point-icon .icon { width: 18px; height: 18px; }
+
+/* emerge-card 浮现卡片 */
+.map-emerge-cards {
+  display: flex;
+  gap: 14px;
+  max-width: 1080px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.emerge-card {
+  flex: 1;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 12px 14px;
+  background: rgba(13, 26, 18, 0.85);
+  border: 1px solid rgba(212, 168, 67, 0.25);
+  border-radius: 10px;
+  backdrop-filter: blur(12px);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.4s ease;
+}
+
+.emerge-card:hover {
+  border-color: rgba(212, 168, 67, 0.5);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.4), 0 0 20px rgba(212,168,67,0.1);
+}
+
+.emerge-card .tech-point-icon {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  background: rgba(212, 168, 67, 0.1);
+  border: 1px solid rgba(212, 168, 67, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--gold);
+}
+
+.emerge-card .tech-point-content { flex: 1; }
+
+.emerge-card .tech-point-title {
+  font-size: 13px;
+  color: var(--gold-light);
+  font-weight: 700;
+  margin-bottom: 3px;
+}
+
+.emerge-card .tech-point-desc {
+  font-size: 11px;
+  color: var(--text-dim);
+  line-height: 1.65;
+}
 
 .inline-icon {
   width: 1.1em;
@@ -779,11 +841,11 @@ body {
 
 /* 结尾 */
 .end-badge {
-  width: 56px; height: 56px;
+  width: 48px; height: 48px;
   border-radius: 50%;
   background: radial-gradient(circle, var(--gold-light), var(--gold), var(--green));
   box-shadow: 0 0 30px rgba(212, 168, 67, 0.3);
-  margin-bottom: 20px;
+  margin-bottom: 10px;
   position: relative;
 }
 
@@ -931,7 +993,7 @@ body {
   <div class="slide" data-index="1">
     <div class="section-tag fade-up">一 / 项目背景</div>
     <h2 class="slide-title fade-up">为什么做这个项目</h2>
-    <div class="slide-content">
+    <div class="slide-content" style="margin-top: 10px;">
       <div class="card-grid cols-2 fade-up">
         <div class="card">
           <div class="card-icon"><svg class="icon"><use href="#icon-map"/></svg></div>
@@ -971,17 +1033,17 @@ body {
     <div class="story-tag fade-up">故事线 · 误入秘境</div>
     <h2 class="slide-title fade-up">游戏启动与状态机</h2>
     <div class="slide-content">
-      <div class="fade-up" style="text-align: center; margin-bottom: 18px;">
-        <p style="font-size: 14px; color: var(--text-dim); line-height: 1.7; max-width: 700px; margin: 0 auto; word-break: keep-all; overflow-wrap: break-word;">
+      <div class="fade-up" style="text-align: center; margin-bottom: 8px;">
+        <p style="font-size: 14px; color: var(--text-dim); line-height: 1.6; max-width: 700px; margin: 0 auto; word-break: keep-all; overflow-wrap: break-word;">
           你是一名刚踏入华师的新生。报到那天，校园里桂花逆季盛开，空气中弥漫着不寻常的气息——你误入了与现实校园重叠的秘境异世界。
         </p>
       </div>
       <!-- 状态机 + 架构图 并排 -->
-      <div class="fade-up" style="display: flex; gap: 20px; margin-bottom: 18px; align-items: flex-start;">
+      <div class="fade-up" style="display: flex; gap: 16px; margin-bottom: 10px; align-items: flex-start;">
         <!-- 左：状态机转换图 -->
         <div style="flex: 0 0 40%;">
           <div class="col-title" style="margin-bottom: 6px;">状态机转换图</div>
-          <svg viewBox="0 0 380 270" xmlns="http://www.w3.org/2000/svg" style="width:100%;">
+          <svg viewBox="0 0 380 270" xmlns="http://www.w3.org/2000/svg" style="width:100%; display: block; margin: 0 auto;">
             <defs>
               <marker id="ah" markerWidth="5" markerHeight="4" refX="4.5" refY="2" orient="auto"><polygon points="0 0,5 2,0 4" fill="rgba(74,140,94,0.6)"/></marker>
               <marker id="ahg" markerWidth="5" markerHeight="4" refX="4.5" refY="2" orient="auto"><polygon points="0 0,5 2,0 4" fill="rgba(212,168,67,0.5)"/></marker>
@@ -1062,7 +1124,7 @@ body {
       <div class="fade-up" style="display: flex; gap: 14px; align-items: stretch;">
         <div style="flex: 0 0 38%; background: var(--bg-card); border: 1px solid rgba(212,168,67,0.12); border-radius: 8px; padding: 8px 12px;">
           <div class="col-title">10 种游戏状态</div>
-          <div style="font-size: 12px; color: var(--text-dim); line-height: 1.8;">
+          <div style="font-size: 12px; color: var(--text-dim); line-height: 1.7;">
             <div style="display:flex; justify-content:space-between;"><span><span style="color:var(--gold-light)">TITLE</span> 标题画面</span><span style="color:rgba(148,140,126,0.6);">—</span></div>
             <div style="display:flex; justify-content:space-between;"><span><span style="color:var(--gold-light)">INTRO</span> 开场动画</span><span style="color:rgba(148,140,126,0.6);">回车</span></div>
             <div style="display:flex; justify-content:space-between;"><span><span style="color:var(--gold-light)">PLAYING</span> 游戏主状态</span><span style="color:rgba(148,140,126,0.6);">完成</span></div>
@@ -1075,21 +1137,21 @@ body {
             <div style="display:flex; justify-content:space-between;"><span><span style="color:var(--gold-light)">OUTRO</span> 结局动画</span><span style="color:rgba(148,140,126,0.6);">通关</span></div>
           </div>
         </div>
-        <div style="flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
-          <div style="background: var(--bg-card); border: 1px solid rgba(212,168,67,0.12); border-radius: 8px; padding: 8px 12px;">
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
+          <div style="background: var(--bg-card); border: 1px solid rgba(212,168,67,0.12); border-radius: 8px; padding: 8px 12px; flex: 1;">
             <div class="col-title">状态转换规则</div>
             <div class="card-text" style="font-size: 11px; line-height: 1.7;">
               每个状态有明确的进入/退出条件，<span class="highlight">不可跳转</span>。PLAYING 是核心枢纽，所有子状态从 PLAYING 进入并返回。状态机保证了游戏流程的<span class="highlight">确定性和可维护性</span>。
             </div>
           </div>
-          <div class="tech-point" style="margin-bottom:0;">
+          <div class="tech-point" style="margin-bottom:0; flex: 1;">
             <div class="tech-point-icon"><svg class="icon"><use href="#icon-state"/></svg></div>
             <div class="tech-point-content">
               <div class="tech-point-title">状态机驱动主循环</div>
               <div class="tech-point-desc">game_manager.py 根据当前状态分发 update/draw 调用，不同状态下输入处理逻辑完全隔离</div>
             </div>
           </div>
-          <div class="tech-point" style="margin-bottom:0;">
+          <div class="tech-point" style="margin-bottom:0; flex: 1;">
             <div class="tech-point-icon"><svg class="icon"><use href="#icon-grid"/></svg></div>
             <div class="tech-point-content">
               <div class="tech-point-title">双缓冲缩放渲染</div>
@@ -1107,10 +1169,34 @@ body {
     <div class="story-tag fade-up">故事线 · 初到校园</div>
     <h2 class="slide-title fade-up">自由探索与无缝地图</h2>
     <div class="slide-content" style="margin-top: 0px;">
-      <div class="fade-up" style="text-align: center; margin-bottom: 20px;">
-        <p style="font-size: 14px; color: var(--text-dim); line-height: 1.7; max-width: 700px; margin: 0 auto; word-break: keep-all; overflow-wrap: break-word;">
+      <div class="fade-up" style="text-align: center; margin-bottom: 8px;">
+        <p style="font-size: 14px; color: var(--text-dim); line-height: 1.6; max-width: 700px; margin: 0 auto; word-break: keep-all; overflow-wrap: break-word;">
           秘境中的校园与游戏现实几乎一模一样——桂中路、图书馆、博雅广场、体育馆……但每个地标都被秘境力量笼罩。
         </p>
+      </div>
+      <!-- 内容卡片从地图浮现 -->
+      <div class="map-emerge-cards fade-up">
+        <div class="emerge-card">
+          <div class="tech-point-icon"><svg class="icon"><use href="#icon-map"/></svg></div>
+          <div class="tech-point-content">
+            <div class="tech-point-title">无缝大地图</div>
+            <div class="tech-point-desc">本部 120×80 tiles + 南湖 40×30 tiles，校车接驳站连接（过场 2-3s + 淡入）。pytmx 加载 TMX，6 层图层（ground→collision）</div>
+          </div>
+        </div>
+        <div class="emerge-card">
+          <div class="tech-point-icon"><svg class="icon"><use href="#icon-bolt"/></svg></div>
+          <div class="tech-point-content">
+            <div class="tech-point-title">碰撞 · 分轴滑动</div>
+            <div class="tech-point-desc">从 Tiled 碰撞层提取布尔矩阵，先 X 后 Y 分轴检测，允许沿墙滑动而非卡住</div>
+          </div>
+        </div>
+        <div class="emerge-card">
+          <div class="tech-point-icon"><svg class="icon"><use href="#icon-eye"/></svg></div>
+          <div class="tech-point-content">
+            <div class="tech-point-title">视口裁剪渲染</div>
+            <div class="tech-point-desc">仅渲染摄像机可见范围内的 Tile 和实体，大地图下保持 60 FPS 稳定</div>
+          </div>
+        </div>
       </div>
       <!-- 透视网格校园图 -->
       <div class="campus-visual fade-up" style="margin-top: -55px;">
@@ -1397,29 +1483,6 @@ body {
           </div>
         </div>
       </div>
-      <div class="card-grid cols-3 fade-up" style="margin-top: 8px;">
-        <div class="tech-point" style="margin-bottom:0;">
-          <div class="tech-point-icon"><svg class="icon"><use href="#icon-map"/></svg></div>
-          <div class="tech-point-content">
-            <div class="tech-point-title">无缝大地图</div>
-            <div class="tech-point-desc">本部 120×80 tiles + 南湖 40×30 tiles，校车接驳站连接（过场 2-3s + 淡入）。pytmx 加载 TMX，6 层图层（ground→collision）</div>
-          </div>
-        </div>
-        <div class="tech-point" style="margin-bottom:0;">
-          <div class="tech-point-icon"><svg class="icon"><use href="#icon-bolt"/></svg></div>
-          <div class="tech-point-content">
-            <div class="tech-point-title">碰撞 · 分轴滑动</div>
-            <div class="tech-point-desc">从 Tiled 碰撞层提取布尔矩阵，先 X 后 Y 分轴检测，允许沿墙滑动而非卡住</div>
-          </div>
-        </div>
-        <div class="tech-point" style="margin-bottom:0;">
-          <div class="tech-point-icon"><svg class="icon"><use href="#icon-eye"/></svg></div>
-          <div class="tech-point-content">
-            <div class="tech-point-title">视口裁剪渲染</div>
-            <div class="tech-point-desc">仅渲染摄像机可见范围内的 Tile 和实体，大地图下保持 60 FPS 稳定</div>
-          </div>
-        </div>
-      </div>
     </div>
   </div>
 
@@ -1428,14 +1491,14 @@ body {
     <div class="section-tag fade-up">二 / 游戏设计</div>
     <div class="story-tag fade-up">故事线 · 夜幕降临</div>
     <h2 class="slide-title fade-up">昼夜循环与秘境觉醒</h2>
-    <div class="slide-content">
-      <div class="fade-up" style="text-align: center; margin-bottom: 18px;">
-        <p style="font-size: 14px; color: var(--text-dim); line-height: 1.7; max-width: 700px; margin: 0 auto; word-break: keep-all; overflow-wrap: break-word;">
+    <div class="slide-content" style="margin-top: -4px;">
+      <div class="fade-up" style="text-align: center; margin-bottom: 6px;">
+        <p style="font-size: 14px; color: var(--text-dim); line-height: 1.6; max-width: 700px; margin: 0 auto; word-break: keep-all; overflow-wrap: break-word;">
           白天，校园宁静如常；夜幕降临，秘境觉醒——幽绿光芒从地面涌出，桂花树在暗夜中发出微光，广场舞阿姨出现在博雅广场……
         </p>
       </div>
       <!-- 昼夜渐变条 -->
-      <div class="fade-up" style="max-width: 800px; margin: 0 auto 24px;">
+      <div class="fade-up" style="max-width: 800px; margin: 0 auto 12px;">
         <div class="gradient-bar" style="background: linear-gradient(90deg,
           rgba(0,0,0,0) 0%,
           rgba(0,0,0,0) 25%,
@@ -1453,19 +1516,19 @@ body {
           <div class="gradient-bar-label" style="left: 55%;">19:30 夜晚</div>
           <div class="gradient-bar-label" style="left: 88%;">6:00 次日</div>
         </div>
-        <div style="height: 24px;"></div>
+        <div style="height: 8px;"></div>
       </div>
       <div class="two-col fade-up">
         <div class="two-col-left">
           <div class="col-title">关键帧插值法</div>
-          <div class="card-text" style="font-size: 13px; line-height: 1.8;">
+          <div class="card-text" style="font-size: 13px; line-height: 1.7;">
             全天定义 <span class="highlight">11 个关键帧</span>，每个帧指定色调颜色和 alpha 值。任意时刻的色调由相邻两个关键帧<span class="highlight">线性插值</span>得到，实现平滑过渡。<br><br>
             <span class="tag">白天</span> 无叠加（秘境蛰伏态淡绿 alpha≈10）<br>
             <span class="tag">黄昏</span> 橘红→紫蓝渐变<br>
             <span class="tag">夜晚</span> 深蓝叠加 alpha 最高 155<br>
             <span class="tag">觉醒态</span> 幽绿脉冲 alpha 20-50 呼吸
           </div>
-          <div class="col-title" style="margin-top: 10px;">NPC 时段系统</div>
+          <div class="col-title" style="margin-top: 6px;">NPC 时段系统</div>
           <div class="card-text" style="font-size: 13px;">
             不同 NPC 在不同时段出现：图书管理员白天在岗，广场舞阿姨仅夜晚出现，<span class="highlight">桂中路谜题仅夜晚可解</span>——昼夜不只是视觉变化，更影响游戏逻辑。
           </div>
@@ -1489,8 +1552,8 @@ KEYFRAMES = [
     color = <span class="fn">lerp</span>(c0, c1, ratio)
     alpha = <span class="fn">lerp</span>(a0, a1, ratio)
           </div>
-          <div class="col-title" style="margin-top: 10px;">技术要点</div>
-          <div class="card-text" style="font-size: 13px; line-height: 1.8;">
+          <div class="col-title" style="margin-top: 6px;">技术要点</div>
+          <div class="card-text" style="font-size: 13px; line-height: 1.7;">
             所有叠加通过 <code>Surface.set_alpha()</code> 实现，<span class="highlight">每帧仅一次全屏 fill</span>，性能友好。游戏内 1 天 = 现实 6 分钟，由 <code>config.py</code> 中 <code>DAY_DURATION</code> 控制。
           </div>
         </div>
@@ -1504,8 +1567,8 @@ KEYFRAMES = [
     <div class="story-tag fade-up">故事线 · 收集徽章</div>
     <h2 class="slide-title fade-up">三个地标 · 三种玩法</h2>
     <div class="slide-content">
-      <div class="fade-up" style="text-align: center; margin-bottom: 18px;">
-        <p style="font-size: 14px; color: var(--text-dim); line-height: 1.7; max-width: 700px; margin: 0 auto; word-break: keep-all; overflow-wrap: break-word;">
+      <div class="fade-up" style="text-align: center; margin-bottom: 8px;">
+        <p style="font-size: 14px; color: var(--text-dim); line-height: 1.6; max-width: 700px; margin: 0 auto; word-break: keep-all; overflow-wrap: break-word;">
           秘境守护者告诉你：七个地标各藏一枚桂花徽章碎片，集齐七枚方能解除封印。夜幕低垂，秘境的气息弥漫在校园的每个角落……
         </p>
       </div>
@@ -1532,38 +1595,34 @@ KEYFRAMES = [
           <div class="puzzle-stars">★☆☆</div>
         </div>
       </div>
-      <div class="fade-up" style="margin-top: 18px;">
-        <div style="display: flex; gap: 16px;">
-          <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
-            <div class="tech-point" style="margin-bottom:0; flex: 1;">
-              <div class="tech-point-icon"><svg class="icon"><use href="#icon-moon"/></svg></div>
-              <div class="tech-point-content">
-                <div class="tech-point-title">夜晚限定机制</div>
-                <div class="tech-point-desc">桂花密语仅在夜晚可触发——PuzzleManager 检查当前时钟时段，白天互动桂花树只返回普通对话。这是昼夜系统与谜题系统的<span class="highlight">跨模块联动</span>。</div>
-              </div>
-            </div>
-            <div class="tech-point" style="margin-bottom:0; flex: 1;">
-              <div class="tech-point-icon"><svg class="icon"><use href="#icon-key"/></svg></div>
-              <div class="tech-point-content">
-                <div class="tech-point-title">密码输入终端</div>
-                <div class="tech-point-desc">综合楼电脑终端支持数字键输入 4 位密码，含光标闪烁动画。线索散布在公告栏残页中，<span class="highlight">信息碎片化设计</span>引导玩家主动探索。</div>
-              </div>
+      <div class="fade-up" style="margin-top: 12px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px; align-items: stretch;">
+          <div class="tech-point" style="margin-bottom:0; align-self: stretch;">
+            <div class="tech-point-icon"><svg class="icon"><use href="#icon-moon"/></svg></div>
+            <div class="tech-point-content">
+              <div class="tech-point-title">夜晚限定机制</div>
+              <div class="tech-point-desc">桂花密语仅在夜晚可触发——PuzzleManager 检查当前时钟时段，白天互动桂花树只返回普通对话。这是昼夜系统与谜题系统的<span class="highlight">跨模块联动</span>。</div>
             </div>
           </div>
-          <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
-            <div class="tech-point" style="margin-bottom:0; flex: 1;">
-              <div class="tech-point-icon"><svg class="icon"><use href="#icon-search"/></svg></div>
-              <div class="tech-point-content">
-                <div class="tech-point-title">搜索交互与对话驱动</div>
-                <div class="tech-point-desc">食堂谜题没有独立 UI，完全通过<span class="highlight">对话系统+互动物体</span>实现：搜索桌子→对话框反馈结果→找到饭卡→与阿姨对话归还。纯逻辑层 48 行代码，体现了数据驱动架构的简洁性。</div>
-              </div>
+          <div class="tech-point" style="margin-bottom:0; align-self: stretch;">
+            <div class="tech-point-icon"><svg class="icon"><use href="#icon-key"/></svg></div>
+            <div class="tech-point-content">
+              <div class="tech-point-title">密码输入终端</div>
+              <div class="tech-point-desc">综合楼电脑终端支持数字键输入 4 位密码，含光标闪烁动画。线索散布在公告栏残页中，<span class="highlight">信息碎片化设计</span>引导玩家主动探索。</div>
             </div>
-            <div class="tech-point" style="margin-bottom:0; flex: 1;">
-              <div class="tech-point-icon"><svg class="icon"><use href="#icon-state"/></svg></div>
-              <div class="tech-point-content">
-                <div class="tech-point-title">谜题状态机</div>
-                <div class="tech-point-desc">所有谜题共享 <span class="highlight">UNDISCOVERED → DISCOVERED → IN_PROGRESS → SOLVED</span> 四阶段状态机，PuzzleManager 统一管理前置条件检查和徽章奖励发放。</div>
-              </div>
+          </div>
+          <div class="tech-point" style="margin-bottom:0; align-self: stretch;">
+            <div class="tech-point-icon"><svg class="icon"><use href="#icon-search"/></svg></div>
+            <div class="tech-point-content">
+              <div class="tech-point-title">搜索交互与对话驱动</div>
+              <div class="tech-point-desc">食堂谜题没有独立 UI，完全通过<span class="highlight">对话系统+互动物体</span>实现：搜索桌子→对话框反馈结果→找到饭卡→与阿姨对话归还。纯逻辑层仅 48 行代码，体现了数据驱动架构的简洁性。</div>
+            </div>
+          </div>
+          <div class="tech-point" style="margin-bottom:0; align-self: stretch;">
+            <div class="tech-point-icon"><svg class="icon"><use href="#icon-state"/></svg></div>
+            <div class="tech-point-content">
+              <div class="tech-point-title">谜题状态机</div>
+              <div class="tech-point-desc">所有谜题共享 <span class="highlight">UNDISCOVERED → DISCOVERED → IN_PROGRESS → SOLVED</span> 四阶段状态机，PuzzleManager 统一管理前置条件检查和徽章奖励发放。</div>
             </div>
           </div>
         </div>
@@ -1577,8 +1636,8 @@ KEYFRAMES = [
     <div class="story-tag fade-up">故事线 · 收集徽章</div>
     <h2 class="slide-title fade-up">三个挑战 · 三重考验</h2>
     <div class="slide-content">
-      <div class="fade-up" style="text-align: center; margin-bottom: 18px;">
-        <p style="font-size: 14px; color: var(--text-dim); line-height: 1.7; max-width: 700px; margin: 0 auto; word-break: keep-all; overflow-wrap: break-word;">
+      <div class="fade-up" style="text-align: center; margin-bottom: 8px;">
+        <p style="font-size: 14px; color: var(--text-dim); line-height: 1.6; max-width: 700px; margin: 0 auto; word-break: keep-all; overflow-wrap: break-word;">
           图书馆的书架间藏着知识的考验，博雅广场的地砖暗含阵法，体育馆里需要精准一击……
         </p>
       </div>
@@ -1605,39 +1664,35 @@ KEYFRAMES = [
           <div class="puzzle-stars">★★☆</div>
         </div>
       </div>
-      <div class="fade-up" style="margin-top: 18px;">
+      <div class="fade-up" style="margin-top: 12px;">
         <!-- 上排两栏对称 -->
-        <div style="display: flex; gap: 16px; margin-bottom: 14px;">
-          <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
-            <div class="tech-point" style="margin-bottom:0; flex: 1;">
-              <div class="tech-point-icon"><svg class="icon"><use href="#icon-book"/></svg></div>
-              <div class="tech-point-content">
-                <div class="tech-point-title">题库 JSON 驱动</div>
-                <div class="tech-point-desc"><code>library_questions.json</code> 存储 12 道选择题，运行时随机抽取 3 道。答错可重试，答对全部通过。<span class="highlight">数据与逻辑完全分离</span>，增删题目无需改代码。</div>
-              </div>
-            </div>
-            <div class="tech-point" style="margin-bottom:0; flex: 1;">
-              <div class="tech-point-icon"><svg class="icon"><use href="#icon-target"/></svg></div>
-              <div class="tech-point-content">
-                <div class="tech-point-title">投篮小游戏 · 双阶段谜题</div>
-                <div class="tech-point-desc">体育馆谜题分两阶段：<span class="highlight">① 投篮</span>（移动指示器停在绿区判定命中）→ <span class="highlight">② 翻牌</span>（记分牌拨盘输入密码 1903）。416 行代码，是复杂度最高的谜题之一。</div>
-              </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px; align-items: stretch;">
+          <div class="tech-point" style="margin-bottom:0; align-self: stretch;">
+            <div class="tech-point-icon"><svg class="icon"><use href="#icon-book"/></svg></div>
+            <div class="tech-point-content">
+              <div class="tech-point-title">题库 JSON 驱动</div>
+              <div class="tech-point-desc"><code>library_questions.json</code> 存储 12 道选择题，运行时随机抽取 3 道。答错可重试，答对全部通过。<span class="highlight">数据与逻辑完全分离</span>，增删题目无需改代码。</div>
             </div>
           </div>
-          <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
-            <div class="tech-point" style="margin-bottom:0; flex: 1;">
-              <div class="tech-point-icon"><svg class="icon"><use href="#icon-grid"/></svg></div>
-              <div class="tech-point-content">
-                <div class="tech-point-title">9-slice 像素风边框</div>
-                <div class="tech-point-desc">pygame_gui 不支持 9-slice 图片拉伸（角会变形），因此<span class="highlight">自写 9-slice 渲染函数</span>：角不拉伸、边单方向拉伸、中心双向拉伸。在 dialog_box.py 中实现，被 inventory_ui、quest_log 等模块全局复用。</div>
-              </div>
+          <div class="tech-point" style="margin-bottom:0; align-self: stretch;">
+            <div class="tech-point-icon"><svg class="icon"><use href="#icon-grid"/></svg></div>
+            <div class="tech-point-content">
+              <div class="tech-point-title">9-slice 像素风边框</div>
+              <div class="tech-point-desc">pygame_gui 不支持 9-slice 图片拉伸（角会变形），因此<span class="highlight">自写 9-slice 渲染函数</span>：角不拉伸、边单方向拉伸、中心双向拉伸。在 dialog_box.py 中实现，被 inventory_ui、quest_log 等模块全局复用。</div>
             </div>
-            <div class="tech-point" style="margin-bottom:0; flex: 1;">
-              <div class="tech-point-icon"><svg class="icon"><use href="#icon-eye"/></svg></div>
-              <div class="tech-point-content">
-                <div class="tech-point-title">视觉反馈系统</div>
-                <div class="tech-point-desc">地砖阵法踩对发光、踩错红色闪烁重置；投篮命中/未中有不同动画；谜题解决时播放音效+徽章获取提示。<span class="highlight">即时反馈</span>让玩家始终知道操作结果。</div>
-              </div>
+          </div>
+          <div class="tech-point" style="margin-bottom:0; align-self: stretch;">
+            <div class="tech-point-icon"><svg class="icon"><use href="#icon-target"/></svg></div>
+            <div class="tech-point-content">
+              <div class="tech-point-title">投篮小游戏 · 双阶段谜题</div>
+              <div class="tech-point-desc">体育馆谜题分两阶段：<span class="highlight">① 投篮</span>（移动指示器停在绿区判定命中）→ <span class="highlight">② 翻牌</span>（记分牌拨盘输入密码 1903）。416 行代码，是复杂度最高的谜题之一。</div>
+            </div>
+          </div>
+          <div class="tech-point" style="margin-bottom:0; align-self: stretch;">
+            <div class="tech-point-icon"><svg class="icon"><use href="#icon-eye"/></svg></div>
+            <div class="tech-point-content">
+              <div class="tech-point-title">视觉反馈系统</div>
+              <div class="tech-point-desc">地砖阵法踩对发光、踩错红色闪烁重置；投篮命中/未中有不同动画；谜题解决时播放音效+徽章获取提示。<span class="highlight">即时反馈</span>让玩家始终知道操作结果。</div>
             </div>
           </div>
         </div>
@@ -1681,22 +1736,22 @@ KEYFRAMES = [
     <div class="story-tag fade-up">故事线 · 七徽归位</div>
     <h2 class="slide-title fade-up">最终谜题与粒子动画</h2>
     <div class="slide-content">
-      <div class="fade-up" style="text-align: center; margin-bottom: 18px;">
-        <p style="font-size: 14px; color: var(--text-dim); line-height: 1.7; max-width: 700px; margin: 0 auto; word-break: keep-all; overflow-wrap: break-word;">
+      <div class="fade-up" style="text-align: center; margin-bottom: 8px;">
+        <p style="font-size: 14px; color: var(--text-dim); line-height: 1.6; max-width: 700px; margin: 0 auto; word-break: keep-all; overflow-wrap: break-word;">
           六枚徽章已集齐。喷泉广场中央，基座上有七个凹槽——按正确顺序嵌入前六枚，第七枚将从光芒中自行显现……
         </p>
       </div>
       <div class="two-col fade-up">
         <div class="two-col-left">
           <div class="col-title">三阶段显现动画</div>
-          <div class="card-text" style="font-size: 13px; line-height: 1.9;">
+          <div class="card-text" style="font-size: 13px; line-height: 1.7;">
             <span class="tag">阶段一</span> 粒子从 6 枚徽章汇聚到第 7 槽位（2s）<br>
             <span class="tag">阶段二</span> 第 7 枚徽章从光芒中逐渐显现（2s）<br>
             <span class="tag">阶段三</span> 完成提示，秘境封印解除<br><br>
             纯 Pygame 手写粒子系统，含速度衰减、透明度渐变、随机偏移。fountain_puzzle.py 共 <span class="highlight">593 行</span>，是代码量最大的谜题。
           </div>
           <div class="col-title" style="margin-top: 10px;">PuzzleManager 统一管理</div>
-          <div class="card-text" style="font-size: 13px; line-height: 1.8;">
+          <div class="card-text" style="font-size: 13px; line-height: 1.7;">
             7 个谜题由 PuzzleManager 统一调度：<br>
             <span class="tag">前置条件检查</span>
             <span class="tag">状态持久化</span>
@@ -1729,7 +1784,7 @@ KEYFRAMES = [
             <div style="position:absolute; bottom:8px; right:12px; font-size:10px; color:var(--text-dim);">6 枚汇聚 → 第 7 枚显现</div>
           </div>
           <div class="col-title" style="margin-top: 10px;">技术实现</div>
-          <div class="card-text" style="font-size: 13px; line-height: 1.8;">
+          <div class="card-text" style="font-size: 13px; line-height: 1.7;">
             粒子属性：位置、速度、加速度、透明度、生命周期<br>
             每帧更新：<code>pos += vel; vel *= 0.96; alpha -= fade_rate</code><br>
             渲染：<code>Surface.set_alpha()</code> + <code>blit</code> 到目标位置
@@ -1745,13 +1800,13 @@ KEYFRAMES = [
     <div class="story-tag fade-up">故事线 · 封印解除</div>
     <h2 class="slide-title fade-up">数据驱动与存档系统</h2>
     <div class="slide-content">
-      <div class="fade-up" style="text-align: center; margin-bottom: 18px;">
-        <p style="font-size: 14px; color: var(--text-dim); line-height: 1.7; max-width: 700px; margin: 0 auto; word-break: keep-all; overflow-wrap: break-word;">
+      <div class="fade-up" style="text-align: center; margin-bottom: 8px;">
+        <p style="font-size: 14px; color: var(--text-dim); line-height: 1.6; max-width: 700px; margin: 0 auto; word-break: keep-all; overflow-wrap: break-word;">
           七枚徽章归位，喷泉涌出光芒，秘境封印解除。通关之后，回顾整个游戏的数据驱动架构——
         </p>
       </div>
       <!-- 结局差异 -->
-      <div class="fade-up" style="display: flex; gap: 14px; justify-content: center; margin-bottom: 18px; flex-wrap: wrap;">
+      <div class="fade-up" style="display: flex; gap: 14px; justify-content: center; margin-bottom: 10px; flex-wrap: wrap;">
         <div style="background: var(--bg-card); border: 1px solid rgba(212,168,67,0.2); border-radius: 8px; padding: 10px 18px; max-width: 280px; flex: 1;">
           <div style="font-size: 13px; color: var(--gold-light); font-weight: 700; margin-bottom: 4px;">普通结局</div>
           <div style="font-size: 11px; color: var(--text-dim); line-height: 1.6;">仅收集 7 枚徽章通关 → 校园恢复平静，秘境消散</div>
@@ -1813,7 +1868,7 @@ KEYFRAMES = [
       <div class="fade-up" style="display: flex; gap: 16px; align-items: flex-start;">
         <div style="flex: 1;">
           <div class="col-title">数据驱动架构</div>
-          <div class="card-text" style="font-size: 13px; line-height: 1.9; margin-bottom: 10px;">
+          <div class="card-text" style="font-size: 13px; line-height: 1.7; margin-bottom: 10px;">
             所有面向玩家的内容存储在 JSON 数据文件中，代码只负责逻辑：<br>
             <span class="tag">14 个对话 JSON</span> 对话文本+条件分支+选项<br>
             <span class="tag">items.json</span> 道具名称/描述/分类/可组合性<br>
@@ -1951,8 +2006,8 @@ KEYFRAMES = [
   <div class="slide cover-slide" data-index="10">
     <div class="end-badge fade-up"></div>
     <h2 class="slide-title fade-up" style="font-size: 40px;">项目总结</h2>
-    <div class="fade-up" style="max-width: 680px; text-align: center; margin-bottom: 24px;">
-      <p style="font-size: 15px; line-height: 2; color: var(--text);">
+    <div class="fade-up" style="max-width: 680px; text-align: center; margin-bottom: 20px;">
+      <p style="font-size: 15px; line-height: 1.8; color: var(--text);">
         从零到一，用 <span class="highlight">Python + Pygame</span> 实现了一款完整的 2D 解谜冒险游戏。<br>
         以华师校园为蓝本，7 个地标对应 7 种玩法，<br>
         昼夜双态赋予时间维度的叙事层次，<br>
@@ -1995,7 +2050,7 @@ KEYFRAMES = [
         <div class="card-text">需求→生成→审查→迭代<br>人机协同高效开发</div>
       </div>
     </div>
-    <p class="fade-up" style="margin-top: 32px; font-size: 28px; color: var(--gold); letter-spacing: 6px; font-family: 'Ma Shan Zheng', cursive;">
+    <p class="fade-up" style="margin-top: 24px; font-size: 28px; color: var(--gold); letter-spacing: 6px; font-family: 'Ma Shan Zheng', cursive;">
       感谢垂听
     </p>
   </div>

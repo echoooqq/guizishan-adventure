@@ -182,10 +182,10 @@ class GameManager:
         self._realm_animating = False
         self._realm_anim_timer = 0.0
         self._realm_anim_duration = 3.0
-        self._realm_first_night_shown = False
         self._realm_hint_timer = 0.0
         self._realm_hint_duration = 5.0
         self._realm_hint_active = False
+        self._last_period = None  # 追踪上一帧时段，用于检测夜晚切换
         self._tutorial_step = TUTORIAL_NONE
         self._tutorial_prompt_text = ""
         self._tutorial_prompt_timer = 0.0
@@ -2433,10 +2433,12 @@ class GameManager:
                 if not self.game_clock.is_realm_active():
                     self._check_realm_trigger()
 
-            if self.game_clock.is_realm_active() and not self._realm_first_night_shown:
-                if self.game_clock.is_night():
-                    self._realm_first_night_shown = True
-                    self._show_first_night_hint()
+            if self.game_clock.is_realm_active() and self.game_clock.is_night():
+                # 检测时段从非夜晚切换到夜晚，且桂中路谜题未完成时提示
+                if self._last_period is not None and self._last_period != "night":
+                    if self.puzzle_manager.get_state("guizhong") != PuzzleState.SOLVED:
+                        self._show_first_night_hint()
+            self._last_period = self.game_clock.get_period()
 
             if self._realm_hint_active:
                 self._realm_hint_timer += dt
@@ -4437,7 +4439,7 @@ class GameManager:
         self._dialog_flags = {}
         self._realm_triggered = False
         self._realm_animating = False
-        self._realm_first_night_shown = False
+        self._last_period = None
         self._tutorial_step = TUTORIAL_NONE  # 新游戏时重新触发教程
         self._tutorial_prompt_text = ""
         self._tutorial_prompt_timer = 0.0

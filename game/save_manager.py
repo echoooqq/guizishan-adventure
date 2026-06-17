@@ -36,7 +36,6 @@ class SaveData:
         self.dialog_flags = {}
         self.visited_nanhu = False
         self.realm_triggered = False
-        self.realm_first_night_shown = False
         self.tutorial_step = 0
         self.tutorial_completed = False
         self.explored_areas = {}
@@ -59,7 +58,6 @@ class SaveData:
             "dialog_flags": self.dialog_flags,
             "visited_nanhu": self.visited_nanhu,
             "realm_triggered": self.realm_triggered,
-            "realm_first_night_shown": self.realm_first_night_shown,
             "tutorial_step": self.tutorial_step,
             "tutorial_completed": self.tutorial_completed,
             "explored_areas": self.explored_areas,
@@ -81,7 +79,6 @@ class SaveData:
         sd.dialog_flags = data.get("dialog_flags", {})
         sd.visited_nanhu = data.get("visited_nanhu", False)
         sd.realm_triggered = data.get("realm_triggered", False)
-        sd.realm_first_night_shown = data.get("realm_first_night_shown", False)
         # 兼容旧存档：tutorial_shown=True → tutorial_completed=True, tutorial_step=9
         if "tutorial_step" in data:
             step = data.get("tutorial_step", 0)
@@ -258,7 +255,6 @@ class SaveManager:
         # 游戏进度标记
         sd.visited_nanhu = game_manager._visited_nanhu
         sd.realm_triggered = game_manager._realm_triggered
-        sd.realm_first_night_shown = game_manager._realm_first_night_shown
         sd.tutorial_step = game_manager._tutorial_step
         sd.tutorial_completed = game_manager._tutorial_completed
 
@@ -300,7 +296,7 @@ class SaveManager:
         # 恢复游戏进度标记
         game_manager._visited_nanhu = save_data.visited_nanhu
         game_manager._realm_triggered = save_data.realm_triggered
-        game_manager._realm_first_night_shown = save_data.realm_first_night_shown
+        game_manager._last_period = game_manager.game_clock.get_period()
         game_manager._tutorial_step = save_data.tutorial_step
         game_manager._tutorial_completed = save_data.tutorial_completed
         # 从谜题状态推导徽章收集进度
